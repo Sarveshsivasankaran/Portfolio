@@ -1,0 +1,300 @@
+
+<h2 class="sr-only">Solo Leveling themed color palette for portfolio design</h2>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+  .sl-root { padding: 1.5rem 0; font-family: 'Rajdhani', sans-serif; }
+
+  .sl-section-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    margin: 0 0 10px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .palette-group { margin-bottom: 2rem; }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .swatch {
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    border: 0.5px solid var(--color-border-tertiary);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .swatch:hover { transform: translateY(-2px); }
+  .swatch:active { transform: scale(0.97); }
+
+  .swatch-color {
+    height: 72px;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 6px 8px;
+  }
+
+  .swatch-tag {
+    font-size: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    padding: 2px 5px;
+    border-radius: 3px;
+    opacity: 0.85;
+  }
+
+  .swatch-info {
+    background: var(--color-background-primary);
+    padding: 8px 10px;
+  }
+
+  .swatch-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 2px;
+    line-height: 1.2;
+  }
+
+  .swatch-hex {
+    font-size: 11px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--color-text-secondary);
+    margin: 0 0 3px;
+  }
+
+  .swatch-use {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .copy-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--color-text-primary);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 999;
+  }
+  .copy-toast.show { opacity: 1; }
+
+  .role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+  }
+
+  .role-card {
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-tertiary);
+    overflow: hidden;
+  }
+
+  .role-bar {
+    height: 8px;
+    width: 100%;
+  }
+
+  .role-body {
+    padding: 8px 10px;
+    background: var(--color-background-primary);
+  }
+
+  .role-label {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    font-family: 'Share Tech Mono', monospace;
+    margin: 0 0 2px;
+  }
+
+  .role-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .divider {
+    height: 0.5px;
+    background: var(--color-border-tertiary);
+    margin: 0.25rem 0 1.75rem;
+  }
+
+  .pair-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .pair-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-secondary);
+    font-size: 12px;
+    color: var(--color-text-primary);
+  }
+
+  .chip-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+</style>
+
+<div class="sl-root">
+
+  <p class="sl-section-label">// Core Palette — Shadow Monarch</p>
+  <div class="palette-group">
+    <div class="swatches" id="core-swatches"></div>
+  </div>
+
+  <p class="sl-section-label">// Accent Palette — Ruler's Authority</p>
+  <div class="palette-group">
+    <div class="swatches" id="accent-swatches"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="sl-section-label">// Portfolio Role Mapping</p>
+  <div class="role-grid" id="role-grid"></div>
+
+  <div class="divider" style="margin-top: 1.5rem;"></div>
+
+  <p class="sl-section-label">// Recommended Combos</p>
+  <div id="combos"></div>
+
+</div>
+
+<div class="copy-toast" id="toast">Copied!</div>
+
+<script>
+const core = [
+  { name: "Void Black", hex: "#0A0A12", use: "page background" },
+  { name: "Dungeon Slate", hex: "#111827", use: "card / section bg" },
+  { name: "Shadow Mist", hex: "#1F2937", use: "elevated surfaces" },
+  { name: "Ash Border", hex: "#374151", use: "borders, dividers" },
+  { name: "Stone Text", hex: "#9CA3AF", use: "secondary text" },
+  { name: "Ghost White", hex: "#F1F5F9", use: "primary text" },
+];
+
+const accents = [
+  { name: "Gate Blue", hex: "#3B82F6", use: "primary CTA, links" },
+  { name: "Monarch Purple", hex: "#7C3AED", use: "hero accent, badges" },
+  { name: "Mana Teal", hex: "#06B6D4", use: "highlights, tags" },
+  { name: "Ruler Silver", hex: "#CBD5E1", use: "icon fills, subtle" },
+  { name: "S-Rank Gold", hex: "#F59E0B", use: "rank badges, awards" },
+  { name: "Blood Crimson", hex: "#DC2626", use: "danger, alerts" },
+];
+
+const roles = [
+  { label: "Background", name: "Void Black", color: "#0A0A12", text: "#F1F5F9" },
+  { label: "Surface", name: "Dungeon Slate", color: "#111827", text: "#F1F5F9" },
+  { label: "Primary", name: "Gate Blue", color: "#3B82F6", text: "#fff" },
+  { label: "Accent", name: "Monarch Purple", color: "#7C3AED", text: "#fff" },
+  { label: "Highlight", name: "Mana Teal", color: "#06B6D4", text: "#fff" },
+  { label: "Text", name: "Ghost White", color: "#F1F5F9", text: "#111827" },
+  { label: "Award", name: "S-Rank Gold", color: "#F59E0B", text: "#111827" },
+  { label: "Border", name: "Ash Border", color: "#374151", text: "#F1F5F9" },
+];
+
+const combos = [
+  { name: "Void + Gate Blue", desc: "Dark bg + blue CTA — the dungeon portal look", colors: ["#0A0A12","#3B82F6","#F1F5F9"] },
+  { name: "Slate + Monarch Purple", desc: "Card surface with purple accent badges", colors: ["#111827","#7C3AED","#CBD5E1"] },
+  { name: "Mist + Teal + Gold", desc: "Elevated card with teal tags and gold rank badge", colors: ["#1F2937","#06B6D4","#F59E0B"] },
+];
+
+function getLuma(hex) {
+  const r = parseInt(hex.slice(1,3),16),
+        g = parseInt(hex.slice(3,5),16),
+        b = parseInt(hex.slice(5,7),16);
+  return 0.299*r + 0.587*g + 0.114*b;
+}
+
+function renderSwatches(data, containerId) {
+  const el = document.getElementById(containerId);
+  data.forEach(s => {
+    const luma = getLuma(s.hex);
+    const tagBg = luma > 128 ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)';
+    const tagCol = luma > 128 ? '#111' : '#fff';
+    const div = document.createElement('div');
+    div.className = 'swatch';
+    div.innerHTML = `
+      <div class="swatch-color" style="background:${s.hex}">
+        <span class="swatch-tag" style="background:${tagBg};color:${tagCol}">${s.hex}</span>
+      </div>
+      <div class="swatch-info">
+        <p class="swatch-name">${s.name}</p>
+        <p class="swatch-hex">${s.hex}</p>
+        <p class="swatch-use">${s.use}</p>
+      </div>`;
+    div.addEventListener('click', () => copyHex(s.hex));
+    el.appendChild(div);
+  });
+}
+
+function renderRoles() {
+  const el = document.getElementById('role-grid');
+  roles.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'role-card';
+    div.innerHTML = `
+      <div class="role-bar" style="background:${r.color}"></div>
+      <div class="role-body">
+        <p class="role-label">${r.label}</p>
+        <p class="role-name">${r.name}</p>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function renderCombos() {
+  const el = document.getElementById('combos');
+  combos.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'pair-row';
+    const dotsHtml = c.colors.map(col => `<span class="chip-dot" style="background:${col};border:0.5px solid rgba(0,0,0,0.1)"></span>`).join('');
+    row.innerHTML = `
+      <div class="pair-chip">
+        ${dotsHtml}
+        <span><strong>${c.name}</strong> — ${c.desc}</span>
+      </div>`;
+    el.appendChild(row);
+  });
+}
+
+function copyHex(hex) {
+  navigator.clipboard.writeText(hex).catch(()=>{});
+  const t = document.getElementById('toast');
+  t.textContent = `Copied ${hex}`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+renderSwatches(core, 'core-swatches');
+renderSwatches(accents, 'accent-swatches');
+renderRoles();
+renderCombos();
+</script>
