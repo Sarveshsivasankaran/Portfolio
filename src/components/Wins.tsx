@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { motion } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { LINKEDIN_POSTS, type LinkedInPost } from '../data/linkedinPosts'
 import { FiChevronLeft, FiChevronRight, FiLinkedin, FiExternalLink } from 'react-icons/fi'
+
+const Spline = lazy(() => import('@splinetool/react-spline'))
+const SPLINE_URL = 'https://prod.spline.design/kZiQZ1hp09EE5chm/scene.splinecode'
+
+gsap.registerPlugin(ScrollTrigger)
+
 
 const TYPE_COLORS: Record<LinkedInPost['type'], string> = {
   post:        '#06b6d4', // Cyan
@@ -24,6 +32,7 @@ function formatDate(dateStr: string) {
 export default function Wins() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(1200)
+  const splineApp = useRef<any>(null)
 
   // Track screen size for responsive card calculations
   useEffect(() => {
@@ -32,6 +41,74 @@ export default function Wins() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('.wins-spline-wrapper',
+        { rotation: 0, scale: 1.1, y: -50 },
+        {
+          rotation: -45, // Rotate opposite direction to hero
+          scale: 1.3,
+          y: 80,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#wins',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+          }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  // Scroll-triggered entrance animations for wins content
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('#wins .section-label, #wins .section-heading',
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power2.out',
+          scrollTrigger: { trigger: '#wins', start: 'top 85%', once: true }
+        }
+      )
+      gsap.fromTo('.wins-card-deck',
+        { opacity: 0, y: 60 },
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
+          scrollTrigger: { trigger: '#wins', start: 'top 75%', once: true }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  function onSplineLoad(app: any) {
+    splineApp.current = app
+    
+    gsap.to({}, {
+      scrollTrigger: {
+        trigger: '#wins',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1.2,
+        onUpdate: (self) => {
+          if (!splineApp.current) return
+          try {
+            const camera = splineApp.current.findObjectByName('Camera')
+            if (camera) {
+              camera.rotation.y = self.progress * Math.PI * 0.4
+            } else {
+              splineApp.current.setZoom(1.0 - self.progress * 0.1)
+            }
+          } catch (e) {
+            try {
+              splineApp.current.setZoom(1.0 - self.progress * 0.1)
+            } catch (err) {}
+          }
+        }
+      }
+    })
+  }
 
   // Card dimensions
   const isMobile = viewportWidth < 768
@@ -64,6 +141,20 @@ export default function Wins() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* 3D Interactive Spline Background Canvas */}
+      <Suspense fallback={null}>
+        <div className="wins-spline-wrapper" style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          opacity: 0.12, // Cohesive premium subtle depth
+          willChange: 'transform',
+        }}>
+          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
+        </div>
+      </Suspense>
+
       {/* Ambient glowing fields */}
       <div style={{
         position: 'absolute',
@@ -89,7 +180,7 @@ export default function Wins() {
         <h2 className="section-heading" style={{ marginBottom: 48 }}>Wins &amp; Activity</h2>
 
         {/* Viewport sliding window */}
-        <div style={{
+        <div className="wins-card-deck" style={{
           width: '100%',
           overflow: 'hidden',
           padding: '20px 0',

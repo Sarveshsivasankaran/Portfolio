@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react'
 import { FaGithub, FaLinkedin } from 'react-icons/fa'
 import { FiArrowUp } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function Footer() {
   const [showScrollTop, setShowScrollTop] = useState(false)
@@ -10,6 +14,19 @@ export default function Footer() {
     const onScroll = () => setShowScrollTop(window.scrollY > 400)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Scroll-triggered entrance animation for footer content
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('footer',
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+          scrollTrigger: { trigger: 'footer', start: 'top 95%', once: true }
+        }
+      )
+    })
+    return () => ctx.revert()
   }, [])
 
   return (

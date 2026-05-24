@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { FiSend, FiUser, FiMail, FiMessageSquare, FiBookOpen } from 'react-icons/fi'
+
+const Spline = lazy(() => import('@splinetool/react-spline'))
+const SPLINE_URL = 'https://prod.spline.design/kZiQZ1hp09EE5chm/scene.splinecode'
+
+gsap.registerPlugin(ScrollTrigger)
+
 
 interface QueuedMessage {
   id: string
@@ -22,6 +30,74 @@ export default function Contact() {
   const [isSending, setIsSending] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [queue, setQueue] = useState<QueuedMessage[]>([])
+  const splineApp = useRef<any>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('.contact-spline-wrapper',
+        { rotation: 0, scale: 1.05, y: -50 },
+        {
+          rotation: 40,
+          scale: 1.25,
+          y: 100,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#contact',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+          }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  // Scroll-triggered entrance animations for contact content
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('#contact .section-label, #contact .section-heading',
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power2.out',
+          scrollTrigger: { trigger: '#contact', start: 'top 85%', once: true }
+        }
+      )
+      gsap.fromTo('.contact-grid',
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: 'power2.out',
+          scrollTrigger: { trigger: '#contact', start: 'top 80%', once: true }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  function onSplineLoad(app: any) {
+    splineApp.current = app
+    gsap.to({}, {
+      scrollTrigger: {
+        trigger: '#contact',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1.2,
+        onUpdate: (self) => {
+          if (!splineApp.current) return
+          try {
+            const camera = splineApp.current.findObjectByName('Camera')
+            if (camera) {
+              camera.rotation.y = self.progress * Math.PI * 0.4
+            } else {
+              splineApp.current.setZoom(1.0 - self.progress * 0.15)
+            }
+          } catch (e) {
+            try {
+              splineApp.current.setZoom(1.0 - self.progress * 0.15)
+            } catch (err) {}
+          }
+        }
+      }
+    })
+  }
 
   // Load stashed queue on mount
   useEffect(() => {
@@ -152,6 +228,20 @@ export default function Contact() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* 3D Interactive Spline Background Canvas */}
+      <Suspense fallback={null}>
+        <div className="contact-spline-wrapper" style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: 'none',
+          opacity: 0.1,
+          willChange: 'transform',
+        }}>
+          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
+        </div>
+      </Suspense>
+
       {/* Background radial glow */}
       <div style={{
         position: 'absolute',
@@ -165,7 +255,7 @@ export default function Contact() {
         zIndex: 0,
       }} />
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 5 }}>
         {/* Title */}
         <p className="section-label" style={{ textAlign: 'center' }}>// SYSTEM.QUESTS</p>
         <h2 className="section-heading" style={{ textAlign: 'center', marginBottom: 12 }}>Contact Monarch</h2>

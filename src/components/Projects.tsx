@@ -1,9 +1,13 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { FiExternalLink, FiGithub } from 'react-icons/fi'
 import { useGitHubRepos, type GitHubRepo } from '../hooks/useGitHubRepos'
+
+const Spline = lazy(() => import('@splinetool/react-spline'))
+const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode'
+
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -61,7 +65,7 @@ function RepoCard({ repo, isTopStarred }: { repo: GitHubRepo; isTopStarred: bool
   return (
     <div
       ref={cardRef}
-      className="card"
+      className="card project-card"
       style={{
         padding: '1.25rem',
         display: 'flex',
@@ -199,6 +203,74 @@ export default function Projects() {
   const { data: repos = [], isLoading, isError, refetch } = useGitHubRepos()
   const [sort, setSort] = useState<SortType>('updated')
   const [langFilter, setLangFilter] = useState('All')
+  const splineApp = useRef<any>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('.projects-spline-wrapper',
+        { rotation: 0, scale: 1.05, y: -50 },
+        {
+          rotation: 40,
+          scale: 1.25,
+          y: 100,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#projects',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+          }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  // Scroll-triggered entrance animations for project content
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('#projects .section-label, #projects .section-heading',
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power2.out',
+          scrollTrigger: { trigger: '#projects', start: 'top 85%', once: true }
+        }
+      )
+      gsap.fromTo('.project-card',
+        { opacity: 0, y: 50, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.08, ease: 'power2.out',
+          scrollTrigger: { trigger: '#projects .project-grid', start: 'top 85%', once: true }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  function onSplineLoad(app: any) {
+    splineApp.current = app
+    gsap.to({}, {
+      scrollTrigger: {
+        trigger: '#projects',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1.2,
+        onUpdate: (self) => {
+          if (!splineApp.current) return
+          try {
+            const camera = splineApp.current.findObjectByName('Camera')
+            if (camera) {
+              camera.rotation.y = self.progress * Math.PI * 0.4
+            } else {
+              splineApp.current.setZoom(1.0 + self.progress * 0.15)
+            }
+          } catch (e) {
+            try {
+              splineApp.current.setZoom(1.0 + self.progress * 0.15)
+            } catch (err) {}
+          }
+        }
+      }
+    })
+  }
 
   const languages = ['All', ...Array.from(new Set(repos.map(r => r.language).filter(Boolean) as string[]))]
 
@@ -218,8 +290,24 @@ export default function Projects() {
     <section id="projects" style={{
       padding: '96px 64px 80px',
       background: 'var(--void)',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+      {/* 3D Interactive Spline Background Canvas */}
+      <Suspense fallback={null}>
+        <div className="projects-spline-wrapper" style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          opacity: 0.12,
+          willChange: 'transform',
+        }}>
+          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
+        </div>
+      </Suspense>
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 5 }}>
         <p className="section-label">// DUNGEON.RAIDS</p>
         <h2 className="section-heading">Projects</h2>
         <p style={{ color: 'var(--stone)', fontSize: 14, marginTop: 8, marginBottom: 32 }}>
@@ -279,7 +367,7 @@ export default function Projects() {
         )}
 
         {/* Grid */}
-        <div style={{
+        <div className="project-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
           gap: 16,

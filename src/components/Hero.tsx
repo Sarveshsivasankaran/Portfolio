@@ -20,6 +20,11 @@ const TYPEWRITER_STRINGS = [
   'Open Source Builder',
   'Problem Solver',
   'Event Organizer',
+  'Solo-P-Leveller',
+  'Public Speaker',
+  'CTF Player',
+  'IOT Enthusiast',
+  'AI Enthusiast',
 ]
 
 const stagger = {

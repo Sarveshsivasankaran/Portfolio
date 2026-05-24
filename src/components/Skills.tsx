@@ -312,6 +312,27 @@ export default function Skills() {
     })
   }
 
+  // Scroll-triggered entrance animations for content elements
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Section header fade-up
+      gsap.fromTo('#skills .section-label, #skills .section-heading',
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power2.out',
+          scrollTrigger: { trigger: '#skills', start: 'top 85%', once: true }
+        }
+      )
+      // GitHub status badge
+      gsap.fromTo('#skills [style*="LINK"]',
+        { opacity: 0, x: 20 },
+        { opacity: 1, x: 0, duration: 0.6, delay: 0.3, ease: 'power2.out',
+          scrollTrigger: { trigger: '#skills', start: 'top 85%', once: true }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
   // Real-time aggregation engine that runs when GitHub query returns data
   useEffect(() => {
     // 1. High-fidelity static database (always acts as solid baseline / zero-network fallback)

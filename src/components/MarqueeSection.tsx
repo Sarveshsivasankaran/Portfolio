@@ -1,6 +1,24 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function MarqueeSection() {
+  // Scroll-triggered entrance animation
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('#marquee-banner .marquee-wrapper',
+        { opacity: 0, x: -80 },
+        { opacity: 1, x: 0, duration: 1, stagger: 0.15, ease: 'power2.out',
+          scrollTrigger: { trigger: '#marquee-banner', start: 'top 90%', once: true }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+
   const contentTags = [
     { text: "Sarvesh Sivasankaran", type: "name" },
     { text: "[S-RANK DEVELOPER]", type: "rank" },

@@ -1,8 +1,16 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, Suspense, lazy } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FiX, FiMaximize2 } from 'react-icons/fi'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useDriveImages } from '../hooks/useDriveImages'
 import { DRIVE_IMAGES } from '../data/driveImages'
+
+const Spline = lazy(() => import('@splinetool/react-spline'))
+const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode'
+
+gsap.registerPlugin(ScrollTrigger)
+
 
 // Placeholder shimmer cards for fallback / loading
 function ShimmerCard() {
@@ -162,9 +170,83 @@ const PLACEHOLDER_IMAGES = DRIVE_IMAGES
 
 export default function Events() {
   const { data: driveImages, isLoading, isError } = useDriveImages()
+  const splineApp = useRef<any>(null)
 
   // Holographic configurations states
   const [activeLightboxImage, setActiveLightboxImage] = useState<{ id?: string; thumbnailUrl: string; name: string } | null>(null)
+
+  useEffect(() => {
+    // 3D container scroll parallax animation using GPU-accelerated CSS transitions
+    const ctx = gsap.context(() => {
+      gsap.fromTo('.events-spline-wrapper',
+        { rotation: 0, scale: 1.1, y: -50 },
+        {
+          rotation: -25, // Rotate opposite direction
+          scale: 1.3,   // Zoom in parallax
+          y: 80,        // Downward vertical displacement
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '#events',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.2,
+          }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  // Scroll-triggered entrance animations for section content
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo('#events .section-label, #events .section-heading',
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power2.out',
+          scrollTrigger: { trigger: '#events', start: 'top 80%', once: true }
+        }
+      )
+      // Marquee tracks staggered entrance
+      gsap.fromTo('.events-marquee-track',
+        { opacity: 0, x: -60 },
+        { opacity: 1, x: 0, duration: 0.8, stagger: 0.2, ease: 'power2.out',
+          scrollTrigger: { trigger: '#events', start: 'top 75%', once: true }
+        }
+      )
+    })
+    return () => ctx.revert()
+  }, [])
+
+  function onSplineLoad(app: any) {
+    splineApp.current = app
+    
+    // Hook scroll updates to animate properties of the 3D spline scene dynamically
+    gsap.to({}, {
+      scrollTrigger: {
+        trigger: '#events',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1.2, // Smooth scrubbing interaction
+        onUpdate: (self) => {
+          if (!splineApp.current) return
+          try {
+            const camera = splineApp.current.findObjectByName('Camera')
+            if (camera) {
+              // Rotate camera on Y-axis slowly as user scrolls
+              camera.rotation.y = -self.progress * Math.PI * 0.4
+            } else {
+              // Fallback: zoom scene dynamically
+              splineApp.current.setZoom(1.0 + self.progress * 0.1)
+            }
+          } catch (e) {
+            try {
+              splineApp.current.setZoom(1.0 + self.progress * 0.1)
+            } catch (err) {}
+          }
+        }
+      }
+    })
+  }
 
   const images = (isError || !driveImages || driveImages.length === 0)
     ? PLACEHOLDER_IMAGES
@@ -181,6 +263,20 @@ export default function Events() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* 3D Interactive Spline Background Canvas */}
+      <Suspense fallback={null}>
+        <div className="events-spline-wrapper" style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          opacity: 0.12, // Subtle, dark-mode cyber atmosphere
+          willChange: 'transform',
+        }}>
+          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
+        </div>
+      </Suspense>
+
       {/* Cyber ambient grids */}
       <div style={{
         position: 'absolute',
@@ -192,7 +288,7 @@ export default function Events() {
         pointerEvents: 'none',
       }} />
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 5 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 48 }}>
           <div>
             <p className="section-label">// FIELD.OPERATIONS</p>
