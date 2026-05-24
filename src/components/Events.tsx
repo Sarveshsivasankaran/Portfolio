@@ -237,32 +237,41 @@ export default function Events() {
   function onSplineLoad(app: any) {
     splineApp.current = app
     
-    // Hook scroll updates to animate properties of the 3D spline scene dynamically
-    gsap.to({}, {
-      scrollTrigger: {
-        trigger: '#events',
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1.2, // Smooth scrubbing interaction
-        onUpdate: (self) => {
-          if (!splineApp.current) return
-          try {
-            const camera = splineApp.current.findObjectByName('Camera')
-            if (camera) {
-              // Rotate camera on Y-axis slowly as user scrolls
-              camera.rotation.y = -self.progress * Math.PI * 0.4
-            } else {
-              // Fallback: zoom scene dynamically
-              splineApp.current.setZoom(1.0 + self.progress * 0.1)
+    // Animate camera rotation natively using high-performance GSAP scroll bindings
+    // instead of running an expensive frame-by-frame onUpdate listener
+    try {
+      const camera = app.findObjectByName('Camera')
+      if (camera) {
+        gsap.fromTo(camera.rotation,
+          { y: 0 },
+          {
+            y: -Math.PI * 0.4,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '#events',
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.2,
             }
-          } catch (e) {
-            try {
-              splineApp.current.setZoom(1.0 + self.progress * 0.1)
-            } catch (err) {}
           }
-        }
+        )
+      } else {
+        // High-performance zoom fallback
+        gsap.fromTo(app,
+          { zoom: 1.0 },
+          {
+            zoom: 1.1,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '#events',
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.2,
+            }
+          }
+        )
       }
-    })
+    } catch (e) {}
   }
 
   const rawImages = (isError || !driveImages || driveImages.length === 0)
@@ -365,7 +374,7 @@ export default function Events() {
           ) : (
             <MarqueeRow 
               images={rowA.length > 0 ? rowA : PLACEHOLDER_IMAGES.filter((_, i) => i % 2 === 0)} 
-              duration={65} 
+              duration={120} 
               reverse={false}
               onImageClick={(img) => setActiveLightboxImage(img)}
             />
@@ -379,7 +388,7 @@ export default function Events() {
           ) : (
             <MarqueeRow 
               images={rowB.length > 0 ? rowB : PLACEHOLDER_IMAGES.filter((_, i) => i % 2 === 1)} 
-              duration={65} 
+              duration={120} 
               reverse={true}
               onImageClick={(img) => setActiveLightboxImage(img)}
             />

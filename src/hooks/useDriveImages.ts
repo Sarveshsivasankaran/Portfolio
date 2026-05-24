@@ -39,7 +39,6 @@ async function fetchDriveImages(): Promise<DriveImage[]> {
 
     try {
       const folderId = getFolderId()
-      // Direct, highly reliable client-side scan for this specific public folder
       const { data } = await axios.get('https://www.googleapis.com/drive/v3/files', {
         params: {
           q: `'${folderId}' in parents and mimeType contains 'image' and trashed = false`,
@@ -47,11 +46,6 @@ async function fetchDriveImages(): Promise<DriveImage[]> {
           fields: 'files(id,name,mimeType,modifiedTime)',
           pageSize: 100,
           orderBy: 'modifiedTime desc',
-        },
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
         }
       })
 
