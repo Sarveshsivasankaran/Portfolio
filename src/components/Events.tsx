@@ -8,6 +8,7 @@ import { DRIVE_IMAGES } from '../data/driveImages'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
 const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode'
+const EVENT_CARD_HEIGHT = 'clamp(260px, 24vw, 300px)'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -16,8 +17,8 @@ gsap.registerPlugin(ScrollTrigger)
 function ShimmerCard() {
   return (
     <div className="skeleton" style={{
-      width: '320px',
-      height: '240px',
+      width: '360px',
+      height: EVENT_CARD_HEIGHT,
       borderRadius: 12,
       flexShrink: 0,
     }} />
@@ -40,7 +41,7 @@ function EventImage({ src, alt, onClick }: EventImageProps) {
       style={{
         position: 'relative',
         width: 'auto', // Dynamic width wrapper
-        height: '240px',
+        height: EVENT_CARD_HEIGHT,
         borderRadius: 12,
         overflow: 'hidden',
         cursor: 'pointer',
@@ -67,8 +68,8 @@ function EventImage({ src, alt, onClick }: EventImageProps) {
         style={{
           width: 'auto', // Dynamic proportional width
           height: '100%',
-          maxWidth: '480px', // Prevent overly wide landscape cards
-          minWidth: '120px', // Nice default baseline size
+          maxWidth: '560px', // Prevent overly wide landscape cards
+          minWidth: '140px', // Nice default baseline size
           objectFit: 'contain',
           display: 'block',
           opacity: loaded ? 1 : 0,
