@@ -135,8 +135,12 @@ function MarqueeRow({
     if (rowRef.current) rowRef.current.style.animationPlayState = 'running'
   }
 
-  // Duplicate images multiple times to ensure continuous seamless horizontal scroll width
-  const doubled = [...images, ...images, ...images]
+  // Duplicate images exactly once (2 copies total) to ensure seamless infinite scroll
+  // while minimizing visual repetition of the same image.
+  const doubled = [
+    ...images.map(img => ({ ...img, copy: 0 })),
+    ...images.map(img => ({ ...img, copy: 1 })),
+  ]
 
   return (
     <div
@@ -155,7 +159,7 @@ function MarqueeRow({
       >
         {doubled.map((img, i) => (
           <EventImage 
-            key={`${img.id || img.thumbnailUrl}-${i}`} 
+            key={`${img.id || img.thumbnailUrl}-copy-${img.copy}`} 
             src={img.thumbnailUrl} 
             alt={img.name}
             onClick={() => onImageClick(img)} 
@@ -168,6 +172,18 @@ function MarqueeRow({
 
 // Static drive images pre-fetched fallback
 const PLACEHOLDER_IMAGES = DRIVE_IMAGES
+
+// DJB2 Hash function to partition images stably into two rows.
+// This guarantees that an image is ALWAYS mapped to the exact same track based on its ID/URL.
+// When new images are prepended or appended, existing images NEVER swap tracks,
+// completely eliminating visual track-swapping glitches.
+function getStableRowIndex(id: string): number {
+  let hash = 5381
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 33) ^ id.charCodeAt(i)
+  }
+  return Math.abs(hash | 0) % 2
+}
 
 export default function Events() {
   const { data: driveImages, isLoading, isError } = useDriveImages()
@@ -249,13 +265,24 @@ export default function Events() {
     })
   }
 
-  const images = (isError || !driveImages || driveImages.length === 0)
+  const rawImages = (isError || !driveImages || driveImages.length === 0)
     ? PLACEHOLDER_IMAGES
     : driveImages
 
-  // Split images into two horizontal tracks
-  const rowA = images.filter((_, i) => i % 2 === 0)
-  const rowB = images.filter((_, i) => i % 2 === 1)
+  // Deduplicate images by filename (case-insensitive) to prevent any duplicate files from being displayed
+  const uniqueImages: typeof rawImages = []
+  const seenNames = new Set<string>()
+  for (const img of rawImages) {
+    const normName = img.name.toLowerCase().trim()
+    if (!seenNames.has(normName)) {
+      seenNames.add(normName)
+      uniqueImages.push(img)
+    }
+  }
+
+  // Partition images stably into two rows using the DJB2 hash algorithm
+  const rowA = uniqueImages.filter(img => getStableRowIndex(img.id || img.thumbnailUrl) === 0)
+  const rowB = uniqueImages.filter(img => getStableRowIndex(img.id || img.thumbnailUrl) === 1)
 
   return (
     <section id="events" style={{
@@ -507,7 +534,7 @@ export default function Events() {
       <style>{`
         @keyframes scrollHorizontal {
           0% { transform: translate3d(0, 0, 0); }
-          100% { transform: translate3d(-33.3333%, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
         }
         @media (max-width: 768px) {
           #events { padding: 96px 24px 64px !important; }

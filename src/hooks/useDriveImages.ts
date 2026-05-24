@@ -13,44 +13,17 @@ export function getFolderId(): string {
   return '1ULYV5aIjArhpxQP_0V8slDRYkBNdBop2' // Hardcoded public Google Drive folder ID
 }
 
-/**
- * Discover all subfolder IDs recursively using a BFS queue.
- * Capped to avoid massive number of requests or hitting rate limits.
- */
-async function fetchAllSubfolders(rootId: string, apiKey: string): Promise<string[]> {
-  const folderIds = [rootId]
-  const queue = [rootId]
-  const maxFolders = 50
-
-  while (queue.length > 0 && folderIds.length < maxFolders) {
-    const currentId = queue.shift()!
-    try {
-      const { data } = await axios.get('https://www.googleapis.com/drive/v3/files', {
-        params: {
-          q: `'${currentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
-          key: apiKey,
-          fields: 'files(id)',
-          pageSize: 100,
-        },
-      })
-      const subfolders = data.files || []
-      for (const folder of subfolders) {
-        if (!folderIds.includes(folder.id)) {
-          folderIds.push(folder.id)
-          queue.push(folder.id)
-        }
-      }
-    } catch (e) {
-      console.error(`[useDriveImages] Error discovering subfolders of ${currentId}:`, e)
-    }
-  }
-  return folderIds
-}
-
 async function fetchDriveImages(): Promise<DriveImage[]> {
   try {
     // 1. Query the secure Vercel Serverless Proxy first (hides tokens in production)
-    const { data } = await axios.get<DriveImage[]>('/api/drive')
+    // Add dynamic cache-busting timestamp parameter to bypass CDN/browser caches
+    const { data } = await axios.get<DriveImage[]>(`/api/drive?t=${Date.now()}`, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    })
     if (!Array.isArray(data)) {
       throw new Error('Proxy response did not return a valid list of images')
     }
@@ -65,40 +38,30 @@ async function fetchDriveImages(): Promise<DriveImage[]> {
     }
 
     try {
-      // 1. Get all folders recursively starting from our active folder ID
-      const allFolderIds = await fetchAllSubfolders(getFolderId(), apiKey)
+      const folderId = getFolderId()
+      // Direct, highly reliable client-side scan for this specific public folder
+      const { data } = await axios.get('https://www.googleapis.com/drive/v3/files', {
+        params: {
+          q: `'${folderId}' in parents and mimeType contains 'image' and trashed = false`,
+          key: apiKey,
+          fields: 'files(id,name,mimeType,modifiedTime)',
+          pageSize: 100,
+          orderBy: 'modifiedTime desc',
+        },
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
 
-      // 2. Fetch images whose parent is in our discovered folders
-      // Chunk queries to keep them within the safe length limit of the q parameter
-      const chunkSize = 20
-      const allImages: DriveImage[] = []
-
-      for (let i = 0; i < allFolderIds.length; i += chunkSize) {
-        const chunk = allFolderIds.slice(i, i + chunkSize)
-        const parentClause = chunk.map(id => `'${id}' in parents`).join(' or ')
-        const query = `(${parentClause}) and mimeType contains 'image' and trashed = false`
-
-        const { data } = await axios.get('https://www.googleapis.com/drive/v3/files', {
-          params: {
-            q: query,
-            key: apiKey,
-            fields: 'files(id,name,mimeType)',
-            pageSize: 100,
-          },
-        })
-
-        const files = data.files || []
-        files.forEach((f: { id: string; name: string; mimeType: string }) => {
-          allImages.push({
-            id: f.id,
-            name: f.name,
-            mimeType: f.mimeType,
-            thumbnailUrl: `https://drive.google.com/thumbnail?id=${f.id}&sz=w600`,
-          })
-        })
-      }
-
-      return allImages
+      const files = data.files || []
+      return files.map((f: any) => ({
+        id: f.id,
+        name: f.name,
+        mimeType: f.mimeType,
+        thumbnailUrl: `https://drive.google.com/thumbnail?id=${f.id}&sz=w600`,
+      }))
     } catch (e) {
       console.error('[useDriveImages] Fetch drive images failed:', e)
       return []
@@ -117,4 +80,3 @@ export function useDriveImages() {
     retry: 1,
   })
 }
-
