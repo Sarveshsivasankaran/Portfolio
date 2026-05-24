@@ -475,9 +475,9 @@ export default function Hero() {
             text-align: center !important;
           }
           .hero-text-pane {
-            background: rgba(10, 10, 18, 0.75) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
+            background: rgba(10, 10, 18, 0.45) !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
             border: 1px solid rgba(59, 130, 246, 0.15) !important;
             border-radius: 16px !important;
             padding: 36px 24px !important;
@@ -486,6 +486,13 @@ export default function Hero() {
             flex-direction: column;
             align-items: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+            margin-top: 100px !important;
+          }
+          .hero-framer-container {
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            justify-content: center !important;
           }
           .hero-cta-row {
             justify-content: center;
