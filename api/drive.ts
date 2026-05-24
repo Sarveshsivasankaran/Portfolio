@@ -11,10 +11,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const folderId = '1ULYV5aIjArhpxQP_0V8slDRYkBNdBop2' // Hardcoded public Google Drive folder ID
 
   try {
+    const cb = Date.now()
     // Direct, highly reliable realtime query for this specific public folder
     const { data } = await axios.get('https://www.googleapis.com/drive/v3/files', {
       params: {
-        q: `'${folderId}' in parents and mimeType contains 'image' and trashed = false`,
+        q: `'${folderId}' in parents and mimeType contains 'image' and trashed = false and name != 'cb_${cb}'`,
         key: apiKey,
         fields: 'files(id,name,mimeType,modifiedTime)',
         pageSize: 100,

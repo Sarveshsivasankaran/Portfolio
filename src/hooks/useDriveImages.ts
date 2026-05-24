@@ -39,9 +39,10 @@ async function fetchDriveImages(): Promise<DriveImage[]> {
 
     try {
       const folderId = getFolderId()
+      const cb = Date.now()
       const { data } = await axios.get('https://www.googleapis.com/drive/v3/files', {
         params: {
-          q: `'${folderId}' in parents and mimeType contains 'image' and trashed = false`,
+          q: `'${folderId}' in parents and mimeType contains 'image' and trashed = false and name != 'cb_${cb}'`,
           key: apiKey,
           fields: 'files(id,name,mimeType,modifiedTime)',
           pageSize: 100,
