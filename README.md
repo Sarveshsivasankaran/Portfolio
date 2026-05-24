@@ -85,11 +85,11 @@ Create a [`.env`](file:///h:/Program%20files/Portfolio/.env) file at the root of
 # S-Rank System Environment Keys
 VITE_GITHUB_TOKEN=your_github_personal_access_token
 VITE_GOOGLE_API_KEY=your_google_cloud_api_key
-VITE_WEB3FORMS_ACCESS_KEY=ef8e117c-6731-402f-b2a2-40e773e7b3cd
+VITE_WEB3FORMS_ACCESS_KEY=your_web3forms_access_key
 ```
 
 ### Unlocking Key Features:
-*   **Web3Forms Access Key:** Already pre-set to your custom credential. Enables silent background form submissions with instant success alerts.
+*   **Web3Forms Access Key:** Set to your Web3Forms access key. Enables silent background form submissions with instant success alerts.
 *   **Google API Key:** Required for recursive background synchronization with Google Drive folder `1ULYV5aIjArhpxQP_0V8slDRYkBNdBop2`. Falls back to a beautiful pre-cached offline grid (`driveImages.ts`) if inactive.
 *   **GitHub Token:** Used to pull real-time statistics for projects and language counts. Falls back to default system values if inactive to prevent API rate limiting.
 
