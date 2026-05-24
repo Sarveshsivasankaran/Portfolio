@@ -59,7 +59,7 @@ export default function Contact() {
     
     body += `Please address these S-Rank hunter inquiries as soon as possible.\n\nBest regards,\nSystem Assistant`
 
-    const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(`[SYSTEM QUEUE] ${queue.length} Stashed Quests`) }&body=${encodeURIComponent(body)}`
+    const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(`[Solo-P-Leveller  Portfolio Contact] ${queue.length} Queued Messages`) }&body=${encodeURIComponent(body)}`
     
     window.location.href = mailtoUrl
     
@@ -99,9 +99,9 @@ export default function Contact() {
             access_key: accessKey,
             name: formData.name,
             email: formData.email,
-            subject: formData.subject,
+            subject: `[Solo-P-Leveller  Portfolio Contact] ${formData.subject}`,
             message: formData.message,
-            from_name: 'Solo Leveling Portfolio Contact Form'
+            from_name: 'Solo-P-Leveller  Portfolio Contact'
           })
         })
         
@@ -134,7 +134,7 @@ export default function Contact() {
       }
       
       const recipient = 'sarveshsivasankaran@gmail.com'
-      const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(
+      const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(`[Solo-P-Leveller  Portfolio Contact] ${formData.subject}`)}&body=${encodeURIComponent(
         `Hi Sarvesh,\n\n${formData.message}\n\nBest regards,\n${formData.name}\nEmail: ${formData.email}`
       )}`
       

@@ -29,6 +29,7 @@ export interface CursorLensProps {
     viscosity?: number
     scale?: number
     backgroundPosition?: string
+    trackingTargetId?: string
 }
 
 export default function CursorLens({
@@ -52,6 +53,7 @@ export default function CursorLens({
     viscosity = 1.2,
     scale = 1.0,
     backgroundPosition = "center",
+    trackingTargetId = "hero",
 }: CursorLensProps) {
     const [isHovering, setIsHovering] = React.useState(false)
     const isActive = isHovering || previewCursor
@@ -157,12 +159,15 @@ export default function CursorLens({
                 return
             }
 
-            // Check if the mouse is physically inside this component's area
+            // Check if the mouse is physically inside the designated target area (e.g. entire hero section)
+            const targetEl = trackingTargetId ? document.getElementById(trackingTargetId) : null
+            const targetRect = targetEl ? targetEl.getBoundingClientRect() : rect
+
             const isInside =
-                clientX >= rect.left &&
-                clientX <= rect.right &&
-                clientY >= rect.top &&
-                clientY <= rect.bottom
+                clientX >= targetRect.left &&
+                clientX <= targetRect.right &&
+                clientY >= targetRect.top &&
+                clientY <= targetRect.bottom
 
             setIsHovering(isInside)
 
@@ -189,7 +194,7 @@ export default function CursorLens({
             window.removeEventListener("touchstart", handleGlobalMove)
             window.removeEventListener("touchmove", handleGlobalMove)
         }
-    }, [mouseX, mouseY, mouseXRatio, mouseYRatio])
+    }, [mouseX, mouseY, mouseXRatio, mouseYRatio, trackingTargetId])
 
     // --- 4. FLUID CURSOR PHYSICS ---
     const time = useTime()
