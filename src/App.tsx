@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -11,12 +11,34 @@ import Wins from './components/Wins'
 import Events from './components/Events'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
+import SystemEntry from './components/SystemEntry'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export default function App() {
+  const [hasEntered, setHasEntered] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasEnteredSystem') === 'true'
+    }
+    return false
+  })
+
+  // Lock body scroll while in system entry sequence
+  useEffect(() => {
+    if (!hasEntered) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [hasEntered])
+
   // Global scroll-driven section entrance animations
   useEffect(() => {
+    if (!hasEntered) return
+
     const ctx = gsap.context(() => {
       // Animate each content section as it scrolls into view
       const sections = ['#skills', '#marquee-banner', '#projects', '#wins', '#events', '#contact']
@@ -71,22 +93,45 @@ export default function App() {
     })
 
     return () => ctx.revert()
-  }, [])
+  }, [hasEntered])
+
+  if (!hasEntered) {
+    return (
+      <SystemEntry 
+        onEnter={() => {
+          setHasEntered(true)
+          sessionStorage.setItem('hasEnteredSystem', 'true')
+        }} 
+      />
+    )
+  }
 
   return (
     <>
-      <Navbar />
-      <main>
-        <Hero />
-        <Skills />
-        <MarqueeSection />
-        <Projects />
-        <Wins />
-        <Events />
-        <Contact />
-      </main>
-      <Footer />
-      <Analytics />
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes mainFadeIn {
+          from { opacity: 0; transform: scale(0.985); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .main-reveal {
+          animation: mainFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      ` }} />
+      <div className="main-reveal">
+        <Navbar />
+        <main>
+          <Hero />
+          <Skills />
+          <MarqueeSection />
+          <Projects />
+          <Wins />
+          <Events />
+          <Contact />
+        </main>
+        <Footer />
+        <Analytics />
+      </div>
     </>
   )
 }
+

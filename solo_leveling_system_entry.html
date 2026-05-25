@@ -1,0 +1,211 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+.sl-wrap{width:100%;height:600px;position:relative;overflow:hidden;background:#0A0A12;font-family:'Share Tech Mono',monospace}
+.hex-bg{position:absolute;inset:0;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg width='60' height='52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.3L60 34.7L30 52L0 34.7L0 17.3Z' fill='none' stroke='%233B82F6' stroke-width='1'/%3E%3C/svg%3E");background-size:60px 52px}
+.scan{position:absolute;width:100%;height:3px;background:rgba(59,130,246,.12);top:0;animation:scan 5s linear infinite;pointer-events:none;z-index:9}
+@keyframes scan{0%{top:-3px}100%{top:100%}}
+.c-tl,.c-tr,.c-bl,.c-br{position:absolute;width:22px;height:22px;border-color:#3B82F6;border-style:solid;opacity:.6;z-index:5}
+.c-tl{top:14px;left:14px;border-width:2px 0 0 2px}
+.c-tr{top:14px;right:14px;border-width:2px 2px 0 0}
+.c-bl{bottom:14px;left:14px;border-width:0 0 2px 2px}
+.c-br{bottom:14px;right:14px;border-width:0 2px 2px 0}
+.hud-top{position:absolute;top:14px;left:44px;right:44px;display:flex;justify-content:space-between;align-items:center;z-index:5}
+.hud-label{font-size:10px;letter-spacing:.18em;color:#374151}
+.hud-dot{width:6px;height:6px;border-radius:50%;background:#3B82F6;animation:pip 1.5s infinite}
+@keyframes pip{0%,100%{opacity:1}50%{opacity:.2}}
+.boot-log{position:absolute;top:50px;left:44px;right:44px;bottom:50px;display:flex;flex-direction:column;gap:7px;z-index:4;overflow:hidden}
+.boot-line{font-size:11px;animation:linein .25s ease forwards;opacity:0;line-height:1.4}
+@keyframes linein{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.cursor{color:#3B82F6;animation:blink .7s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.alert-layer{position:absolute;inset:0;background:rgba(10,10,18,.88);display:flex;align-items:center;justify-content:center;z-index:20;animation:fadein .4s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.alert-box{width:390px;max-width:92%;border:1px solid #3B82F6;background:#111827;animation:boxin .4s ease,glow 3s ease-in-out infinite}
+@keyframes boxin{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(59,130,246,.4),0 0 28px rgba(124,58,237,.2)}50%{box-shadow:0 0 22px rgba(59,130,246,.7),0 0 50px rgba(124,58,237,.4),0 0 80px rgba(6,182,212,.15)}}
+.alert-hdr{background:#0d1e36;padding:10px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #1e3a5f}
+.alert-pip{width:7px;height:7px;border-radius:50%;background:#3B82F6;animation:pip 1.2s infinite}
+.alert-hdr-txt{font-size:10px;letter-spacing:.18em;color:#4B5563}
+.alert-body{padding:22px 20px 16px;text-align:center;font-family:'Rajdhani',sans-serif}
+.alert-sym{font-size:42px;display:block;margin-bottom:10px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 8px #7C3AED)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.alert-main{font-size:20px;font-weight:700;color:#F1F5F9;letter-spacing:.06em;line-height:1.25;animation:glitch 6s infinite}
+@keyframes glitch{0%,85%,100%{text-shadow:none;transform:translate(0)}87%{text-shadow:2px 0 #06B6D4,-2px 0 #DC2626;transform:translate(-1px,0)}89%{text-shadow:-2px 0 #7C3AED;transform:translate(2px,0)}91%{text-shadow:none;transform:translate(0)}}
+.alert-arise{font-size:13px;color:#06B6D4;letter-spacing:.2em;margin:6px 0 0;font-family:'Share Tech Mono',monospace}
+.stats{margin:14px 0 0;border-top:1px solid #1F2937;padding-top:10px}
+.stat-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1a2233;font-family:'Share Tech Mono',monospace;font-size:10px}
+.stat-row:last-child{border:none}
+.s-key{color:#6B7280}.s-blue{color:#3B82F6}.s-gold{color:#F59E0B}.s-purple{color:#7C3AED}.s-teal{color:#06B6D4}
+.alert-q{font-size:12px;color:#6B7280;margin-top:14px;line-height:1.5;font-family:'Share Tech Mono',monospace}
+.alert-actions{padding:14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid #1F2937}
+.btn-accept{background:#3B82F6;color:#fff;border:none;padding:11px 0;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.15em;cursor:pointer;transition:all .2s;position:relative}
+.btn-accept:hover{background:#2563EB}
+.btn-accept:active{transform:scale(.97)}
+.btn-deny{background:transparent;color:#6B7280;border:1px solid #374151;padding:11px 0;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:.12em;cursor:pointer;transition:all .2s}
+.btn-deny:hover{border-color:#DC2626;color:#DC2626}
+.acc-layer{position:absolute;inset:0;background:#0A0A12;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:30;gap:0;animation:fadein .3s ease}
+.portal{width:110px;height:110px;border-radius:50%;border:2px solid #7C3AED;display:flex;align-items:center;justify-content:center;animation:portal-open 2.2s ease forwards;position:relative}
+@keyframes portal-open{0%{transform:scale(0);opacity:0;box-shadow:none}30%{transform:scale(1);opacity:1;box-shadow:0 0 30px #7C3AED,0 0 60px #3B82F6}70%{transform:scale(1.05);box-shadow:0 0 50px #7C3AED,0 0 100px #3B82F6}100%{transform:scale(18);opacity:0}}
+.portal-inner{width:70px;height:70px;border-radius:50%;border:1px solid #3B82F6;animation:portal-open 2.2s ease .15s forwards;opacity:0}
+.arise-txt{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:.35em;color:#F1F5F9;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);animation:fadein 1s ease 1.8s forwards;opacity:0;white-space:nowrap;text-align:center}
+.sub-txt{font-family:'Share Tech Mono',monospace;font-size:11px;color:#3B82F6;letter-spacing:.2em;margin-top:60px;animation:fadein 1s ease 2.2s forwards;opacity:0}
+.deny-layer{position:absolute;inset:0;background:#0A0A12;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:30;animation:fadein .3s ease}
+.deny-main{font-size:14px;letter-spacing:.25em;color:#DC2626;animation:glitch .4s infinite}
+.deny-sub{font-size:10px;color:#374151;letter-spacing:.12em;text-align:center;max-width:260px;line-height:1.6}
+.retry-btn{margin-top:12px;background:transparent;border:1px solid #374151;color:#6B7280;padding:8px 22px;font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:.12em;cursor:pointer;transition:all .2s}
+.retry-btn:hover{border-color:#3B82F6;color:#3B82F6}
+</style>
+
+<h2 class="sr-only">Solo Leveling anime-style system entry screen for portfolio — shows a boot sequence then a system alert popup asking user to accept or deny entry</h2>
+
+<div class="sl-wrap" id="root">
+  <div class="hex-bg"></div>
+  <div class="scan"></div>
+  <div class="c-tl"></div><div class="c-tr"></div><div class="c-bl"></div><div class="c-br"></div>
+  <div class="hud-top">
+    <span class="hud-label">SYS://MONARCH-OS v9.4.2</span>
+    <div style="display:flex;align-items:center;gap:6px"><div class="hud-dot"></div><span class="hud-label" id="hud-status">INITIALIZING</span></div>
+    <span class="hud-label" id="hud-time">00:00:00</span>
+  </div>
+  <div class="boot-log" id="boot-log"></div>
+</div>
+
+<script>
+const BOOT = [
+  {t:"MONARCH OS — AWAKENING SEQUENCE INITIATED",c:"#4B5563",d:0},
+  {t:"LOADING DIMENSIONAL CORE... [OK]",c:"#4B5563",d:550},
+  {t:"SCANNING LOCAL MANA FREQUENCY...",c:"#6B7280",d:1100},
+  {t:"> FREQ: 9,847.33 Hz  [IRREGULAR]",c:"#3B82F6",d:1650},
+  {t:"CROSS-REFERENCING HUNTER REGISTRY...",c:"#6B7280",d:2100},
+  {t:"> STATUS: NOT REGISTERED  [ANOMALY]",c:"#F59E0B",d:2600},
+  {t:"WARNING — IRREGULAR MANA SIGNATURE DETECTED",c:"#DC2626",d:3100},
+  {t:"DIMENSIONAL RANK ASSESSMENT: IMMEASURABLE",c:"#7C3AED",d:3650},
+  {t:"INITIATING EMERGENCY PROTOCOL ARISE-7...",c:"#6B7280",d:4100},
+  {t:"▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%",c:"#7C3AED",d:4600},
+  {t:"NEW PLAYER DETECTED — CALIBRATING SYSTEM...",c:"#06B6D4",d:5100},
+];
+
+const root = document.getElementById('root');
+const log = document.getElementById('boot-log');
+const hudStatus = document.getElementById('hud-status');
+const hudTime = document.getElementById('hud-time');
+
+let phase = 'boot';
+let startTime = Date.now();
+
+setInterval(()=>{
+  const e = Math.floor((Date.now()-startTime)/1000);
+  const m = String(Math.floor(e/60)).padStart(2,'0');
+  const s = String(e%60).padStart(2,'0');
+  hudTime.textContent = `00:${m}:${s}`;
+},500);
+
+let cursor = document.createElement('span');
+cursor.className='cursor';cursor.textContent='█';
+
+BOOT.forEach((line,i)=>{
+  setTimeout(()=>{
+    if(cursor.parentNode) cursor.parentNode.removeChild(cursor);
+    const el = document.createElement('div');
+    el.className='boot-line';
+    el.style.color=line.c;
+    el.textContent='> '+line.t;
+    log.appendChild(el);
+    log.appendChild(cursor);
+    if(i===BOOT.length-1){
+      hudStatus.textContent='AWAITING INPUT';
+      setTimeout(showAlert, 900);
+    }
+  }, line.d);
+});
+
+function showAlert(){
+  if(cursor.parentNode) cursor.parentNode.removeChild(cursor);
+  const logEl = log;
+  logEl.style.opacity='0.25';
+  logEl.style.filter='blur(1px)';
+
+  const overlay = document.createElement('div');
+  overlay.className='alert-layer';
+  overlay.innerHTML=`
+    <div class="alert-box">
+      <div class="alert-hdr">
+        <div class="alert-pip"></div>
+        <span class="alert-hdr-txt">// SYSTEM ALERT — PRIORITY: EMERGENCY</span>
+      </div>
+      <div class="alert-body">
+        <span class="alert-sym">⚡</span>
+        <div class="alert-main">A NEW PLAYER<br/>HAS BEEN DETECTED</div>
+        <div class="alert-arise">— A R I S E —</div>
+        <div class="stats">
+          <div class="stat-row"><span class="s-key">CLASS</span><span class="s-purple">UNKNOWN  [IRREGULAR]</span></div>
+          <div class="stat-row"><span class="s-key">MANA LEVEL</span><span class="s-gold">∞  IMMEASURABLE</span></div>
+          <div class="stat-row"><span class="s-key">RANK</span><span class="s-gold">S — SHADOW MONARCH</span></div>
+          <div class="stat-row"><span class="s-key">STATUS</span><span class="s-teal">AWAKENING...</span></div>
+        </div>
+        <div class="alert-q">Will you accept the calling of the System<br/>and enter this dimension?</div>
+      </div>
+      <div class="alert-actions">
+        <button class="btn-accept" id="btn-accept">[ ACCEPT ]</button>
+        <button class="btn-deny" id="btn-deny">[ DENY ]</button>
+      </div>
+    </div>`;
+  root.appendChild(overlay);
+
+  document.getElementById('btn-accept').addEventListener('click', onAccept);
+  document.getElementById('btn-deny').addEventListener('click', onDeny);
+}
+
+function onAccept(){
+  const overlay = root.querySelector('.alert-layer');
+  if(overlay) overlay.remove();
+  hudStatus.textContent='ACCESS GRANTED';
+
+  const acc = document.createElement('div');
+  acc.className='acc-layer';
+  acc.innerHTML=`
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;width:110px;height:110px">
+      <div class="portal"><div class="portal-inner"></div></div>
+    </div>
+    <div class="arise-txt">ARISE,&nbsp;PLAYER</div>
+    <div class="sub-txt">ENTERING THE SYSTEM...</div>`;
+  root.appendChild(acc);
+}
+
+function onDeny(){
+  const overlay = root.querySelector('.alert-layer');
+  if(overlay) overlay.remove();
+  hudStatus.textContent='ACCESS DENIED';
+
+  const deny = document.createElement('div');
+  deny.className='deny-layer';
+  deny.innerHTML=`
+    <div class="deny-main">ACCESS DENIED</div>
+    <div class="deny-sub">YOU LACK THE QUALIFICATIONS<br/>TO ENTER THIS DUNGEON.</div>
+    <button class="retry-btn" id="retry-btn">[ RETRY ]</button>`;
+  root.appendChild(deny);
+
+  document.getElementById('retry-btn').addEventListener('click', ()=>{
+    deny.remove();
+    const logEl = document.getElementById('boot-log');
+    logEl.innerHTML='';
+    logEl.style.opacity='1';
+    logEl.style.filter='none';
+    startTime=Date.now();
+    hudStatus.textContent='INITIALIZING';
+
+    BOOT.forEach((line,i)=>{
+      setTimeout(()=>{
+        if(cursor.parentNode) cursor.parentNode.removeChild(cursor);
+        const el=document.createElement('div');
+        el.className='boot-line';el.style.color=line.c;
+        el.textContent='> '+line.t;
+        logEl.appendChild(el);logEl.appendChild(cursor);
+        if(i===BOOT.length-1){hudStatus.textContent='AWAITING INPUT';setTimeout(showAlert,900);}
+      },line.d);
+    });
+  });
+}
+</script>

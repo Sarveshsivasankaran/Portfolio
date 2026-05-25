@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { LINKEDIN_POSTS, type LinkedInPost } from '../data/linkedinPosts'
+import { type LinkedInPost } from '../data/linkedinPosts'
 import { FiChevronLeft, FiChevronRight, FiLinkedin, FiExternalLink } from 'react-icons/fi'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
@@ -33,6 +33,48 @@ export default function Wins() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(1200)
   const splineApp = useRef<any>(null)
+  const [posts, setPosts] = useState<LinkedInPost[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch real-time LinkedIn posts via our secure Vercel backend proxy route
+  useEffect(() => {
+    let active = true
+    fetch('/api/linkedin')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Server returned status ${res.status}`)
+        }
+        return res.json()
+      })
+      .then(data => {
+        if (active) {
+          if (Array.isArray(data) && data.length > 0) {
+            setPosts(data)
+            setLoading(false)
+          } else {
+            throw new Error('API returned empty or non-array posts list')
+          }
+        }
+      })
+      .catch(err => {
+        console.error('[Telemetry Failure] Failed to retrieve secure LinkedIn feed, loading local cache:', err.message)
+        if (active) {
+          // Fallback to static mock posts on fetch or parse errors (e.g. local 404)
+          import('../data/linkedinPosts').then(mod => {
+            if (active) {
+              setPosts(mod.LINKEDIN_POSTS)
+              setLoading(false)
+            }
+          }).catch(importErr => {
+            console.error('Failed to import local fallback posts:', importErr)
+            if (active) {
+              setLoading(false)
+            }
+          })
+        }
+      })
+    return () => { active = false }
+  }, [])
 
   // Track screen size for responsive card calculations
   useEffect(() => {
@@ -110,6 +152,8 @@ export default function Wins() {
     })
   }
 
+  const deckRef = useRef<HTMLDivElement>(null)
+
   // Card dimensions
   const isMobile = viewportWidth < 768
   const isTablet = viewportWidth >= 768 && viewportWidth < 1024
@@ -118,17 +162,50 @@ export default function Wins() {
 
   // Calculate slide limit based on viewport constraints
   const visibleCount = isMobile ? 1 : (isTablet ? 2 : 3)
-  const maxSlideIndex = Math.max(0, LINKEDIN_POSTS.length - visibleCount)
+  const maxSlideIndex = Math.max(0, posts.length - visibleCount)
 
   // Bounds clamp index
   const safeActiveIndex = Math.min(activeIndex, maxSlideIndex)
 
   const handlePrev = () => {
-    setActiveIndex((prev) => (prev > 0 ? prev - 1 : maxSlideIndex))
+    const newIndex = activeIndex > 0 ? activeIndex - 1 : maxSlideIndex
+    setActiveIndex(newIndex)
+    if (isMobile && deckRef.current) {
+      deckRef.current.scrollTo({
+        left: newIndex * (cardWidth + gap),
+        behavior: 'smooth'
+      })
+    }
   }
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev < maxSlideIndex ? prev + 1 : 0))
+    const newIndex = activeIndex < maxSlideIndex ? activeIndex + 1 : 0
+    setActiveIndex(newIndex)
+    if (isMobile && deckRef.current) {
+      deckRef.current.scrollTo({
+        left: newIndex * (cardWidth + gap),
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  const handleDotClick = (index: number) => {
+    setActiveIndex(index)
+    if (isMobile && deckRef.current) {
+      deckRef.current.scrollTo({
+        left: index * (cardWidth + gap),
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  const handleScroll = () => {
+    if (!isMobile || !deckRef.current) return
+    const scrollLeft = deckRef.current.scrollLeft
+    const newIndex = Math.round(scrollLeft / (cardWidth + gap))
+    if (newIndex !== activeIndex && newIndex >= 0 && newIndex <= maxSlideIndex) {
+      setActiveIndex(newIndex)
+    }
   }
 
   // Slide translation X
@@ -180,29 +257,55 @@ export default function Wins() {
         <h2 className="section-heading" style={{ marginBottom: 48 }}>Wins &amp; Activity</h2>
 
         {/* Viewport sliding window */}
-        <div className="wins-card-deck" style={{
-          width: '100%',
-          overflow: 'hidden',
-          padding: '20px 0',
-          position: 'relative',
-        }}>
-          <motion.div
-            animate={{ x: slideX }}
-            transition={{
-              type: 'spring',
-              stiffness: 220,
-              damping: 24,
-            }}
-            style={{
-              display: 'flex',
-              gap: `${gap}px`,
-              width: 'max-content',
-              willChange: 'transform',
-            }}
-          >
-            {LINKEDIN_POSTS.map((post, index) => {
-              // Highlight card if inside the current visible viewport slice
-              const isCurrentlyVisible = index >= safeActiveIndex && index < safeActiveIndex + visibleCount
+        <div 
+          ref={deckRef}
+          className="wins-card-deck" 
+          onScroll={handleScroll}
+          style={{
+            width: '100%',
+            overflowX: isMobile ? 'auto' : 'hidden',
+            padding: '20px 0',
+            position: 'relative',
+            scrollSnapType: isMobile ? 'x mandatory' : 'none',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {loading ? (
+            <div style={{ display: 'flex', gap: `${gap}px`, width: 'max-content' }}>
+              {Array.from({ length: visibleCount }).map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className="skeleton" 
+                  style={{ 
+                    width: `${cardWidth}px`, 
+                    height: '450px', 
+                    borderRadius: '16px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--dungeon)',
+                    opacity: 0.35,
+                    animation: 'pulse 1.8s infinite ease-in-out',
+                  }} 
+                />
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              animate={{ x: isMobile ? 0 : slideX }}
+              transition={{
+                type: 'spring',
+                stiffness: 220,
+                damping: 24,
+              }}
+              style={{
+                display: 'flex',
+                gap: `${gap}px`,
+                width: 'max-content',
+                willChange: 'transform',
+              }}
+            >
+              {posts.map((post, index) => {
+                // Highlight card if inside the current visible viewport slice
+                const isCurrentlyVisible = index >= safeActiveIndex && index < safeActiveIndex + visibleCount
 
               return (
                 <motion.div
@@ -222,6 +325,7 @@ export default function Wins() {
                     flexDirection: 'column',
                     transformStyle: 'preserve-3d',
                     transition: 'border-color 0.3s, box-shadow 0.3s',
+                    scrollSnapAlign: isMobile ? 'center' : 'none',
                   }}
                   whileHover={{
                     y: -8,
@@ -398,6 +502,7 @@ export default function Wins() {
               )
             })}
           </motion.div>
+          )}
         </div>
 
         {/* Dynamic Holographic Controls and Progress dots */}
@@ -446,7 +551,7 @@ export default function Wins() {
               {Array.from({ length: maxSlideIndex + 1 }).map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => setActiveIndex(i)}
+                  onClick={() => handleDotClick(i)}
                   style={{
                     width: i === safeActiveIndex ? '28px' : '8px',
                     height: '8px',
@@ -513,6 +618,17 @@ export default function Wins() {
             radial-gradient(rgba(124, 58, 237, 0.015) 1px, transparent 0);
           background-size: 24px 24px;
           background-position: 0 0, 12px 12px;
+        }
+        .wins-card-deck::-webkit-scrollbar {
+          display: none;
+        }
+        .wins-card-deck {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none;  /* IE/Edge */
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.35; }
+          50% { opacity: 0.15; }
         }
         @media (max-width: 768px) {
           #wins { padding: 96px 24px 64px !important; }
