@@ -204,6 +204,135 @@ export default function Projects() {
   const [sort, setSort] = useState<SortType>('updated')
   const [langFilter, setLangFilter] = useState('All')
   const splineApp = useRef<any>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // High-Performance HTML5 Canvas Grid & Particle Background Animation (White Mode)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let animationFrameId: number
+    let width = (canvas.width = canvas.offsetWidth)
+    let height = (canvas.height = canvas.offsetHeight)
+
+    const handleResize = () => {
+      if (!canvas) return
+      width = canvas.width = canvas.offsetWidth
+      height = canvas.height = canvas.offsetHeight
+    }
+    window.addEventListener('resize', handleResize)
+
+    // Particle pool
+    const particleCount = 45
+    const particles: Array<{
+      x: number
+      y: number
+      size: number
+      speedY: number
+      alpha: number
+      pulseSpeed: number
+      pulseDir: number
+    }> = []
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 0.5,
+        speedY: -(Math.random() * 0.35 + 0.1),
+        alpha: Math.random() * 0.45 + 0.1,
+        pulseSpeed: Math.random() * 0.02 + 0.005,
+        pulseDir: Math.random() > 0.5 ? 1 : -1
+      })
+    }
+
+    let scanY = 0
+    const gridSpacing = 60
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height)
+
+      // Draw grids (White grid lines)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)'
+      ctx.lineWidth = 0.5
+      
+      for (let x = 0; x < width; x += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, height)
+        ctx.stroke()
+      }
+      for (let y = 0; y < height; y += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(width, y)
+        ctx.stroke()
+      }
+
+      // Tech radars in corners (White radars)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)'
+      ctx.beginPath()
+      ctx.arc(40, 40, 100, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(width - 40, height - 40, 150, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Horizontal sweeping tracking lines (White scanline)
+      scanY += 0.8
+      if (scanY > height) scanY = 0
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(0, scanY)
+      ctx.lineTo(width, scanY)
+      ctx.stroke()
+
+      // Render coordinates particles and neon networking strings (White coordinates)
+      particles.forEach((p) => {
+        p.y += p.speedY
+        if (p.y < 0) {
+          p.y = height
+          p.x = Math.random() * width
+        }
+
+        p.alpha += p.pulseSpeed * p.pulseDir
+        if (p.alpha > 0.8 || p.alpha < 0.1) {
+          p.pulseDir *= -1
+        }
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * 0.3})`
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fill()
+
+        particles.forEach((p2) => {
+          const dx = p.x - p2.x
+          const dy = p.y - p2.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < 100) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.04 * (1 - dist / 100)})`
+            ctx.lineWidth = 0.5
+            ctx.beginPath()
+            ctx.moveTo(p.x, p.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.stroke()
+          }
+        })
+      })
+
+      animationFrameId = requestAnimationFrame(render)
+    }
+
+    render()
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -293,6 +422,19 @@ export default function Projects() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* HTML5 Cybernetic Grid Canvas - White Accent Mode */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 2,
+          pointerEvents: 'none',
+          opacity: 0.85,
+        }}
+      />
       {/* 3D Interactive Spline Background Canvas */}
       <Suspense fallback={null}>
         <div className="projects-spline-wrapper" style={{

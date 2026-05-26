@@ -31,6 +31,135 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false)
   const [queue, setQueue] = useState<QueuedMessage[]>([])
   const splineApp = useRef<any>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // S-Rank Blue-themed High-Performance HTML5 Canvas Grid & Particle Background Animation
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let animationFrameId: number
+    let width = (canvas.width = canvas.offsetWidth)
+    let height = (canvas.height = canvas.offsetHeight)
+
+    const handleResize = () => {
+      if (!canvas) return
+      width = canvas.width = canvas.offsetWidth
+      height = canvas.height = canvas.offsetHeight
+    }
+    window.addEventListener('resize', handleResize)
+
+    // Particle pool
+    const particleCount = 40
+    const particles: Array<{
+      x: number
+      y: number
+      size: number
+      speedY: number
+      alpha: number
+      pulseSpeed: number
+      pulseDir: number
+    }> = []
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 1,
+        speedY: -(Math.random() * 0.3 + 0.1),
+        alpha: Math.random() * 0.45 + 0.1,
+        pulseSpeed: Math.random() * 0.02 + 0.005,
+        pulseDir: Math.random() > 0.5 ? 1 : -1
+      })
+    }
+
+    let scanY = 0
+    const gridSpacing = 65
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height)
+
+      // Draw blue grid lines
+      ctx.strokeStyle = 'rgba(14, 165, 233, 0.025)' // Sky blue
+      ctx.lineWidth = 0.5
+      
+      for (let x = 0; x < width; x += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, height)
+        ctx.stroke()
+      }
+      for (let y = 0; y < height; y += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(width, y)
+        ctx.stroke()
+      }
+
+      // Tech radars in corner (Royal blue)
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.04)'
+      ctx.beginPath()
+      ctx.arc(60, 60, 120, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(width - 60, height - 60, 160, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Horizontal sweeping tracking lines (Indigo scanline)
+      scanY += 0.75
+      if (scanY > height) scanY = 0
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.04)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(0, scanY)
+      ctx.lineTo(width, scanY)
+      ctx.stroke()
+
+      // Render coordinates particles and blue connecting strings
+      particles.forEach((p) => {
+        p.y += p.speedY
+        if (p.y < 0) {
+          p.y = height
+          p.x = Math.random() * width
+        }
+
+        p.alpha += p.pulseSpeed * p.pulseDir
+        if (p.alpha > 0.8 || p.alpha < 0.1) {
+          p.pulseDir *= -1
+        }
+
+        ctx.fillStyle = `rgba(14, 165, 233, ${p.alpha})` // Sky blue particle
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fill()
+
+        particles.forEach((p2) => {
+          const dx = p.x - p2.x
+          const dy = p.y - p2.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < 110) {
+            ctx.strokeStyle = `rgba(37, 99, 235, ${0.08 * (1 - dist / 110)})` // Indigo / Royal blue string
+            ctx.lineWidth = 0.5
+            ctx.beginPath()
+            ctx.moveTo(p.x, p.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.stroke()
+          }
+        })
+      })
+
+      animationFrameId = requestAnimationFrame(render)
+    }
+
+    render()
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -228,6 +357,19 @@ export default function Contact() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* HTML5 Blue Cybernetic Grid Network Canvas Background */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
+          pointerEvents: 'none',
+          opacity: 0.85,
+        }}
+      />
       {/* 3D Interactive Spline Background Canvas */}
       <Suspense fallback={null}>
         <div className="contact-spline-wrapper" style={{

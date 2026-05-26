@@ -1,9 +1,18 @@
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { type LinkedInPost } from '../data/linkedinPosts'
-import { FiChevronLeft, FiChevronRight, FiLinkedin, FiExternalLink } from 'react-icons/fi'
+import { 
+  FiChevronLeft, 
+  FiChevronRight, 
+  FiLinkedin, 
+  FiExternalLink,
+  FiX,
+  FiMaximize2,
+  FiShield,
+  FiActivity
+} from 'react-icons/fi'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
 const SPLINE_URL = 'https://prod.spline.design/kZiQZ1hp09EE5chm/scene.splinecode'
@@ -35,6 +44,154 @@ export default function Wins() {
   const splineApp = useRef<any>(null)
   const [posts, setPosts] = useState<LinkedInPost[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [wrRotateX, setWrRotateX] = useState(0)
+  const [wrRotateY, setWrRotateY] = useState(0)
+  const [wrSheenX, setWrSheenX] = useState(50)
+  const [wrSheenY, setWrSheenY] = useState(50)
+  const [wrHovered, setWrHovered] = useState(false)
+  const [wrLightbox, setWrLightbox] = useState(false)
+
+  // World Record Gallery Media List
+  const wrMediaList = [
+    { url: '/tifa_micro_forest_certificate.jpg', title: 'World Record Certificate', type: 'certificate' },
+    { url: '/micro_forest_event_1.jpg', title: 'Robotics Team World Record Group', type: 'photo' },
+    { url: '/micro_forest_event_2.jpg', title: 'Student Team Lead holding record card', type: 'photo' },
+    { url: '/micro_forest_event_3.jpg', title: 'World Record presentation ceremony', type: 'photo' },
+    { url: '/micro_forest_event_4.jpg', title: 'Participants with the planting robots', type: 'photo' },
+    { url: '/micro_forest_event_5.jpg', title: 'Student Operator with autonomous robot', type: 'photo' },
+  ]
+  const [featuredMediaIndex, setFeaturedMediaIndex] = useState(0)
+
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // High-Performance HTML5 Canvas Grid & Particle Background Animation
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let animationFrameId: number
+    let width = (canvas.width = canvas.offsetWidth)
+    let height = (canvas.height = canvas.offsetHeight)
+
+    const handleResize = () => {
+      if (!canvas) return
+      width = canvas.width = canvas.offsetWidth
+      height = canvas.height = canvas.offsetHeight
+    }
+    window.addEventListener('resize', handleResize)
+
+    // Particle pool
+    const particleCount = 45
+    const particles: Array<{
+      x: number
+      y: number
+      size: number
+      speedY: number
+      alpha: number
+      pulseSpeed: number
+      pulseDir: number
+    }> = []
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 1,
+        speedY: -(Math.random() * 0.35 + 0.1),
+        alpha: Math.random() * 0.45 + 0.1,
+        pulseSpeed: Math.random() * 0.02 + 0.005,
+        pulseDir: Math.random() > 0.5 ? 1 : -1
+      })
+    }
+
+    let scanY = 0
+    const gridSpacing = 60
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height)
+
+      // Draw grids
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.025)' // Gold grid lines
+      ctx.lineWidth = 0.5
+      
+      for (let x = 0; x < width; x += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, height)
+        ctx.stroke()
+      }
+      for (let y = 0; y < height; y += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(width, y)
+        ctx.stroke()
+      }
+
+      // Tech radars in corner
+      ctx.strokeStyle = 'rgba(124, 58, 237, 0.04)' // Purple radar
+      ctx.beginPath()
+      ctx.arc(40, 40, 100, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(width - 40, height - 40, 150, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Horizontal sweeping tracking lines
+      scanY += 0.8
+      if (scanY > height) scanY = 0
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.04)' // Teal scanline
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(0, scanY)
+      ctx.lineTo(width, scanY)
+      ctx.stroke()
+
+      // Render coordinates particles and neon networking strings
+      particles.forEach((p) => {
+        p.y += p.speedY
+        if (p.y < 0) {
+          p.y = height
+          p.x = Math.random() * width
+        }
+
+        p.alpha += p.pulseSpeed * p.pulseDir
+        if (p.alpha > 0.8 || p.alpha < 0.1) {
+          p.pulseDir *= -1
+        }
+
+        ctx.fillStyle = `rgba(245, 158, 11, ${p.alpha})`
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fill()
+
+        particles.forEach((p2) => {
+          const dx = p.x - p2.x
+          const dy = p.y - p2.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < 100) {
+            ctx.strokeStyle = `rgba(124, 58, 237, ${0.08 * (1 - dist / 100)})`
+            ctx.lineWidth = 0.5
+            ctx.beginPath()
+            ctx.moveTo(p.x, p.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.stroke()
+          }
+        })
+      })
+
+      animationFrameId = requestAnimationFrame(render)
+    }
+
+    render()
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
 
   // Fetch real-time LinkedIn posts via our secure Vercel backend proxy route
   useEffect(() => {
@@ -208,6 +365,38 @@ export default function Wins() {
     }
   }
 
+  const pageFlipVariants = {
+    initial: {
+      rotateY: 25,
+      x: 30,
+      opacity: 0,
+      scale: 0.98,
+      transformOrigin: 'left center',
+    },
+    animate: {
+      rotateY: 0,
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      transformOrigin: 'center center',
+      transition: {
+        duration: 0.45,
+        ease: [0.22, 1, 0.36, 1],
+      }
+    },
+    exit: {
+      rotateY: -25,
+      x: -30,
+      opacity: 0,
+      scale: 0.98,
+      transformOrigin: 'right center',
+      transition: {
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1],
+      }
+    }
+  }
+
   // Slide translation X
   const slideX = -safeActiveIndex * (cardWidth + gap)
 
@@ -218,6 +407,20 @@ export default function Wins() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* HTML5 Cybernetic Grid Canvas */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 2,
+          pointerEvents: 'none',
+          opacity: 0.85,
+        }}
+      />
+
       {/* 3D Interactive Spline Background Canvas */}
       <Suspense fallback={null}>
         <div className="wins-spline-wrapper" style={{
@@ -255,6 +458,335 @@ export default function Wins() {
       <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 5 }}>
         <p className="section-label">// CORE.ACHIEVEMENTS</p>
         <h2 className="section-heading" style={{ marginBottom: 48 }}>Wins &amp; Activity</h2>
+
+        {/* --- A. NEW INTEGRATED FEATURED WORLD RECORD CERTIFICATE --- */}
+        <div className="featured-record-card" style={{
+          background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.65) 0%, rgba(10, 10, 18, 0.8) 100%)',
+          border: '1.5px solid rgba(245, 158, 11, 0.25)',
+          borderRadius: '16px',
+          padding: '32px',
+          marginBottom: '56px',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(245, 158, 11, 0.05)',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'grid',
+          gridTemplateColumns: 'minmax(280px, 1fr) minmax(320px, 1.25fr)',
+          gap: '40px',
+          alignItems: 'center',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+        }}>
+          {/* Bezel strip highlight */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: '10%',
+            width: '120px',
+            height: '2px',
+            background: 'linear-gradient(90deg, transparent, var(--gold), transparent)',
+          }} />
+
+          {/* Column 1: A4 3D tilt frame & Thumbnail Gallery */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '20px',
+            width: '100%',
+          }}>
+            <div style={{
+              perspective: 1000,
+              display: 'flex',
+              justifyContent: 'center',
+              width: '100%',
+            }}>
+              <motion.div
+                onMouseMove={(e) => {
+                  const card = e.currentTarget
+                  const rect = card.getBoundingClientRect()
+                  const x = e.clientX - rect.left - rect.width / 2
+                  const y = e.clientY - rect.top - rect.height / 2
+                  setWrRotateX(-(y / (rect.height / 2)) * 8)
+                  setWrRotateY((x / (rect.width / 2)) * 8)
+                  setWrSheenX(((e.clientX - rect.left) / rect.width) * 100)
+                  setWrSheenY(((e.clientY - rect.top) / rect.height) * 100)
+                }}
+                onMouseEnter={() => setWrHovered(true)}
+                onMouseLeave={() => {
+                  setWrHovered(false)
+                  setWrRotateX(0)
+                  setWrRotateY(0)
+                }}
+                animate={{
+                  rotateX: wrHovered ? wrRotateX : 0,
+                  rotateY: wrHovered ? wrRotateY : 0,
+                  scale: wrHovered ? 1.02 : 1,
+                }}
+                transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  maxWidth: wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px',
+                  aspectRatio: wrMediaList[featuredMediaIndex].type === 'certificate' ? '0.707' : '1.333',
+                  borderRadius: '12px',
+                  background: 'rgba(5, 5, 12, 0.95)',
+                  border: wrHovered ? '2px solid rgba(245, 158, 11, 0.6)' : '1px solid rgba(255,255,255,0.06)',
+                  boxShadow: wrHovered
+                    ? '0 25px 50px rgba(0,0,0,0.65), 0 0 30px rgba(245,158,11,0.12)'
+                    : '0 15px 30px rgba(0,0,0,0.45)',
+                  cursor: 'zoom-in',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transformStyle: 'preserve-3d',
+                  transition: 'aspect-ratio 0.4s ease-in-out, max-width 0.4s ease-in-out, border-color 0.3s, box-shadow 0.3s',
+                }}
+                onClick={() => setWrLightbox(true)}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={featuredMediaIndex}
+                    src={wrMediaList[featuredMediaIndex].url}
+                    alt={wrMediaList[featuredMediaIndex].title}
+                    variants={pageFlipVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                      const fallback = document.getElementById('wr-embed-placeholder')
+                      if (fallback) fallback.style.display = 'flex'
+                    }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: wrMediaList[featuredMediaIndex].type === 'certificate' ? 'contain' : 'cover',
+                      zIndex: 2,
+                      filter: wrHovered ? 'contrast(1.05) brightness(1.03)' : 'contrast(0.98) brightness(0.85)',
+                      transition: 'filter 0.3s',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                    }}
+                  />
+                </AnimatePresence>
+
+                <div
+                  id="wr-embed-placeholder"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'none',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 16,
+                    zIndex: 3,
+                    background: 'linear-gradient(135deg, rgba(17,24,39,0.96) 0%, rgba(10,10,18,0.98) 100%)',
+                    fontFamily: 'Share Tech Mono, monospace',
+                    textAlign: 'center',
+                  }}
+                >
+                  <FiShield size={36} color="var(--gold)" style={{ marginBottom: 12, filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.4))' }} />
+                  <span style={{ color: 'var(--ghost)', fontSize: 13, letterSpacing: '0.05em', marginBottom: 4 }}>TIFA WORLD RECORD</span>
+                  <span style={{ color: 'var(--stone)', fontSize: 10 }}>[ VALID CREDENTIAL DATA ]</span>
+                </div>
+
+                <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at ${wrSheenX}% ${wrSheenY}%, rgba(255, 255, 255, 0.12) 0%, transparent 60%)`, pointerEvents: 'none', zIndex: 6 }} />
+
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(10, 10, 18, 0.45)',
+                  opacity: wrHovered ? 1 : 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'opacity 0.3s',
+                  zIndex: 10,
+                }}>
+                  <div style={{
+                    background: 'rgba(10, 10, 18, 0.9)',
+                    padding: '10px 16px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--gold)',
+                    color: 'var(--gold)',
+                    fontFamily: 'Share Tech Mono, monospace',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    boxShadow: '0 0 15px rgba(245, 158, 11, 0.3)',
+                  }}>
+                    <FiMaximize2 size={13} />
+                    <span>EXPAND GALLERY VIEW</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Gallery Thumbnail Row */}
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              maxWidth: '380px',
+              padding: '6px',
+              background: 'rgba(10, 10, 18, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.05)',
+              borderRadius: '8px',
+            }}>
+              {wrMediaList.map((media, idx) => (
+                <button
+                  key={idx}
+                  onMouseEnter={() => setFeaturedMediaIndex(idx)}
+                  onClick={() => setFeaturedMediaIndex(idx)}
+                  style={{
+                    width: '46px',
+                    height: '34px',
+                    borderRadius: '4px',
+                    border: featuredMediaIndex === idx ? '1.5px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: '#07070d',
+                    padding: 0,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    opacity: featuredMediaIndex === idx ? 1 : 0.55,
+                    transform: featuredMediaIndex === idx ? 'scale(1.08)' : 'scale(1)',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: featuredMediaIndex === idx ? '0 0 8px rgba(245,158,11,0.35)' : 'none',
+                  }}
+                  title={media.title}
+                >
+                  <img
+                    src={media.url}
+                    alt={media.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Column 2: Content descriptions */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            justifyContent: 'center',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{
+                fontFamily: 'Share Tech Mono, monospace',
+                fontSize: '10px',
+                color: 'var(--gold)',
+                background: 'rgba(245, 158, 11, 0.12)',
+                border: '1px solid var(--gold)',
+                borderRadius: '4px',
+                padding: '2px 8px',
+                letterSpacing: '0.1em',
+                fontWeight: 700,
+                boxShadow: '0 0 10px rgba(245, 158, 11, 0.15)',
+              }}>
+                ⭐ S-RANK RECORD ACHIEVEMENT
+              </span>
+            </div>
+
+            <h3 style={{
+              fontFamily: 'Rajdhani, sans-serif',
+              fontWeight: 700,
+              fontSize: '26px',
+              color: 'var(--ghost)',
+              lineHeight: 1.2,
+              margin: 0,
+            }}>
+              World Record: Students Use Robots to Plant a Micro Forest in Chennai
+            </h3>
+
+            <p style={{
+              color: 'var(--stone)',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              margin: '0 0 12px 0',
+            }}>
+              On January 25, 2020, at the Anna University campus in Chennai, a remarkable world record attempt took place — instead of humans planting trees, it was student-built robots that did the work. The robots were programmed to pick up saplings, lower them into the soil, and water them. A total of 326 students from 20 centres of SP Robotics Maker Lab, aged between 7 and 17, built and operated these robots to create what is recognized as the world's first micro forest planted by robots.
+            </p>
+            <p style={{
+              color: 'var(--stone)',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              margin: '0 0 12px 0',
+            }}>
+              The robots were controlled via smartphones over Bluetooth, with one team assembling and operating the robots while another team coded the watering mechanism. The planted saplings were committed to be nurtured for three years by SP Robotics in collaboration with Communitree.
+            </p>
+            <p style={{
+              color: 'var(--stone)',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              margin: '0 0 12px 0',
+            }}>
+              The initiative was inspired when a student submitted a project featuring a robot planting trees and a friend's robot watering them. The Maker Lab Head, Aarthi Muralitharan, scaled up the idea into a world record attempt to demonstrate that technology can be harnessed to fight climate change and benefit nature.
+            </p>
+            <p style={{
+              color: 'var(--stone)',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              margin: 0,
+            }}>
+              The event set the world record for <strong style={{ color: 'var(--gold)' }}>"Most Participants with Robots to Create a Micro Forest"</strong> and received a World Record Certificate in recognition of this achievement.
+            </p>
+
+            <div style={{ marginTop: 12 }}>
+              <a
+                href="https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644"
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primary"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  window.open("https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644", "_blank")
+                }}
+                style={{
+                  fontFamily: 'Share Tech Mono, monospace',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  padding: '10px 16px',
+                  borderRadius: '6px',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 58, 237, 0.15))',
+                  border: '1.5px solid var(--gold)',
+                  boxShadow: '0 0 15px rgba(245, 158, 11, 0.15)',
+                  color: 'var(--gold)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, var(--gold), var(--monarch))'
+                  e.currentTarget.style.color = '#000'
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.4)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 58, 237, 0.15))'
+                  e.currentTarget.style.color = 'var(--gold)'
+                  e.currentTarget.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.15)'
+                }}
+              >
+                <FiExternalLink size={13} />
+                <span>READ OFFICIAL NDTV REPORT</span>
+              </a>
+            </div>
+          </div>
+        </div>
 
         {/* Viewport sliding window */}
         <div 
@@ -611,13 +1143,278 @@ export default function Wins() {
         </div>
       </div>
 
+      {/* --- B. WORLD RECORD HIGH-RES LIGHTBOX MODAL --- */}
+      <AnimatePresence>
+        {wrLightbox && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '24px',
+            boxSizing: 'border-box',
+          }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setWrLightbox(false)}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(5, 5, 10, 0.95)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                cursor: 'zoom-out',
+                zIndex: 1,
+              }}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              style={{
+                position: 'relative',
+                zIndex: 10,
+                width: '100%',
+                maxWidth: '960px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+              }}
+            >
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                maxHeight: '75vh',
+                background: 'rgba(10, 10, 18, 0.6)',
+                borderRadius: '16px',
+                border: '2px solid rgba(245, 158, 11, 0.5)',
+                boxShadow: '0 0 50px rgba(245, 158, 11, 0.25)',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {/* Left navigation arrow */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFeaturedMediaIndex((prev) => (prev === 0 ? wrMediaList.length - 1 : prev - 1))
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    width: 44,
+                    height: 44,
+                    borderRadius: '50%',
+                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                    background: 'rgba(10, 10, 18, 0.85)',
+                    color: 'var(--gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.25s',
+                    zIndex: 20,
+                    outline: 'none',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'var(--gold)'
+                    e.currentTarget.style.transform = 'scale(1.08)'
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(245,158,11,0.5)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)'
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <FiChevronLeft size={22} />
+                </button>
+
+                {/* Right navigation arrow */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFeaturedMediaIndex((prev) => (prev === wrMediaList.length - 1 ? 0 : prev + 1))
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: 20,
+                    width: 44,
+                    height: 44,
+                    borderRadius: '50%',
+                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                    background: 'rgba(10, 10, 18, 0.85)',
+                    color: 'var(--gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.25s',
+                    zIndex: 20,
+                    outline: 'none',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'var(--gold)'
+                    e.currentTarget.style.transform = 'scale(1.08)'
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(245,158,11,0.5)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)'
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <FiChevronRight size={22} />
+                </button>
+
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={featuredMediaIndex}
+                    src={wrMediaList[featuredMediaIndex].url}
+                    alt={wrMediaList[featuredMediaIndex].title}
+                    variants={pageFlipVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                      const backupModal = document.getElementById('wr-backup-modal')
+                      if (backupModal) backupModal.style.display = 'flex'
+                    }}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '75vh',
+                      display: 'block',
+                      objectFit: 'contain',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                    }}
+                  />
+                </AnimatePresence>
+
+                <div
+                  id="wr-backup-modal"
+                  style={{
+                    display: 'none',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 48,
+                    background: 'rgba(10, 10, 18, 0.98)',
+                    fontFamily: 'Share Tech Mono, monospace',
+                    width: '100%',
+                    height: '400px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <FiShield size={64} color="var(--gold)" style={{ marginBottom: 20, filter: 'drop-shadow(0 0 15px rgba(245,158,11,0.5))' }} />
+                  <h3 style={{ color: 'var(--ghost)', fontSize: 20, letterSpacing: '0.1em', marginBottom: 12 }}>
+                    TIFA WORLD RECORD OFFICIAL VERIFICATION
+                  </h3>
+                  <p style={{ color: 'var(--stone)', fontSize: 13, maxWidth: '460px', lineHeight: 1.6, marginBottom: 24 }}>
+                    Students designed and operated customized mobile robotic platforms to successfully plant the world's first robot-assisted micro forest at Anna University, Chennai.
+                  </p>
+                  <div style={{
+                    border: '1.5px solid var(--gold)',
+                    background: 'rgba(245,158,11,0.06)',
+                    padding: '8px 16px',
+                    borderRadius: 4,
+                    color: 'var(--gold)',
+                    fontSize: 12,
+                    boxShadow: '0 0 10px rgba(245,158,11,0.15)',
+                  }}>
+                    CREDENTIAL SERIAL: TIFA-WORLD-RECORD-2020-01-25-MICRO-FOREST
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setWrLightbox(false)}
+                  style={{
+                    position: 'absolute',
+                    top: 16,
+                    right: 16,
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                    background: 'rgba(10, 10, 18, 0.85)',
+                    color: 'var(--gold)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.25s',
+                    outline: 'none',
+                    zIndex: 100,
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'var(--gold)'
+                    e.currentTarget.style.transform = 'scale(1.08) rotate(90deg)'
+                    e.currentTarget.style.boxShadow = '0 0 10px rgba(245,158,11,0.5)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)'
+                    e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <FiX size={18} />
+                </button>
+              </div>
+
+              <div style={{
+                background: 'rgba(10, 10, 18, 0.9)',
+                border: '1.5px solid rgba(124, 58, 237, 0.4)',
+                borderRadius: 12,
+                padding: '20px 28px',
+                backdropFilter: 'blur(10px)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                color: 'var(--stone)',
+                fontFamily: 'Share Tech Mono, monospace',
+                fontSize: 12,
+                boxShadow: '0 20px 45px rgba(0,0,0,0.6)',
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={{ color: 'var(--monarch)', fontWeight: 'bold' }}>// DIVINE VERIFICATION LOG DETECTED</span>
+                  <span style={{ color: 'var(--ghost)', fontSize: 15, fontFamily: 'Rajdhani, sans-serif', fontWeight: 600 }}>
+                    {wrMediaList[featuredMediaIndex].title} ({featuredMediaIndex + 1}/{wrMediaList.length})
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: 40, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                    <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>RECORD ID</span>
+                    <span style={{ color: 'var(--teal)' }}>TIFA_8ffd0025</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                    <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>SYSTEM CLASS</span>
+                    <span style={{ color: 'var(--gold)', fontWeight: 'bold', letterSpacing: '0.1em' }}>S-RANK VERIFIED</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <style>{`
         #wins {
           background-image: 
-            radial-gradient(rgba(59, 130, 246, 0.015) 1px, transparent 0),
-            radial-gradient(rgba(124, 58, 237, 0.015) 1px, transparent 0);
-          background-size: 24px 24px;
-          background-position: 0 0, 12px 12px;
+            radial-gradient(rgba(245, 158, 11, 0.008) 1px, transparent 0),
+            radial-gradient(rgba(124, 58, 237, 0.008) 1px, transparent 0);
+          background-size: 30px 30px;
+          background-position: 0 0, 15px 15px;
         }
         .wins-card-deck::-webkit-scrollbar {
           display: none;
@@ -629,6 +1426,25 @@ export default function Wins() {
         @keyframes pulse {
           0%, 100% { opacity: 0.35; }
           50% { opacity: 0.15; }
+        }
+        @keyframes scanVertical {
+          0% { top: -2%; }
+          50% { top: 102%; }
+          100% { top: -2%; }
+        }
+        .pulsing-icon {
+          animation: pulseIcon 1.5s ease infinite alternate;
+        }
+        @keyframes pulseIcon {
+          from { opacity: 0.5; filter: drop-shadow(0 0 1px var(--teal)); }
+          to { opacity: 1; filter: drop-shadow(0 0 8px var(--teal)); }
+        }
+        @media (max-width: 1024px) {
+          .featured-record-card {
+            grid-template-columns: 1fr !important;
+            gap: 32px !important;
+            padding: 24px !important;
+          }
         }
         @media (max-width: 768px) {
           #wins { padding: 96px 24px 64px !important; }
