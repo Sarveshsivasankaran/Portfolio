@@ -314,6 +314,7 @@ export default function Wins() {
   // Card dimensions
   const isMobile = viewportWidth < 768
   const isTablet = viewportWidth >= 768 && viewportWidth < 1024
+  const isTabletOrMobile = viewportWidth < 1024
   const cardWidth = isMobile ? 290 : (isTablet ? 320 : 360)
   const gap = 20
 
@@ -402,7 +403,7 @@ export default function Wins() {
 
   return (
     <section id="wins" style={{
-      padding: '96px 64px 80px',
+      padding: isTabletOrMobile ? '80px 20px 60px' : '96px 64px 80px',
       background: 'var(--void)',
       position: 'relative',
       overflow: 'hidden',
@@ -464,14 +465,14 @@ export default function Wins() {
           background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.65) 0%, rgba(10, 10, 18, 0.8) 100%)',
           border: '1.5px solid rgba(245, 158, 11, 0.25)',
           borderRadius: '16px',
-          padding: isMobile ? '24px 16px' : '32px',
-          marginBottom: isMobile ? '36px' : '56px',
+          padding: isTabletOrMobile ? '24px 16px' : '32px',
+          marginBottom: isTabletOrMobile ? '36px' : '56px',
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(245, 158, 11, 0.05)',
           position: 'relative',
           overflow: 'hidden',
           display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'minmax(280px, 1fr) minmax(320px, 1.25fr)',
-          gap: isMobile ? '24px' : '40px',
+          gridTemplateColumns: isTabletOrMobile ? '1fr' : 'minmax(280px, 1fr) minmax(320px, 1.25fr)',
+          gap: isTabletOrMobile ? '24px' : '40px',
           alignItems: 'center',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
@@ -526,7 +527,7 @@ export default function Wins() {
                 style={{
                   position: 'relative',
                   width: '100%',
-                  maxWidth: isMobile ? '100%' : (wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px'),
+                  maxWidth: isTabletOrMobile ? '100%' : (wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px'),
                   aspectRatio: wrMediaList[featuredMediaIndex].type === 'certificate' ? '0.707' : '1.333',
                   borderRadius: '12px',
                   background: 'rgba(5, 5, 12, 0.95)',
@@ -685,13 +686,13 @@ export default function Wins() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <span style={{
                 fontFamily: 'Share Tech Mono, monospace',
-                fontSize: isMobile ? '9px' : '10px',
+                fontSize: isTabletOrMobile ? '9px' : '10px',
                 color: 'var(--gold)',
                 background: 'rgba(245, 158, 11, 0.12)',
                 border: '1px solid var(--gold)',
                 borderRadius: '4px',
                 padding: '4px 10px',
-                letterSpacing: isMobile ? '0.04em' : '0.1em',
+                letterSpacing: isTabletOrMobile ? '0.04em' : '0.1em',
                 fontWeight: 700,
                 boxShadow: '0 0 10px rgba(245, 158, 11, 0.15)',
                 whiteSpace: 'normal',
@@ -706,7 +707,7 @@ export default function Wins() {
             <h3 style={{
               fontFamily: 'Rajdhani, sans-serif',
               fontWeight: 700,
-              fontSize: isMobile ? '20px' : '26px',
+              fontSize: isTabletOrMobile ? '20px' : '26px',
               color: 'var(--ghost)',
               lineHeight: 1.2,
               margin: 0,
@@ -768,13 +769,13 @@ export default function Wins() {
                   border: '1.5px solid var(--gold)',
                   boxShadow: '0 0 15px rgba(245, 158, 11, 0.15)',
                   color: 'var(--gold)',
-                  display: isMobile ? 'flex' : 'inline-flex',
+                  display: isTabletOrMobile ? 'flex' : 'inline-flex',
                   justifyContent: 'center',
                   alignItems: 'center',
                   gap: 8,
                   transition: 'all 0.3s ease',
                   cursor: 'pointer',
-                  width: isMobile ? '100%' : 'auto',
+                  width: isTabletOrMobile ? '100%' : 'auto',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.background = 'linear-gradient(135deg, var(--gold), var(--monarch))'
