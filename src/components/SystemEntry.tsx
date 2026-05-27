@@ -22,12 +22,11 @@ interface SystemEntryProps {
 }
 
 export default function SystemEntry({ onEnter }: SystemEntryProps) {
-  const [status, setStatus] = useState<'boot' | 'alert' | 'accepted' | 'denied'>('boot')
+  const [status, setStatus] = useState<'boot' | 'sync' | 'alert' | 'accepted' | 'denied'>('boot')
   const [bootLines, setBootLines] = useState<{ t: string; c: string }[]>([])
   const [timeElapsed, setTimeElapsed] = useState('00:00:00')
   const timeoutsRef = useRef<number[]>([])
   const startTimeRef = useRef(Date.now())
-  const alertAudioRef = useRef<HTMLAudioElement | null>(null)
 
   // Update ticking HUD timer
   useEffect(() => {
@@ -56,7 +55,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
         
         if (index === BOOT.length - 1) {
           const alertId = window.setTimeout(() => {
-            setStatus('alert')
+            setStatus('sync') // Transition to sync state once all texts are loaded
           }, 900)
           timeoutsRef.current.push(alertId)
         }
@@ -65,24 +64,41 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
     })
   }
 
-  // Auto start sequence on mount & preload audio
+  // Trigger boot sequence automatically on mount
   useEffect(() => {
-    alertAudioRef.current = new Audio('/sound/solo_leveling_system.mp3')
-    alertAudioRef.current.volume = 0.5
-    alertAudioRef.current.load()
-
     startBootSequence()
-
     return () => {
       timeoutsRef.current.forEach(id => clearTimeout(id))
     }
   }, [])
 
+  // Listen to interactive tap/click on completion of logs to unlock AudioContext
   useEffect(() => {
-    if (status === 'alert' && alertAudioRef.current) {
-      alertAudioRef.current.play().catch(err => {
-        console.warn('System alert sound playback failed:', err)
-      })
+    if (status === 'sync') {
+      const handleSyncTrigger = () => {
+        window.removeEventListener('click', handleSyncTrigger)
+        window.removeEventListener('keydown', handleSyncTrigger)
+        window.removeEventListener('touchstart', handleSyncTrigger)
+        
+        // Play system alert chime sound immediately (completely unlocked!)
+        const audio = new Audio('/sound/solo_leveling_system.mp3')
+        audio.volume = 0.5
+        audio.play().catch(err => {
+          console.warn('System alert sound playback failed:', err)
+        })
+
+        setStatus('alert')
+      }
+
+      window.addEventListener('click', handleSyncTrigger)
+      window.addEventListener('keydown', handleSyncTrigger)
+      window.addEventListener('touchstart', handleSyncTrigger)
+
+      return () => {
+        window.removeEventListener('click', handleSyncTrigger)
+        window.removeEventListener('keydown', handleSyncTrigger)
+        window.removeEventListener('touchstart', handleSyncTrigger)
+      }
     }
   }, [status])
 
@@ -970,6 +986,48 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
 
       <div className="hex-bg"></div>
 
+      {status === 'sync' && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(10, 10, 18, 0.45)',
+          backdropFilter: 'blur(3px)',
+          WebkitBackdropFilter: 'blur(3px)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'Share Tech Mono, monospace',
+          color: '#00d4ff',
+          cursor: 'pointer',
+          padding: '20px',
+        }}>
+          <div style={{
+            fontSize: '18px',
+            letterSpacing: '0.2em',
+            textShadow: '0 0 12px rgba(0, 212, 255, 0.55)',
+            marginBottom: '16px',
+            fontWeight: 600,
+          }}>
+            &gt; SYSTEM CONNECTED
+          </div>
+          <div style={{
+            fontSize: '13px',
+            letterSpacing: '0.12em',
+            color: 'rgba(255, 255, 255, 0.85)',
+            animation: 'blink 1.2s infinite steps(2, start)',
+          }}>
+            [ CLICK OR TAP ANYWHERE TO ENTER SYSTEM ]
+          </div>
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes blink {
+              to { visibility: hidden; }
+            }
+          ` }} />
+        </div>
+      )}
+
       {/* Interactive 3D Holographic Backdrop Scene */}
       <Suspense fallback={null}>
         <div style={{
@@ -1038,71 +1096,63 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
       </div>
 
       {status === 'alert' && (
-        <>
-          <audio
-            src="/sound/solo_leveling_system.mp3"
-            autoPlay
-            preload="auto"
-            style={{ display: 'none' }}
-          />
-          <div className="alert-layer">
-            <div className="sl-notification-frame">
-              {/* Cybernetic outer corners and glowing brackets */}
-              <div className="sl-frame-border top-bar"></div>
-              <div className="sl-frame-border bottom-bar"></div>
-              <div className="sl-frame-bracket left-bracket"></div>
-              <div className="sl-frame-bracket right-bracket"></div>
+        <div className="alert-layer">
+          <div className="sl-notification-frame">
+            {/* Cybernetic outer corners and glowing brackets */}
+            <div className="sl-frame-border top-bar"></div>
+            <div className="sl-frame-border bottom-bar"></div>
+            <div className="sl-frame-bracket left-bracket"></div>
+            <div className="sl-frame-bracket right-bracket"></div>
 
-              <div className="sl-notification-box">
-                {/* Header Badge */}
-                <div className="sl-notification-badge">
-                  <div className="sl-badge-icon">
-                    <span className="sl-exclamation">!</span>
-                  </div>
-                  <span className="sl-badge-text">NOTIFICATION</span>
+            <div className="sl-notification-box">
+              {/* Header Badge */}
+              <div className="sl-notification-badge">
+                <div className="sl-badge-icon">
+                  <span className="sl-exclamation">!</span>
                 </div>
+                <span className="sl-badge-text">NOTIFICATION</span>
+              </div>
 
-                {/* Body */}
-                <div className="sl-notification-body">
-                  <div className="sl-notification-glow-title">
-                    A NEW PLAYER HAS BEEN DETECTED
+              {/* Body */}
+              <div className="sl-notification-body">
+                <div className="sl-notification-glow-title">
+                  A NEW PLAYER HAS BEEN DETECTED
+                </div>
+                <div className="sl-notification-subtitle">— A R I S E —</div>
+                
+                {/* Stats Panel */}
+                <div className="sl-stats-container">
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">CLASS</span>
+                    <span className="sl-stat-value purple">UNKNOWN [IRREGULAR]</span>
                   </div>
-                  <div className="sl-notification-subtitle">— A R I S E —</div>
-                  
-                  {/* Stats Panel */}
-                  <div className="sl-stats-container">
-                    <div className="sl-stat-row">
-                      <span className="sl-stat-label">CLASS</span>
-                      <span className="sl-stat-value purple">UNKNOWN [IRREGULAR]</span>
-                    </div>
-                    <div className="sl-stat-row">
-                      <span className="sl-stat-label">MANA LEVEL</span>
-                      <span className="sl-stat-value gold">∞ IMMEASURABLE</span>
-                    </div>
-                    <div className="sl-stat-row">
-                      <span className="sl-stat-label">RANK</span>
-                      <span className="sl-stat-value gold">S — SHADOW MONARCH</span>
-                    </div>
-                    <div className="sl-stat-row">
-                      <span className="sl-stat-label">STATUS</span>
-                      <span className="sl-stat-value teal">AWAKENING...</span>
-                    </div>
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">MANA LEVEL</span>
+                    <span className="sl-stat-value gold">∞ IMMEASURABLE</span>
                   </div>
-
-                  <div className="sl-question">
-                    Will you accept the calling of the System<br />and enter this dimension?
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">RANK</span>
+                    <span className="sl-stat-value gold">S — SHADOW MONARCH</span>
+                  </div>
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">STATUS</span>
+                    <span className="sl-stat-value teal">AWAKENING...</span>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="sl-notification-actions">
-                  <button className="sl-btn sl-btn-accept" onClick={handleAccept}>ACCEPT</button>
-                  <button className="sl-btn sl-btn-deny" onClick={handleDeny}>DENY</button>
+                <div className="sl-question">
+                  Will you accept the calling of the System<br />and enter this dimension?
                 </div>
+              </div>
+
+              {/* Actions */}
+              <div className="sl-notification-actions">
+                <button className="sl-btn sl-btn-accept" onClick={handleAccept}>ACCEPT</button>
+                <button className="sl-btn sl-btn-deny" onClick={handleDeny}>DENY</button>
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {status === 'accepted' && (
