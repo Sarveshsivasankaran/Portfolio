@@ -61,3 +61,11 @@ jobs:
           git commit -m "chore: auto-update linkedin featured posts [skip ci]"
           git push
         fi
+
+    - name: Upload Debug Screenshots on Failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug-screenshots
+        path: |
+          *.png

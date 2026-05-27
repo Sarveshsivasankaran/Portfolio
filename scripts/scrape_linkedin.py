@@ -112,13 +112,21 @@ async def scrape_linkedin():
         print("Launching scraper in headless mode...")
         browser = await p.chromium.launch(headless=True)
         
-        # Load authenticated context
+        # Load authenticated context with a realistic Windows Desktop user-agent
         try:
-            context = await browser.new_context(storage_state=SESSION_FILE)
+            context = await browser.new_context(
+                storage_state=SESSION_FILE,
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                viewport={"width": 1280, "height": 800}
+            )
         except Exception as e:
             print(f"Failed to load cached session: {e}. Re-logging in...")
             await login_and_save_session(p)
-            context = await browser.new_context(storage_state=SESSION_FILE)
+            context = await browser.new_context(
+                storage_state=SESSION_FILE,
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                viewport={"width": 1280, "height": 800}
+            )
             
         page = await context.new_page()
         
@@ -126,11 +134,18 @@ async def scrape_linkedin():
         print("Verifying session status...")
         await page.goto("https://www.linkedin.com/feed/", wait_until="domcontentloaded")
         if "login" in page.url or "signup" in page.url or "checkpoint" in page.url:
+            print(f"Verification failed! Ended up at URL: {page.url}")
+            await page.screenshot(path="auth_failed.png")
+            print("Captured auth_failed.png screenshot for CI debugging.")
             print("Session expired or invalid. Launching manual login...")
             await browser.close()
             await login_and_save_session(p)
             browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context(storage_state=SESSION_FILE)
+            context = await browser.new_context(
+                storage_state=SESSION_FILE,
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                viewport={"width": 1280, "height": 800}
+            )
             page = await context.new_page()
             await page.goto("https://www.linkedin.com/feed/", wait_until="domcontentloaded")
 
