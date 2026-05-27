@@ -3,3 +3,8 @@ node_modules
 dist
 .DS_Store
 *.local
+
+# LinkedIn Scraper Security
+linkedin_session.json
+*.html
+*.png
