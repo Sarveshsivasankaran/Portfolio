@@ -57,6 +57,19 @@ def clean_url(url):
     return url
 
 async def login_and_save_session(playwright):
+    # Detect non-interactive CI/Cloud environment to avoid XServer crashes
+    if os.environ.get('CI') or os.environ.get('GITHUB_ACTIONS'):
+        print("\n" + "="*70)
+        print("ERROR: LINKEDIN SESSION COOKIES ARE EXPIRED OR INVALID IN GITHUB SECRETS!")
+        print("Because this is running in a non-interactive GitHub Actions cloud container,")
+        print("the script cannot launch a manual browser window for you to log in.")
+        print("\nTO RESOLVE:")
+        print("1. Log in to linkedin.com in your web browser.")
+        print("2. Export fresh cookies as JSON (e.g. using the EditThisCookie extension).")
+        print("3. Copy that JSON and update your GITHUB REPOSITORY SECRET named: LINKEDIN_SESSION_JSON")
+        print("="*70 + "\n")
+        raise Exception("Authentication session expired in CI. Update LINKEDIN_SESSION_JSON secret on GitHub.")
+
     print("\n" + "="*70)
     print("ACTION REQUIRED: LINKEDIN MANUAL LOGIN REQUIRED")
     print("We will launch a Chromium browser window for you.")
