@@ -682,18 +682,22 @@ export default function Wins() {
             gap: 16,
             justifyContent: 'center',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <span style={{
                 fontFamily: 'Share Tech Mono, monospace',
-                fontSize: '10px',
+                fontSize: isMobile ? '9px' : '10px',
                 color: 'var(--gold)',
                 background: 'rgba(245, 158, 11, 0.12)',
                 border: '1px solid var(--gold)',
                 borderRadius: '4px',
-                padding: '2px 8px',
-                letterSpacing: '0.1em',
+                padding: '4px 10px',
+                letterSpacing: isMobile ? '0.04em' : '0.1em',
                 fontWeight: 700,
                 boxShadow: '0 0 10px rgba(245, 158, 11, 0.15)',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+                textAlign: 'center',
+                maxWidth: '100%',
               }}>
                 ⭐ S-RANK RECORD ACHIEVEMENT
               </span>
@@ -1314,7 +1318,7 @@ export default function Wins() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    padding: 48,
+                    padding: isMobile ? '24px 16px' : '48px',
                     background: 'rgba(10, 10, 18, 0.98)',
                     fontFamily: 'Share Tech Mono, monospace',
                     width: '100%',
@@ -1323,20 +1327,22 @@ export default function Wins() {
                   }}
                 >
                   <FiShield size={64} color="var(--gold)" style={{ marginBottom: 20, filter: 'drop-shadow(0 0 15px rgba(245,158,11,0.5))' }} />
-                  <h3 style={{ color: 'var(--ghost)', fontSize: 20, letterSpacing: '0.1em', marginBottom: 12 }}>
+                  <h3 style={{ color: 'var(--ghost)', fontSize: isMobile ? 16 : 20, letterSpacing: '0.1em', marginBottom: 12 }}>
                     TIFA WORLD RECORD OFFICIAL VERIFICATION
                   </h3>
-                  <p style={{ color: 'var(--stone)', fontSize: 13, maxWidth: '460px', lineHeight: 1.6, marginBottom: 24 }}>
+                  <p style={{ color: 'var(--stone)', fontSize: isMobile ? 11 : 13, maxWidth: '460px', lineHeight: 1.6, marginBottom: 24 }}>
                     Students designed and operated customized mobile robotic platforms to successfully plant the world's first robot-assisted micro forest at Anna University, Chennai.
                   </p>
                   <div style={{
                     border: '1.5px solid var(--gold)',
-                    background: 'rgba(245,158,11,0.06)',
-                    padding: '8px 16px',
+                    background: 'rgba(245, 158, 11, 0.06)',
+                    padding: isMobile ? '8px 12px' : '8px 16px',
                     borderRadius: 4,
                     color: 'var(--gold)',
-                    fontSize: 12,
-                    boxShadow: '0 0 10px rgba(245,158,11,0.15)',
+                    fontSize: isMobile ? '10px' : '12px',
+                    boxShadow: '0 0 10px rgba(245, 158, 11, 0.15)',
+                    wordBreak: 'break-all',
+                    maxWidth: '100%',
                   }}>
                     CREDENTIAL SERIAL: TIFA-WORLD-RECORD-2020-01-25-MICRO-FOREST
                   </div>
