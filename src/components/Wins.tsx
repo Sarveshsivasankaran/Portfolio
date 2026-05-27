@@ -527,7 +527,9 @@ export default function Wins() {
                 style={{
                   position: 'relative',
                   width: '100%',
-                  maxWidth: isTabletOrMobile ? '100%' : (wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px'),
+                  maxWidth: isTabletOrMobile
+                    ? (wrMediaList[featuredMediaIndex].type === 'certificate' ? '260px' : '100%')
+                    : (wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px'),
                   aspectRatio: wrMediaList[featuredMediaIndex].type === 'certificate' ? '0.707' : '1.333',
                   borderRadius: '12px',
                   background: 'rgba(5, 5, 12, 0.95)',
@@ -631,11 +633,12 @@ export default function Wins() {
             {/* Gallery Thumbnail Row */}
             <div style={{
               display: 'flex',
-              gap: '10px',
+              gap: isTabletOrMobile ? '6px' : '10px',
               justifyContent: 'center',
               alignItems: 'center',
+              flexWrap: 'wrap',
               width: '100%',
-              maxWidth: '380px',
+              maxWidth: isTabletOrMobile ? '300px' : '380px',
               padding: '6px',
               background: 'rgba(10, 10, 18, 0.4)',
               border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -647,8 +650,8 @@ export default function Wins() {
                   onMouseEnter={() => setFeaturedMediaIndex(idx)}
                   onClick={() => setFeaturedMediaIndex(idx)}
                   style={{
-                    width: '46px',
-                    height: '34px',
+                    width: isTabletOrMobile ? '38px' : '46px',
+                    height: isTabletOrMobile ? '28px' : '34px',
                     borderRadius: '4px',
                     border: featuredMediaIndex === idx ? '1.5px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.1)',
                     background: '#07070d',
@@ -1473,6 +1476,15 @@ export default function Wins() {
         }
         @media (max-width: 768px) {
           #wins { padding: 96px 24px 64px !important; }
+        }
+        @media (max-width: 480px) {
+          .featured-record-card {
+            padding: 20px 14px !important;
+            gap: 20px !important;
+          }
+          #wins {
+            padding: 72px 14px 48px !important;
+          }
         }
       `}</style>
     </section>
