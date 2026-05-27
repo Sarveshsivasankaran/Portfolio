@@ -23,6 +23,43 @@ export default function App() {
     return false
   })
 
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('siteMuted') === 'true'
+    }
+    return false
+  })
+
+  const [bgAudio] = useState(() => {
+    const a = new Audio('/sound/dark_aria_lofi_solo_le.mp3')
+    a.loop = true
+    a.volume = 0.5
+    return a
+  })
+
+  useEffect(() => {
+    if (hasEntered) {
+      if (isMuted) {
+        bgAudio.pause()
+      } else {
+        bgAudio.play().catch(err => {
+          console.warn('Dark Aria audio playback was blocked or failed:', err)
+        })
+      }
+    }
+    return () => {
+      bgAudio.pause()
+    }
+  }, [hasEntered, isMuted, bgAudio])
+
+  const toggleMute = () => {
+    setIsMuted(prev => {
+      const next = !prev
+      localStorage.setItem('siteMuted', String(next))
+      return next
+    })
+  }
+
   // Lock body scroll while in system entry sequence
   useEffect(() => {
     if (!hasEntered) {
@@ -120,7 +157,7 @@ export default function App() {
       <div className="main-reveal">
         <Navbar />
         <main>
-          <Hero />
+          <Hero isMuted={isMuted} toggleMute={toggleMute} />
           <Skills />
           <MarqueeSection />
           <Projects />
@@ -134,4 +171,3 @@ export default function App() {
     </>
   )
 }
-

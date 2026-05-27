@@ -98,7 +98,12 @@ function PortalFallback() {
   )
 }
 
-export default function Hero() {
+interface HeroProps {
+  isMuted: boolean
+  toggleMute: () => void
+}
+
+export default function Hero({ isMuted, toggleMute }: HeroProps) {
   const [splineLoaded, setSplineLoaded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const splineApp = useRef<any>(null)
@@ -175,6 +180,55 @@ export default function Hero() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      {/* Sound Mute/Unmute Toggle Button */}
+      <button 
+        onClick={toggleMute}
+        style={{
+          position: 'absolute',
+          top: '32px',
+          right: '32px',
+          zIndex: 100,
+          background: 'rgba(10, 10, 18, 0.65)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1.5px solid rgba(0, 212, 255, 0.45)',
+          boxShadow: '0 0 15px rgba(0, 212, 255, 0.15)',
+          borderRadius: '50%',
+          width: '50px',
+          height: '50px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          color: isMuted ? 'rgba(255, 255, 255, 0.35)' : '#00d4ff',
+          transition: 'all 0.2s ease-in-out',
+        }}
+        className="sound-toggle-btn"
+        aria-label={isMuted ? 'Unmute Background Music' : 'Mute Background Music'}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = isMuted ? 'rgba(255,255,255,0.6)' : '#00d4ff'
+          e.currentTarget.style.boxShadow = isMuted ? '0 0 15px rgba(255,255,255,0.2)' : '0 0 25px rgba(0, 212, 255, 0.45)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = isMuted ? 'rgba(0, 212, 255, 0.25)' : 'rgba(0, 212, 255, 0.45)'
+          e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 212, 255, 0.15)'
+        }}
+      >
+        {isMuted ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+        ) : (
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+            <span className="sound-wave wave-1"></span>
+            <span className="sound-wave wave-2"></span>
+          </div>
+        )}
+      </button>
       {/* 1. Full-Screen Height Interactive 3D CursorLens Background Portrait */}
       <div className="hero-framer-container" style={{
         position: 'absolute',
@@ -458,6 +512,32 @@ export default function Hero() {
       </motion.div>
 
       <style>{`
+        .sound-toggle-btn:active {
+          transform: scale(0.92);
+        }
+        .sound-wave {
+          position: absolute;
+          border: 1.5px solid #00d4ff;
+          border-radius: 50%;
+          opacity: 0;
+          pointer-events: none;
+        }
+        .wave-1 {
+          width: 32px;
+          height: 32px;
+          animation: sound-pulse 1.8s infinite linear;
+        }
+        .wave-2 {
+          width: 44px;
+          height: 44px;
+          animation: sound-pulse 1.8s infinite linear 0.9s;
+        }
+        @keyframes sound-pulse {
+          0% { transform: scale(0.6); opacity: 0; }
+          50% { opacity: 0.35; }
+          100% { transform: scale(1.4); opacity: 0; }
+        }
+
         .typewriter-cursor { color: var(--gate) !important; }
         @keyframes ribbonScrollLeft {
           0% { transform: translate3d(0, 0, 0); }

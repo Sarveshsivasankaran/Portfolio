@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense, lazy } from 'react'
+
+const Spline = lazy(() => import('@splinetool/react-spline'))
+const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode'
 
 const BOOT = [
   { t: "MONARCH OS — AWAKENING SEQUENCE INITIATED", c: "#4B5563", d: 0 },
@@ -68,13 +71,42 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
     }
   }, [])
 
+  useEffect(() => {
+    if (status === 'alert') {
+      const audio = new Audio('/sound/solo_leveling_system.mp3')
+      audio.volume = 0.5
+      audio.play().catch(err => {
+        console.warn('Audio playback was prevented by the browser:', err)
+      })
+    }
+  }, [status])
+
   const handleAccept = () => {
     setStatus('accepted')
-    // After 2.8s, trigger website reveal
-    const id = window.setTimeout(() => {
+    
+    const audio = new Audio('/sound/Voicy_Arise.mp3')
+    audio.volume = 0.8
+    
+    let transitioned = false
+    const transition = () => {
+      if (transitioned) return
+      transitioned = true
       onEnter()
-    }, 2800)
-    timeoutsRef.current.push(id)
+    }
+
+    // Rely on ended event to transition exactly when "Arise" whisper finishes
+    audio.addEventListener('ended', transition)
+    
+    audio.play().then(() => {
+      // safety timeout of 5 seconds max so user is never stuck
+      const safetyId = window.setTimeout(transition, 5000)
+      timeoutsRef.current.push(safetyId)
+    }).catch(err => {
+      console.warn('Arise sound playback was prevented by the browser:', err)
+      // Fallback timer if browser blocks audio autoplay
+      const fallbackId = window.setTimeout(transition, 2800)
+      timeoutsRef.current.push(fallbackId)
+    })
   }
 
   const handleDeny = () => {
@@ -467,9 +499,506 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
         }
         .retry-btn:hover { border-color: #3B82F6; color: #3B82F6; }
         .retry-btn:active { transform: scale(.97); }
+
+        /* Highly customized Solo Leveling Neon Hologram alert frame from user request */
+        .sl-notification-frame {
+          position: relative;
+          width: 480px;
+          max-width: 95%;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          animation: sl-box-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          z-index: 25;
+        }
+
+        /* Sideways Glitch Stripes */
+        .sl-notification-box::before,
+        .sl-notification-box::after {
+          content: '';
+          position: absolute;
+          left: -4px;
+          right: -4px;
+          height: 6px;
+          background: rgba(0, 212, 255, 0.55);
+          box-shadow: 0 0 15px rgba(0, 212, 255, 0.8), 0 0 5px #ffffff;
+          opacity: 0;
+          pointer-events: none;
+          z-index: 10;
+        }
+
+        .sl-notification-box::before {
+          top: 25%;
+          animation: sl-stripe-glitch-top 5s steps(1) infinite;
+        }
+
+        .sl-notification-box::after {
+          top: 70%;
+          animation: sl-stripe-glitch-bottom 5s steps(1) infinite;
+        }
+
+        @keyframes sl-stripe-glitch-top {
+          0%, 88%, 94%, 100% {
+            opacity: 0;
+            transform: translate3d(0, 0, 0) scaleY(1);
+          }
+          89% {
+            opacity: 1;
+            transform: translate3d(-30px, 0, 0) scaleY(1.4);
+            background: rgba(0, 212, 255, 0.85);
+            height: 10px;
+          }
+          90% {
+            opacity: 1;
+            transform: translate3d(25px, 0, 0) scaleY(0.7);
+            background: rgba(239, 68, 68, 0.85);
+            height: 4px;
+          }
+          91% {
+            opacity: 1;
+            transform: translate3d(-18px, 0, 0) scaleY(1.2);
+            background: rgba(192, 132, 252, 0.85);
+            height: 8px;
+          }
+          92% {
+            opacity: 0.7;
+            transform: translate3d(20px, 0, 0) scaleY(1);
+            background: rgba(0, 212, 255, 0.6);
+          }
+          93% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes sl-stripe-glitch-bottom {
+          0%, 90%, 96%, 100% {
+            opacity: 0;
+            transform: translate3d(0, 0, 0) scaleY(1);
+          }
+          91% {
+            opacity: 1;
+            transform: translate3d(35px, 0, 0) scaleY(1.5);
+            background: rgba(0, 212, 255, 0.85);
+            height: 8px;
+          }
+          92% {
+            opacity: 1;
+            transform: translate3d(-25px, 0, 0) scaleY(0.6);
+            background: rgba(251, 191, 36, 0.85);
+            height: 3px;
+          }
+          93% {
+            opacity: 1;
+            transform: translate3d(20px, 0, 0) scaleY(1.2);
+            background: rgba(34, 211, 238, 0.85);
+            height: 7px;
+          }
+          94% {
+            opacity: 0.7;
+            transform: translate3d(-15px, 0, 0) scaleY(1);
+            background: rgba(0, 212, 255, 0.6);
+          }
+          95% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes sl-box-in {
+          0% { opacity: 0; transform: scale(0.85) translateY(20px); filter: blur(8px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+
+        /* Top and Bottom Horizontal Bars matching the image's cyan caps */
+        .sl-frame-border {
+          position: absolute;
+          left: 12px;
+          right: 12px;
+          height: 3px;
+          background: linear-gradient(90deg, rgba(0, 212, 255, 0) 0%, rgba(0, 212, 255, 0.8) 15%, rgba(0, 212, 255, 0.8) 85%, rgba(0, 212, 255, 0) 100%);
+          box-shadow: 0 0 15px rgba(0, 212, 255, 0.7);
+          z-index: 10;
+        }
+        .sl-frame-border::before, .sl-frame-border::after {
+          content: '';
+          position: absolute;
+          width: 20px;
+          height: 8px;
+          background: #00d4ff;
+          box-shadow: 0 0 12px #00d4ff;
+        }
+        .sl-frame-border.top-bar {
+          top: 0;
+        }
+        .sl-frame-border.top-bar::before { left: 0; top: -3px; }
+        .sl-frame-border.top-bar::after { right: 0; top: -3px; }
+
+        .sl-frame-border.bottom-bar {
+          bottom: 0;
+        }
+        .sl-frame-border.bottom-bar::before { left: 0; bottom: -3px; }
+        .sl-frame-border.bottom-bar::after { right: 0; bottom: -3px; }
+
+        /* Left and Right Brackets with notch styling */
+        .sl-frame-bracket {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background: rgba(0, 212, 255, 0.3);
+          z-index: 9;
+        }
+        .sl-frame-bracket::before, .sl-frame-bracket::after {
+          content: '';
+          position: absolute;
+          width: 6px;
+          height: 24px;
+          background: #00d4ff;
+          box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+        }
+        .sl-frame-bracket.left-bracket {
+          left: 0;
+          border-left: 2px solid #00d4ff;
+        }
+        .sl-frame-bracket.left-bracket::before { left: -4px; top: 20%; }
+        .sl-frame-bracket.left-bracket::after { left: -4px; bottom: 20%; }
+
+        .sl-frame-bracket.right-bracket {
+          right: 0;
+          border-right: 2px solid #00d4ff;
+        }
+        .sl-frame-bracket.right-bracket::before { right: -4px; top: 20%; }
+        .sl-frame-bracket.right-bracket::after { right: -4px; bottom: 20%; }
+
+        /* Inner Holographic glass box */
+        .sl-notification-box {
+          width: 100%;
+          background: rgba(5, 12, 28, 0.82);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(0, 212, 255, 0.35);
+          box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.15), 0 0 40px rgba(0, 212, 255, 0.25);
+          padding: 32px 28px 24px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+          z-index: 5;
+        }
+
+        /* Top Header Notification Badge */
+        .sl-notification-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          border: 1.5px solid rgba(0, 212, 255, 0.85);
+          padding: 8px 24px;
+          background: rgba(0, 20, 48, 0.6);
+          box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+          margin-bottom: 24px;
+          position: relative;
+          min-width: 220px;
+        }
+        .sl-notification-badge::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border: 1px solid rgba(0, 212, 255, 0.25);
+          pointer-events: none;
+        }
+
+        .sl-badge-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: 1.5px solid #00d4ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 212, 255, 0.1);
+          box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+        }
+
+        .sl-exclamation {
+          color: #00d4ff;
+          font-family: 'Rajdhani', sans-serif;
+          font-weight: 700;
+          font-size: 16px;
+          text-shadow: 0 0 5px #00d4ff;
+        }
+
+        .sl-badge-text {
+          color: #ffffff;
+          font-family: 'Rajdhani', sans-serif;
+          font-weight: 700;
+          font-size: 18px;
+          letter-spacing: 0.18em;
+          text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Body Typography and Glow Content */
+        .sl-notification-body {
+          width: 100%;
+          text-align: center;
+          font-family: 'Rajdhani', sans-serif;
+        }
+
+        .sl-notification-glow-title {
+          font-size: 22px;
+          font-weight: 700;
+          color: #ffffff;
+          letter-spacing: 0.08em;
+          margin-bottom: 8px;
+          line-height: 1.3;
+          text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.5);
+          animation: sl-glitch 5s infinite;
+        }
+
+        @keyframes sl-glitch {
+          0%, 92%, 100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); transform: translate(0); }
+          94% { text-shadow: 2px 0 #00d4ff, -2px 0 #DC2626; transform: translate(-1px, 0); }
+          96% { text-shadow: -2px 0 #7C3AED; transform: translate(1px, 0); }
+          98% { text-shadow: none; transform: translate(0); }
+        }
+
+        .sl-notification-subtitle {
+          font-family: 'Share Tech Mono', monospace;
+          font-size: 15px;
+          color: #00d4ff;
+          letter-spacing: 0.3em;
+          margin-bottom: 20px;
+          text-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
+        }
+
+        /* Sci-Fi Stats Panel */
+        .sl-stats-container {
+          border-top: 1px solid rgba(0, 212, 255, 0.2);
+          border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+          padding: 16px 0;
+          margin-bottom: 20px;
+          background: rgba(0, 10, 25, 0.35);
+        }
+
+        .sl-stat-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 12px;
+          font-family: 'Share Tech Mono', monospace;
+          font-size: 13px;
+          border-bottom: 1px solid rgba(0, 212, 255, 0.05);
+        }
+        .sl-stat-row:last-child {
+          border-bottom: none;
+        }
+
+        .sl-stat-label {
+          color: rgba(255, 255, 255, 0.5);
+          letter-spacing: 0.1em;
+        }
+
+        .sl-stat-value {
+          font-weight: 600;
+          letter-spacing: 0.05em;
+        }
+        .sl-stat-value.purple {
+          color: #c084fc;
+          text-shadow: 0 0 6px rgba(192, 132, 252, 0.8);
+        }
+        .sl-stat-value.gold {
+          color: #fbbf24;
+          text-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+        }
+        .sl-stat-value.teal {
+          color: #22d3ee;
+          text-shadow: 0 0 6px rgba(34, 211, 238, 0.8);
+        }
+
+        .sl-question {
+          font-family: 'Share Tech Mono', monospace;
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.7);
+          line-height: 1.6;
+          margin-bottom: 24px;
+        }
+
+        /* Buttons & Actions */
+        .sl-notification-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          width: 100%;
+        }
+
+        .sl-btn {
+          font-family: 'Rajdhani', sans-serif;
+          font-size: 15px;
+          font-weight: 700;
+          letter-spacing: 0.15em;
+          padding: 12px 0;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          border: 1px solid rgba(0, 212, 255, 0.4);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .sl-btn-accept {
+          background: rgba(0, 212, 255, 0.15);
+          color: #00d4ff;
+          box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+        .sl-btn-accept:hover {
+          background: rgba(0, 212, 255, 0.35);
+          color: #ffffff;
+          box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+          border-color: #00d4ff;
+        }
+        .sl-btn-accept:active {
+          transform: scale(0.95);
+        }
+
+        .sl-btn-deny {
+          background: transparent;
+          color: rgba(255, 255, 255, 0.5);
+          border-color: rgba(255, 255, 255, 0.15);
+        }
+        .sl-btn-deny:hover {
+          background: rgba(220, 38, 38, 0.15);
+          color: #f87171;
+          border-color: #f87171;
+          box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);
+        }
+        .sl-btn-deny:active {
+          transform: scale(0.95);
+        }
+
+        /* Shadow Monarch Mist Container */
+        .shadow-mist-container {
+          position: absolute;
+          inset: 0;
+          z-index: 3; /* Rendered between the 3D Spline scene and HUD overlays */
+          overflow: hidden;
+          pointer-events: none;
+          mix-blend-mode: screen;
+          filter: url(#shadow-mist-filter) blur(10px);
+          opacity: 0.75;
+          animation: mist-fade-in 2.5s ease-out forwards;
+        }
+
+        @keyframes mist-fade-in {
+          0% { opacity: 0; }
+          100% { opacity: 0.75; }
+        }
+
+        .mist-cloud {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(50px);
+          opacity: 0.5;
+          transform-origin: center center;
+        }
+
+        /* Ambient organic shadow monarch mist layers */
+        .mist-purple-1 {
+          width: 700px;
+          height: 700px;
+          background: radial-gradient(circle, rgba(124, 58, 237, 0.5) 0%, rgba(76, 29, 149, 0.18) 50%, rgba(0, 0, 0, 0) 70%);
+          left: -150px;
+          bottom: -150px;
+          animation: float-mist-1 28s infinite ease-in-out;
+        }
+
+        .mist-cyan-1 {
+          width: 600px;
+          height: 600px;
+          background: radial-gradient(circle, rgba(0, 212, 255, 0.38) 0%, rgba(0, 76, 120, 0.12) 60%, rgba(0, 0, 0, 0) 80%);
+          right: -80px;
+          top: -80px;
+          animation: float-mist-2 32s infinite ease-in-out;
+        }
+
+        .mist-dark-2 {
+          width: 800px;
+          height: 800px;
+          background: radial-gradient(circle, rgba(12, 12, 28, 0.95) 0%, rgba(6, 6, 15, 0.45) 55%, rgba(0, 0, 0, 0) 75%);
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          animation: float-mist-3 38s infinite ease-in-out;
+        }
+
+        .mist-purple-2 {
+          width: 650px;
+          height: 650px;
+          background: radial-gradient(circle, rgba(139, 92, 246, 0.45) 0%, rgba(0, 0, 0, 0) 70%);
+          left: 25%;
+          bottom: -200px;
+          animation: float-mist-4 30s infinite ease-in-out;
+        }
+
+        /* Fluid organic floating keyframes */
+        @keyframes float-mist-1 {
+          0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+          33% { transform: translate(100px, -60px) scale(1.15) rotate(120deg); }
+          66% { transform: translate(-50px, 90px) scale(0.9) rotate(240deg); }
+        }
+
+        @keyframes float-mist-2 {
+          0%, 100% { transform: translate(0, 0) scale(1.1) rotate(0deg); }
+          50% { transform: translate(-100px, 70px) scale(0.85) rotate(-180deg); }
+        }
+
+        @keyframes float-mist-3 {
+          0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+          33% { transform: translate(-45%, -55%) scale(1.08) rotate(90deg); }
+          66% { transform: translate(-55%, -45%) scale(0.92) rotate(-90deg); }
+        }
+
+        @keyframes float-mist-4 {
+          0%, 100% { transform: translate(0, 0) scale(0.9) rotate(0deg); }
+          50% { transform: translate(60px, -90px) scale(1.15) rotate(180deg); }
+        }
       ` }} />
 
       <div className="hex-bg"></div>
+
+      {/* Interactive 3D Holographic Backdrop Scene */}
+      <Suspense fallback={null}>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 2,
+          pointerEvents: 'none',
+          opacity: 0.45,
+          width: '100%',
+          height: '100%',
+        }}>
+          <Spline scene={SPLINE_URL} />
+        </div>
+      </Suspense>
+
+      {/* Dark Shadow Monarch Mist Aura (SVG Filtered Organic Fluid Particles) */}
+      <div className="shadow-mist-container">
+        <div className="mist-cloud mist-purple-1"></div>
+        <div className="mist-cloud mist-cyan-1"></div>
+        <div className="mist-cloud mist-dark-2"></div>
+        <div className="mist-cloud mist-purple-2"></div>
+      </div>
+
+      {/* SVG filter for organic liquid/mist turbulence morphing */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
+        <defs>
+          <filter id="shadow-mist-filter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" result="noise">
+              <animate attributeName="baseFrequency" values="0.015;0.022;0.015" dur="30s" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="55" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
+
       <div className="scan"></div>
       <div className="c-tl"></div>
       <div className="c-tr"></div>
@@ -504,40 +1033,59 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
 
       {status === 'alert' && (
         <div className="alert-layer">
-          <div className="alert-box">
-            <div className="alert-hdr">
-              <div className="alert-pip"></div>
-              <span className="alert-hdr-txt">// SYSTEM ALERT — PRIORITY: EMERGENCY</span>
-            </div>
-            <div className="alert-body">
-              <span className="alert-sym">⚡</span>
-              <div className="alert-main">A NEW PLAYER<br />HAS BEEN DETECTED</div>
-              <div className="alert-arise">— A R I S E —</div>
-              <div className="stats">
-                <div className="stat-row">
-                  <span className="s-key">CLASS</span>
-                  <span className="s-purple">UNKNOWN [IRREGULAR]</span>
+          <div className="sl-notification-frame">
+            {/* Cybernetic outer corners and glowing brackets */}
+            <div className="sl-frame-border top-bar"></div>
+            <div className="sl-frame-border bottom-bar"></div>
+            <div className="sl-frame-bracket left-bracket"></div>
+            <div className="sl-frame-bracket right-bracket"></div>
+
+            <div className="sl-notification-box">
+              {/* Header Badge */}
+              <div className="sl-notification-badge">
+                <div className="sl-badge-icon">
+                  <span className="sl-exclamation">!</span>
                 </div>
-                <div className="stat-row">
-                  <span className="s-key">MANA LEVEL</span>
-                  <span className="s-gold">∞ IMMEASURABLE</span>
+                <span className="sl-badge-text">NOTIFICATION</span>
+              </div>
+
+              {/* Body */}
+              <div className="sl-notification-body">
+                <div className="sl-notification-glow-title">
+                  A NEW PLAYER HAS BEEN DETECTED
                 </div>
-                <div className="stat-row">
-                  <span className="s-key">RANK</span>
-                  <span className="s-gold">S — SHADOW MONARCH</span>
+                <div className="sl-notification-subtitle">— A R I S E —</div>
+                
+                {/* Stats Panel */}
+                <div className="sl-stats-container">
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">CLASS</span>
+                    <span className="sl-stat-value purple">UNKNOWN [IRREGULAR]</span>
+                  </div>
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">MANA LEVEL</span>
+                    <span className="sl-stat-value gold">∞ IMMEASURABLE</span>
+                  </div>
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">RANK</span>
+                    <span className="sl-stat-value gold">S — SHADOW MONARCH</span>
+                  </div>
+                  <div className="sl-stat-row">
+                    <span className="sl-stat-label">STATUS</span>
+                    <span className="sl-stat-value teal">AWAKENING...</span>
+                  </div>
                 </div>
-                <div className="stat-row">
-                  <span className="s-key">STATUS</span>
-                  <span className="s-teal">AWAKENING...</span>
+
+                <div className="sl-question">
+                  Will you accept the calling of the System<br />and enter this dimension?
                 </div>
               </div>
-              <div className="alert-q">
-                Will you accept the calling of the System<br />and enter this dimension?
+
+              {/* Actions */}
+              <div className="sl-notification-actions">
+                <button className="sl-btn sl-btn-accept" onClick={handleAccept}>ACCEPT</button>
+                <button className="sl-btn sl-btn-deny" onClick={handleDeny}>DENY</button>
               </div>
-            </div>
-            <div className="alert-actions">
-              <button className="btn-accept" onClick={handleAccept}>[ ACCEPT ]</button>
-              <button className="btn-deny" onClick={handleDeny}>[ DENY ]</button>
             </div>
           </div>
         </div>
