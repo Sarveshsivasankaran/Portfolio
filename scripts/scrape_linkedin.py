@@ -99,6 +99,19 @@ async def login_and_save_session(playwright):
         await browser.close()
 
 async def scrape_linkedin():
+    # Securely write the session file from GITHUB SECRET env var if present to avoid shell-escaping issues
+    env_session = os.environ.get('LINKEDIN_SESSION_DATA')
+    if env_session:
+        print("Restoring LinkedIn session state from secure environment variable...")
+        try:
+            import json
+            parsed_session = json.loads(env_session)
+            with open(SESSION_FILE, 'w', encoding='utf-8') as f:
+                json.dump(parsed_session, f)
+            print("Session state successfully restored locally via Python environment!")
+        except Exception as e:
+            print(f"Error loading session JSON from environment: {e}")
+
     async with async_playwright() as p:
         # Check if session file exists, if not trigger login
         if not os.path.exists(SESSION_FILE):

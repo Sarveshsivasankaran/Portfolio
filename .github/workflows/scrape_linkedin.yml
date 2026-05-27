@@ -32,17 +32,9 @@ jobs:
       run: |
         python -m playwright install chromium --with-deps
 
-    - name: Restore LinkedIn Session Cache
+    - name: Run Scraper Script
       env:
         LINKEDIN_SESSION_DATA: ${{ secrets.LINKEDIN_SESSION_JSON }}
-      run: |
-        if [ -z "$LINKEDIN_SESSION_DATA" ]; then
-          echo "Error: LINKEDIN_SESSION_JSON secret is not set in your GitHub repository!"
-          exit 1
-        fi
-        echo "$LINKEDIN_SESSION_DATA" > linkedin_session.json
-
-    - name: Run Scraper Script
       run: |
         python scripts/scrape_linkedin.py
 
