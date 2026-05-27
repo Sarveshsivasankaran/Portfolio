@@ -27,6 +27,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
   const [timeElapsed, setTimeElapsed] = useState('00:00:00')
   const timeoutsRef = useRef<number[]>([])
   const startTimeRef = useRef(Date.now())
+  const alertAudioRef = useRef<HTMLAudioElement | null>(null)
 
   // Update ticking HUD timer
   useEffect(() => {
@@ -64,37 +65,24 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
     })
   }
 
+  // Auto start sequence on mount & preload audio
   useEffect(() => {
+    alertAudioRef.current = new Audio('/sound/solo_leveling_system.mp3')
+    alertAudioRef.current.volume = 0.5
+    alertAudioRef.current.load()
+
     startBootSequence()
+
     return () => {
       timeoutsRef.current.forEach(id => clearTimeout(id))
     }
   }, [])
 
   useEffect(() => {
-    if (status === 'alert') {
-      const audio = new Audio('/sound/solo_leveling_system.mp3')
-      audio.volume = 0.5
-      
-      const playAudio = () => {
-        audio.play().then(() => {
-          window.removeEventListener('click', playAudio)
-          window.removeEventListener('touchstart', playAudio)
-        }).catch(err => {
-          console.warn('Audio playback retry failed:', err)
-        })
-      }
-
-      audio.play().catch(err => {
-        console.warn('Audio playback was prevented by the browser on load. Waiting for user interaction...', err)
-        window.addEventListener('click', playAudio)
-        window.addEventListener('touchstart', playAudio)
+    if (status === 'alert' && alertAudioRef.current) {
+      alertAudioRef.current.play().catch(err => {
+        console.warn('System alert sound playback failed:', err)
       })
-
-      return () => {
-        window.removeEventListener('click', playAudio)
-        window.removeEventListener('touchstart', playAudio)
-      }
     }
   }, [status])
 
