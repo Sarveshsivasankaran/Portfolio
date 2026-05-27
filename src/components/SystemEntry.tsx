@@ -22,7 +22,7 @@ interface SystemEntryProps {
 }
 
 export default function SystemEntry({ onEnter }: SystemEntryProps) {
-  const [status, setStatus] = useState<'connect' | 'boot' | 'alert' | 'accepted' | 'denied'>('connect')
+  const [status, setStatus] = useState<'boot' | 'alert' | 'accepted' | 'denied'>('boot')
   const [bootLines, setBootLines] = useState<{ t: string; c: string }[]>([])
   const [timeElapsed, setTimeElapsed] = useState('00:00:00')
   const timeoutsRef = useRef<number[]>([])
@@ -64,23 +64,9 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
     })
   }
 
-  // Bind initial page load click/keydown/touchstart audio unlocking listener
   useEffect(() => {
-    const handleInitialTrigger = () => {
-      window.removeEventListener('click', handleInitialTrigger)
-      window.removeEventListener('keydown', handleInitialTrigger)
-      window.removeEventListener('touchstart', handleInitialTrigger)
-      startBootSequence()
-    }
-
-    window.addEventListener('click', handleInitialTrigger)
-    window.addEventListener('keydown', handleInitialTrigger)
-    window.addEventListener('touchstart', handleInitialTrigger)
-
+    startBootSequence()
     return () => {
-      window.removeEventListener('click', handleInitialTrigger)
-      window.removeEventListener('keydown', handleInitialTrigger)
-      window.removeEventListener('touchstart', handleInitialTrigger)
       timeoutsRef.current.forEach(id => clearTimeout(id))
     }
   }, [])
@@ -89,9 +75,26 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
     if (status === 'alert') {
       const audio = new Audio('/sound/solo_leveling_system.mp3')
       audio.volume = 0.5
+      
+      const playAudio = () => {
+        audio.play().then(() => {
+          window.removeEventListener('click', playAudio)
+          window.removeEventListener('touchstart', playAudio)
+        }).catch(err => {
+          console.warn('Audio playback retry failed:', err)
+        })
+      }
+
       audio.play().catch(err => {
-        console.warn('System alert sound playback failed:', err)
+        console.warn('Audio playback was prevented by the browser on load. Waiting for user interaction...', err)
+        window.addEventListener('click', playAudio)
+        window.addEventListener('touchstart', playAudio)
       })
+
+      return () => {
+        window.removeEventListener('click', playAudio)
+        window.removeEventListener('touchstart', playAudio)
+      }
     }
   }, [status])
 
@@ -978,46 +981,6 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
       ` }} />
 
       <div className="hex-bg"></div>
-
-      {status === 'connect' && (
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: '#0d0c15',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: 'Share Tech Mono, monospace',
-          color: '#00d4ff',
-          cursor: 'pointer',
-          padding: '20px',
-        }}>
-          <div style={{
-            fontSize: '18px',
-            letterSpacing: '0.2em',
-            textShadow: '0 0 10px rgba(0, 212, 255, 0.45)',
-            marginBottom: '16px',
-            fontWeight: 600,
-          }}>
-            &gt; SYSTEM BOOT INITIATED
-          </div>
-          <div style={{
-            fontSize: '13px',
-            letterSpacing: '0.12em',
-            color: 'rgba(255, 255, 255, 0.65)',
-            animation: 'blink 1.2s infinite steps(2, start)',
-          }}>
-            [ CLICK OR TAP ANYWHERE TO SYNC NEURAL LINK ]
-          </div>
-          <style dangerouslySetInnerHTML={{ __html: `
-            @keyframes blink {
-              to { visibility: hidden; }
-            }
-          ` }} />
-        </div>
-      )}
 
       {/* Interactive 3D Holographic Backdrop Scene */}
       <Suspense fallback={null}>
