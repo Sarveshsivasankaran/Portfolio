@@ -1038,63 +1038,71 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
       </div>
 
       {status === 'alert' && (
-        <div className="alert-layer">
-          <div className="sl-notification-frame">
-            {/* Cybernetic outer corners and glowing brackets */}
-            <div className="sl-frame-border top-bar"></div>
-            <div className="sl-frame-border bottom-bar"></div>
-            <div className="sl-frame-bracket left-bracket"></div>
-            <div className="sl-frame-bracket right-bracket"></div>
+        <>
+          <audio
+            src="/sound/solo_leveling_system.mp3"
+            autoPlay
+            preload="auto"
+            style={{ display: 'none' }}
+          />
+          <div className="alert-layer">
+            <div className="sl-notification-frame">
+              {/* Cybernetic outer corners and glowing brackets */}
+              <div className="sl-frame-border top-bar"></div>
+              <div className="sl-frame-border bottom-bar"></div>
+              <div className="sl-frame-bracket left-bracket"></div>
+              <div className="sl-frame-bracket right-bracket"></div>
 
-            <div className="sl-notification-box">
-              {/* Header Badge */}
-              <div className="sl-notification-badge">
-                <div className="sl-badge-icon">
-                  <span className="sl-exclamation">!</span>
-                </div>
-                <span className="sl-badge-text">NOTIFICATION</span>
-              </div>
-
-              {/* Body */}
-              <div className="sl-notification-body">
-                <div className="sl-notification-glow-title">
-                  A NEW PLAYER HAS BEEN DETECTED
-                </div>
-                <div className="sl-notification-subtitle">— A R I S E —</div>
-                
-                {/* Stats Panel */}
-                <div className="sl-stats-container">
-                  <div className="sl-stat-row">
-                    <span className="sl-stat-label">CLASS</span>
-                    <span className="sl-stat-value purple">UNKNOWN [IRREGULAR]</span>
+              <div className="sl-notification-box">
+                {/* Header Badge */}
+                <div className="sl-notification-badge">
+                  <div className="sl-badge-icon">
+                    <span className="sl-exclamation">!</span>
                   </div>
-                  <div className="sl-stat-row">
-                    <span className="sl-stat-label">MANA LEVEL</span>
-                    <span className="sl-stat-value gold">∞ IMMEASURABLE</span>
-                  </div>
-                  <div className="sl-stat-row">
-                    <span className="sl-stat-label">RANK</span>
-                    <span className="sl-stat-value gold">S — SHADOW MONARCH</span>
-                  </div>
-                  <div className="sl-stat-row">
-                    <span className="sl-stat-label">STATUS</span>
-                    <span className="sl-stat-value teal">AWAKENING...</span>
-                  </div>
+                  <span className="sl-badge-text">NOTIFICATION</span>
                 </div>
 
-                <div className="sl-question">
-                  Will you accept the calling of the System<br />and enter this dimension?
-                </div>
-              </div>
+                {/* Body */}
+                <div className="sl-notification-body">
+                  <div className="sl-notification-glow-title">
+                    A NEW PLAYER HAS BEEN DETECTED
+                  </div>
+                  <div className="sl-notification-subtitle">— A R I S E —</div>
+                  
+                  {/* Stats Panel */}
+                  <div className="sl-stats-container">
+                    <div className="sl-stat-row">
+                      <span className="sl-stat-label">CLASS</span>
+                      <span className="sl-stat-value purple">UNKNOWN [IRREGULAR]</span>
+                    </div>
+                    <div className="sl-stat-row">
+                      <span className="sl-stat-label">MANA LEVEL</span>
+                      <span className="sl-stat-value gold">∞ IMMEASURABLE</span>
+                    </div>
+                    <div className="sl-stat-row">
+                      <span className="sl-stat-label">RANK</span>
+                      <span className="sl-stat-value gold">S — SHADOW MONARCH</span>
+                    </div>
+                    <div className="sl-stat-row">
+                      <span className="sl-stat-label">STATUS</span>
+                      <span className="sl-stat-value teal">AWAKENING...</span>
+                    </div>
+                  </div>
 
-              {/* Actions */}
-              <div className="sl-notification-actions">
-                <button className="sl-btn sl-btn-accept" onClick={handleAccept}>ACCEPT</button>
-                <button className="sl-btn sl-btn-deny" onClick={handleDeny}>DENY</button>
+                  <div className="sl-question">
+                    Will you accept the calling of the System<br />and enter this dimension?
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="sl-notification-actions">
+                  <button className="sl-btn sl-btn-accept" onClick={handleAccept}>ACCEPT</button>
+                  <button className="sl-btn sl-btn-deny" onClick={handleDeny}>DENY</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {status === 'accepted' && (
