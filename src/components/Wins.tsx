@@ -464,14 +464,14 @@ export default function Wins() {
           background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.65) 0%, rgba(10, 10, 18, 0.8) 100%)',
           border: '1.5px solid rgba(245, 158, 11, 0.25)',
           borderRadius: '16px',
-          padding: '32px',
-          marginBottom: '56px',
+          padding: isMobile ? '24px 16px' : '32px',
+          marginBottom: isMobile ? '36px' : '56px',
           boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(245, 158, 11, 0.05)',
           position: 'relative',
           overflow: 'hidden',
           display: 'grid',
-          gridTemplateColumns: 'minmax(280px, 1fr) minmax(320px, 1.25fr)',
-          gap: '40px',
+          gridTemplateColumns: isMobile ? '1fr' : 'minmax(280px, 1fr) minmax(320px, 1.25fr)',
+          gap: isMobile ? '24px' : '40px',
           alignItems: 'center',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
@@ -526,7 +526,7 @@ export default function Wins() {
                 style={{
                   position: 'relative',
                   width: '100%',
-                  maxWidth: wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px',
+                  maxWidth: isMobile ? '100%' : (wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px'),
                   aspectRatio: wrMediaList[featuredMediaIndex].type === 'certificate' ? '0.707' : '1.333',
                   borderRadius: '12px',
                   background: 'rgba(5, 5, 12, 0.95)',
@@ -702,7 +702,7 @@ export default function Wins() {
             <h3 style={{
               fontFamily: 'Rajdhani, sans-serif',
               fontWeight: 700,
-              fontSize: '26px',
+              fontSize: isMobile ? '20px' : '26px',
               color: 'var(--ghost)',
               lineHeight: 1.2,
               margin: 0,
@@ -758,17 +758,19 @@ export default function Wins() {
                   fontSize: '11px',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
-                  padding: '10px 16px',
+                  padding: '12px 16px',
                   borderRadius: '6px',
                   background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 58, 237, 0.15))',
                   border: '1.5px solid var(--gold)',
                   boxShadow: '0 0 15px rgba(245, 158, 11, 0.15)',
                   color: 'var(--gold)',
-                  display: 'inline-flex',
+                  display: isMobile ? 'flex' : 'inline-flex',
+                  justifyContent: 'center',
                   alignItems: 'center',
                   gap: 8,
                   transition: 'all 0.3s ease',
                   cursor: 'pointer',
+                  width: isMobile ? '100%' : 'auto',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.background = 'linear-gradient(135deg, var(--gold), var(--monarch))'
@@ -794,9 +796,10 @@ export default function Wins() {
           className="wins-card-deck" 
           onScroll={handleScroll}
           style={{
-            width: '100%',
+            width: 'auto',
             overflowX: isMobile ? 'auto' : 'hidden',
-            padding: '20px 0',
+            padding: isMobile ? '20px 24px' : '20px 0',
+            margin: isMobile ? '0 -24px' : '0',
             position: 'relative',
             scrollSnapType: isMobile ? 'x mandatory' : 'none',
             WebkitOverflowScrolling: 'touch',
@@ -1079,25 +1082,27 @@ export default function Wins() {
             </button>
 
             {/* Pagination Indicators - S-Rank Level Steps */}
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {Array.from({ length: maxSlideIndex + 1 }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleDotClick(i)}
-                  style={{
-                    width: i === safeActiveIndex ? '28px' : '8px',
-                    height: '8px',
-                    borderRadius: '4px',
-                    border: 'none',
-                    background: i === safeActiveIndex ? 'var(--gate)' : 'var(--border)',
-                    boxShadow: i === safeActiveIndex ? '0 0 10px rgba(59, 130, 246, 0.6)' : 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  }}
-                  title={`Step ${i + 1}`}
-                />
-              ))}
-            </div>
+            {!isMobile && (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {Array.from({ length: maxSlideIndex + 1 }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleDotClick(i)}
+                    style={{
+                      width: i === safeActiveIndex ? '28px' : '8px',
+                      height: '8px',
+                      borderRadius: '4px',
+                      border: 'none',
+                      background: i === safeActiveIndex ? 'var(--gate)' : 'var(--border)',
+                      boxShadow: i === safeActiveIndex ? '0 0 10px rgba(59, 130, 246, 0.6)' : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    title={`Step ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
 
             <button
               onClick={handleNext}
@@ -1211,9 +1216,9 @@ export default function Wins() {
                   }}
                   style={{
                     position: 'absolute',
-                    left: 20,
-                    width: 44,
-                    height: 44,
+                    left: isMobile ? 12 : 20,
+                    width: isMobile ? 36 : 44,
+                    height: isMobile ? 36 : 44,
                     borderRadius: '50%',
                     border: '1.5px solid rgba(245, 158, 11, 0.4)',
                     background: 'rgba(10, 10, 18, 0.85)',
@@ -1248,9 +1253,9 @@ export default function Wins() {
                   }}
                   style={{
                     position: 'absolute',
-                    right: 20,
-                    width: 44,
-                    height: 44,
+                    right: isMobile ? 12 : 20,
+                    width: isMobile ? 36 : 44,
+                    height: isMobile ? 36 : 44,
                     borderRadius: '50%',
                     border: '1.5px solid rgba(245, 158, 11, 0.4)',
                     background: 'rgba(10, 10, 18, 0.85)',
@@ -1376,11 +1381,13 @@ export default function Wins() {
                 background: 'rgba(10, 10, 18, 0.9)',
                 border: '1.5px solid rgba(124, 58, 237, 0.4)',
                 borderRadius: 12,
-                padding: '20px 28px',
+                padding: isMobile ? '16px 20px' : '20px 28px',
                 backdropFilter: 'blur(10px)',
                 display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: isMobile ? 'stretch' : 'center',
+                gap: isMobile ? 16 : 12,
                 color: 'var(--stone)',
                 fontFamily: 'Share Tech Mono, monospace',
                 fontSize: 12,
@@ -1388,12 +1395,17 @@ export default function Wins() {
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span style={{ color: 'var(--monarch)', fontWeight: 'bold' }}>// DIVINE VERIFICATION LOG DETECTED</span>
-                  <span style={{ color: 'var(--ghost)', fontSize: 15, fontFamily: 'Rajdhani, sans-serif', fontWeight: 600 }}>
+                  <span style={{ color: 'var(--ghost)', fontSize: isMobile ? 13 : 15, fontFamily: 'Rajdhani, sans-serif', fontWeight: 600 }}>
                     {wrMediaList[featuredMediaIndex].title} ({featuredMediaIndex + 1}/{wrMediaList.length})
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: 40, alignItems: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: isMobile ? 20 : 40, 
+                  justifyContent: isMobile ? 'space-between' : 'flex-start',
+                  alignItems: 'center' 
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'flex-start' : 'flex-end', gap: 2 }}>
                     <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>RECORD ID</span>
                     <span style={{ color: 'var(--teal)' }}>TIFA_8ffd0025</span>
                   </div>
