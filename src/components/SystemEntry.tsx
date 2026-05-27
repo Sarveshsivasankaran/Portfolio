@@ -75,9 +75,26 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
     if (status === 'alert') {
       const audio = new Audio('/sound/solo_leveling_system.mp3')
       audio.volume = 0.5
+      
+      const playAudio = () => {
+        audio.play().then(() => {
+          window.removeEventListener('click', playAudio)
+          window.removeEventListener('touchstart', playAudio)
+        }).catch(err => {
+          console.warn('Audio playback retry failed:', err)
+        })
+      }
+
       audio.play().catch(err => {
-        console.warn('Audio playback was prevented by the browser:', err)
+        console.warn('Audio playback was prevented by the browser on load. Waiting for user interaction...', err)
+        window.addEventListener('click', playAudio)
+        window.addEventListener('touchstart', playAudio)
       })
+
+      return () => {
+        window.removeEventListener('click', playAudio)
+        window.removeEventListener('touchstart', playAudio)
+      }
     }
   }, [status])
 
@@ -960,6 +977,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
           0%, 100% { transform: translate(0, 0) scale(0.9) rotate(0deg); }
           50% { transform: translate(60px, -90px) scale(1.15) rotate(180deg); }
         }
+
       ` }} />
 
       <div className="hex-bg"></div>

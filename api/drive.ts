@@ -2,10 +2,10 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import axios from 'axios'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Read sensitive credentials strictly server-side
-  const apiKey = process.env.GOOGLE_API_KEY
+  // Read sensitive credentials strictly server-side (supporting both standard and VITE prefixed environment variables)
+  const apiKey = process.env.GOOGLE_API_KEY || process.env.VITE_GOOGLE_API_KEY
   if (!apiKey || apiKey.includes('your_')) {
-    return res.status(200).json([]) // Safe empty return if not yet configured
+    return res.status(412).json({ error: 'Google API credentials not configured on the server side proxy' })
   }
 
   const folderId = '1ULYV5aIjArhpxQP_0V8slDRYkBNdBop2' // Hardcoded public Google Drive folder ID
