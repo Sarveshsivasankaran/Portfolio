@@ -682,8 +682,9 @@ export default function Wins() {
             flexDirection: 'column',
             gap: 16,
             justifyContent: 'center',
+            alignItems: isTabletOrMobile ? 'center' : 'stretch',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: isTabletOrMobile ? 'center' : 'flex-start', gap: 10, flexWrap: 'wrap', width: '100%' }}>
               <span style={{
                 fontFamily: 'Share Tech Mono, monospace',
                 fontSize: isTabletOrMobile ? '9px' : '10px',
@@ -711,6 +712,7 @@ export default function Wins() {
               color: 'var(--ghost)',
               lineHeight: 1.2,
               margin: 0,
+              textAlign: isTabletOrMobile ? 'center' : 'left',
             }}>
               World Record: Students Use Robots to Plant a Micro Forest in Chennai
             </h3>
@@ -720,6 +722,7 @@ export default function Wins() {
               fontSize: '14px',
               lineHeight: 1.6,
               margin: '0 0 12px 0',
+              textAlign: isTabletOrMobile ? 'center' : 'left',
             }}>
               On January 25, 2020, at the Anna University campus in Chennai, a remarkable world record attempt took place — instead of humans planting trees, it was student-built robots that did the work. The robots were programmed to pick up saplings, lower them into the soil, and water them. A total of 326 students from 20 centres of SP Robotics Maker Lab, aged between 7 and 17, built and operated these robots to create what is recognized as the world's first micro forest planted by robots.
             </p>
@@ -728,6 +731,7 @@ export default function Wins() {
               fontSize: '14px',
               lineHeight: 1.6,
               margin: '0 0 12px 0',
+              textAlign: isTabletOrMobile ? 'center' : 'left',
             }}>
               The robots were controlled via smartphones over Bluetooth, with one team assembling and operating the robots while another team coded the watering mechanism. The planted saplings were committed to be nurtured for three years by SP Robotics in collaboration with Communitree.
             </p>
@@ -736,6 +740,7 @@ export default function Wins() {
               fontSize: '14px',
               lineHeight: 1.6,
               margin: '0 0 12px 0',
+              textAlign: isTabletOrMobile ? 'center' : 'left',
             }}>
               The initiative was inspired when a student submitted a project featuring a robot planting trees and a friend's robot watering them. The Maker Lab Head, Aarthi Muralitharan, scaled up the idea into a world record attempt to demonstrate that technology can be harnessed to fight climate change and benefit nature.
             </p>
@@ -744,11 +749,12 @@ export default function Wins() {
               fontSize: '14px',
               lineHeight: 1.6,
               margin: 0,
+              textAlign: isTabletOrMobile ? 'center' : 'left',
             }}>
               The event set the world record for <strong style={{ color: 'var(--gold)' }}>"Most Participants with Robots to Create a Micro Forest"</strong> and received a World Record Certificate in recognition of this achievement.
             </p>
 
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 12, width: '100%', display: 'flex', justifyContent: isTabletOrMobile ? 'center' : 'flex-start' }}>
               <a
                 href="https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644"
                 target="_blank"
