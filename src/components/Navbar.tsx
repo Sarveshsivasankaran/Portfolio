@@ -47,10 +47,11 @@ export default function Navbar() {
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close navigation menu" : "Open navigation menu"}
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 24,
           left: 24,
           zIndex: 101,
+          marginBottom: -48,
           background: 'rgba(10, 10, 18, 0.75)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
@@ -83,7 +84,14 @@ export default function Navbar() {
       {/* Retractable Sidebar Drawer */}
       <AnimatePresence>
         {open && (
-          <>
+          <div style={{
+            position: 'sticky',
+            top: 0,
+            left: 0,
+            width: 0,
+            height: 0,
+            zIndex: 99,
+          }}>
             {/* Backdrop dimming overlay */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -91,8 +99,11 @@ export default function Navbar() {
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
               style={{
-                position: 'fixed',
-                inset: 0,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
                 background: 'rgba(5, 5, 10, 0.45)',
                 backdropFilter: 'blur(6px)',
                 WebkitBackdropFilter: 'blur(6px)',
@@ -107,11 +118,11 @@ export default function Navbar() {
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.28, ease: 'easeOut' }}
               style={{
-                position: 'fixed',
+                position: 'absolute',
                 top: 0,
-                bottom: 0,
                 left: 0,
                 width: 290,
+                height: '100vh',
                 maxWidth: '85vw',
                 background: 'rgba(10, 10, 18, 0.95)',
                 borderRight: '1px solid rgba(59, 130, 246, 0.15)',
@@ -202,7 +213,7 @@ export default function Navbar() {
                 ><FaLinkedin /></a>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </>

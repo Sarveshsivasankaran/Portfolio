@@ -169,7 +169,7 @@ export default function App() {
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes mainFadeIn {
           from { opacity: 0; transform: scale(0.985); }
-          to { opacity: 1; transform: scale(1); }
+          to { opacity: 1; transform: none; }
         }
         .main-reveal {
           animation: mainFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
