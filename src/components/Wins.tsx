@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { type LinkedInPost } from '../data/linkedinPosts'
+import { type LinkedInPost, LINKEDIN_POSTS } from '../data/linkedinPosts'
 import { 
   FiChevronLeft, 
   FiChevronRight, 
@@ -42,8 +42,8 @@ export default function Wins() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(1200)
   const splineApp = useRef<any>(null)
-  const [posts, setPosts] = useState<LinkedInPost[]>([])
-  const [loading, setLoading] = useState(true)
+  const [posts, setPosts] = useState<LinkedInPost[]>(LINKEDIN_POSTS)
+  const [loading, setLoading] = useState(false)
 
   const [wrRotateX, setWrRotateX] = useState(0)
   const [wrRotateY, setWrRotateY] = useState(0)
@@ -193,45 +193,7 @@ export default function Wins() {
     }
   }, [])
 
-  // Fetch real-time LinkedIn posts via our secure Vercel backend proxy route
-  useEffect(() => {
-    let active = true
-    fetch('/api/linkedin')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Server returned status ${res.status}`)
-        }
-        return res.json()
-      })
-      .then(data => {
-        if (active) {
-          if (Array.isArray(data) && data.length > 0) {
-            setPosts(data)
-            setLoading(false)
-          } else {
-            throw new Error('API returned empty or non-array posts list')
-          }
-        }
-      })
-      .catch(err => {
-        console.error('[Telemetry Failure] Failed to retrieve secure LinkedIn feed, loading local cache:', err.message)
-        if (active) {
-          // Fallback to static mock posts on fetch or parse errors (e.g. local 404)
-          import('../data/linkedinPosts').then(mod => {
-            if (active) {
-              setPosts(mod.LINKEDIN_POSTS)
-              setLoading(false)
-            }
-          }).catch(importErr => {
-            console.error('Failed to import local fallback posts:', importErr)
-            if (active) {
-              setLoading(false)
-            }
-          })
-        }
-      })
-    return () => { active = false }
-  }, [])
+
 
   // Track screen size for responsive card calculations
   useEffect(() => {
