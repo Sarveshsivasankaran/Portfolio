@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from './components/Navbar'
@@ -187,6 +188,7 @@ export default function App() {
         </main>
         <Footer />
         <Analytics />
+        <SpeedInsights />
       </div>
       <button
         onClick={scrollToTop}
