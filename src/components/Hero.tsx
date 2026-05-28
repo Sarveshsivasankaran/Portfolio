@@ -105,6 +105,7 @@ interface HeroProps {
 
 export default function Hero({ isMuted, toggleMute }: HeroProps) {
   const [splineLoaded, setSplineLoaded] = useState(false)
+  const [splineError, setSplineError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const splineApp = useRef<any>(null)
 
@@ -278,21 +279,36 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
       </div>
 
       {/* 2. Interactive 3D Spline Vortex Background Layer */}
-      <Suspense fallback={null}>
-        <div className="hero-spline-wrapper" style={{
+      {(!splineLoaded || splineError) && (
+        <div style={{
           position: 'absolute',
           inset: 0,
           zIndex: 2,
           pointerEvents: 'none',
-          opacity: 0.25,
-          willChange: 'transform',
+          opacity: 0.35,
         }}>
-          <Spline 
-            scene={SPLINE_URL} 
-            onLoad={onSplineLoad}
-          />
+          <PortalFallback />
         </div>
-      </Suspense>
+      )}
+      {!splineError && (
+        <Suspense fallback={null}>
+          <div className="hero-spline-wrapper" style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 2,
+            pointerEvents: 'none',
+            opacity: 0.25,
+            willChange: 'transform',
+            display: splineLoaded ? 'block' : 'none',
+          }}>
+            <Spline 
+              scene={SPLINE_URL} 
+              onLoad={onSplineLoad}
+              onError={() => setSplineError(true)}
+            />
+          </div>
+        </Suspense>
+      )}
 
       {/* 3. Cybernetic Background Topo-Curves & Intersecting Diagonal Scrolling Ribbons Layer */}
       <div style={{
