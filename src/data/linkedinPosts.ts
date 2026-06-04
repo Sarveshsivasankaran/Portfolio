@@ -12,13 +12,13 @@ export interface LinkedInPost {
 export const LINKEDIN_POSTS: LinkedInPost[] = [
   {
     "id": 1,
-    "title": "Sarvesh Sivasankaran \u2014 Portfolio",
-    "summary": "This Portfolio is based on Solo Levelling anime theme",
-    "date": "2026-05-20",
-    "url": "https://solo-p-leveller-portfolio.netlify.app",
-    "type": "post",
-    "badge": "SYSTEM LOG",
-    "image": "https://media.licdn.com/dms/image/v2/D562DAQHor2RlfROF0w/profile-treasury-image-shrink_480_480/B56Z5bHSLbGoAU-/0/1779645096923?e=1780484400&v=beta&t=XPIWK03lzr3SqYyiYg7oP3mBsPSz8fu2GKBuOlszU2M"
+    "title": "\ud83c\udf1f What a Journey \u2013 SIH Internal Hackathon 2025 (Software Edition)! \ud83c\udf1f",
+    "summary": "I\u2019m thrilled to share that our team Code-O-Philes made it to the Top 50 among 160+ teams in the SIH Internal Hackathon 2025 (Software Edition) conducted at Rajalakshmi Engineering College! \ud83d\ude80\n\nThis was my first-ever major hackathon experience, and the past month has been nothing short of transformative \u2014 countless brainstorming sessions, continuous iterations, and late-night discussions all shaped our solution. It was a true test of creativity, focus, and persistence.\n\nDuring the 30-hour hackathon, I faced unexpected issues with our hardware sensors on Day 1 night. I worked through the night, barely managing an hour of inconsistent sleep, until I was able to solve the problem and get everything back on track. This experience pushed me to stay calm under pressure, troubleshoot effectively, and find solutions despite fatigue and constraints.\n\nA special mention to:\n\n\ud83d\udc68\u200d\ud83c\udfeb Dr.K.Vijay Sir \u2013 for his constant mentorship and guidance throughout this journey.\n\n\ud83e\udd1d Sajiv Jess, swarna lakshmi B, Dejaswini B G, Akash Vardhan V, and Aniketh J \u2013 my amazing teammates whose dedication and collaboration made this achievement possible.\n\n\ud83d\ude4c Abuthahir A Sir\u2013 one of our jury, for his valuable insights and encouragement.\n\nParticipating in this hackathon gave me an incredible opportunity to strengthen my technical skills, improve my problem-solving approach, and experience the excitement of building something meaningful under time pressure. It was a month-long journey of growth, collaboration, and learning that I will always remember. \ud83d\udc99\ud83d\udc7e\n\n#Hackathon #SIH2025 #SoftwareEdition #Innovation #ProblemSolving #CriticalThinking #EngineeringJourney #CodeOPhiles #RajalakshmiEngineeringCollege #Teamwork #LearningJourney\n\n#TechForGood #BuildInPublic #HackathonLife #EngineeringStudents #StudentInnovators #STEM #FutureEngineers #TechCommunity #TechInnovation #Collaboration #LearningByDoing #HardwareAndSoftware #CodingJourney #EngineeringLife #Creativity #Resilience #Persistence #GrowthMindset #DesignThinking #StudentHackathon",
+    "date": "2025-09-15",
+    "url": "https://www.linkedin.com/feed/update/urn:li:activity:7375878224737677312/",
+    "type": "project",
+    "badge": "HACKATHON WINNER",
+    "image": "https://media.licdn.com/dms/image/v2/D5622AQHhIWTAJy5n4w/feedshare-shrink_480/B56ZlxiFP2HQAY-/0/1758546396705?e=1781740800&v=beta&t=VOcsGTeSNtpHemiSypNEFnwj2uGgd7L3b3Yl79ZRvKo"
   },
   {
     "id": 2,
@@ -182,16 +182,6 @@ export const LINKEDIN_POSTS: LinkedInPost[] = [
   },
   {
     "id": 18,
-    "title": "\ud83c\udf1f What a Journey \u2013 SIH Internal Hackathon 2025 (Software Edition)! \ud83c\udf1f",
-    "summary": "I\u2019m thrilled to share that our team Code-O-Philes made it to the Top 50 among 160+ teams in the SIH Internal Hackathon 2025 (Software Edition) conducted at Rajalakshmi Engineering College! \ud83d\ude80\n\nThis was my first-ever major hackathon experience, and the past month has been nothing short of transformative \u2014 countless brainstorming sessions, continuous iterations, and late-night discussions all shaped our solution. It was a true test of creativity, focus, and persistence.\n\nDuring the 30-hour hackathon, I faced unexpected issues with our hardware sensors on Day 1 night. I worked through the night, barely managing an hour of inconsistent sleep, until I was able to solve the problem and get everything back on track. This experience pushed me to stay calm under pressure, troubleshoot effectively, and find solutions despite fatigue and constraints.\n\nA special mention to:\n\n\ud83d\udc68\u200d\ud83c\udfeb Dr.K.Vijay Sir \u2013 for his constant mentorship and guidance throughout this journey.\n\n\ud83e\udd1d Sajiv Jess, swarna lakshmi B, Dejaswini B G, Akash Vardhan V, and Aniketh J \u2013 my amazing teammates whose dedication and collaboration made this achievement possible.\n\n\ud83d\ude4c Abuthahir A Sir\u2013 one of our jury, for his valuable insights and encouragement.\n\nParticipating in this hackathon gave me an incredible opportunity to strengthen my technical skills, improve my problem-solving approach, and experience the excitement of building something meaningful under time pressure. It was a month-long journey of growth, collaboration, and learning that I will always remember. \ud83d\udc99\ud83d\udc7e\n\n#Hackathon #SIH2025 #SoftwareEdition #Innovation #ProblemSolving #CriticalThinking #EngineeringJourney #CodeOPhiles #RajalakshmiEngineeringCollege #Teamwork #LearningJourney\n\n#TechForGood #BuildInPublic #HackathonLife #EngineeringStudents #StudentInnovators #STEM #FutureEngineers #TechCommunity #TechInnovation #Collaboration #LearningByDoing #HardwareAndSoftware #CodingJourney #EngineeringLife #Creativity #Resilience #Persistence #GrowthMindset #DesignThinking #StudentHackathon",
-    "date": "2025-09-15",
-    "url": "https://www.linkedin.com/feed/update/urn:li:activity:7375878224737677312/",
-    "type": "project",
-    "badge": "HACKATHON WINNER",
-    "image": "https://media.licdn.com/dms/image/v2/D5622AQHhIWTAJy5n4w/feedshare-shrink_480/B56ZlxiFP2HQAY-/0/1758546396705?e=1781740800&v=beta&t=VOcsGTeSNtpHemiSypNEFnwj2uGgd7L3b3Yl79ZRvKo"
-  },
-  {
-    "id": 19,
     "title": "\ud83c\udf1f Internship Milestone Achieved! \ud83c\udf1f",
     "summary": "I am excited to share that I have successfully completed my 1-month internship in Cybersecurity at SkillCraft Technology (15th July 2025 \u2013 14th August 2025) \ud83c\udfaf\n\nThis experience has been an incredible journey where I gained valuable insights into real-world Cybersecurity challenges and honed my technical, analytical, and problem-solving skills. I\u2019m grateful for this opportunity and proud to have earned both a Certificate of Completion and a Letter of Recommendation acknowledging my performance during the internship.\n\nThis is just the beginning \u2014 I look forward to further exploring and contributing to the Cybersecurity domain in the coming years.\n\n#CyberSecurity #Internship #SkillCraftTechnology #EthicalHacking #InformationSecurity #CyberDefense #CyberAwareness #TechJourney #CareerGrowth #LearningExperience #DigitalSecurity #CyberSecurityInternship #CyberProtection #TechSkills #FutureReady",
     "date": "2025-08-15",
@@ -201,7 +191,7 @@ export const LINKEDIN_POSTS: LinkedInPost[] = [
     "image": "https://media.licdn.com/dms/image/v2/D5622AQGqvkSAZiJfgw/feedshare-shrink_480/B56ZisBwYgG0AY-/0/1755232800218?e=1781740800&v=beta&t=ki2uomSW-C8OZBa0iTtpGtmMS4T78c6hYPgbpdWx0Cc"
   },
   {
-    "id": 20,
+    "id": 19,
     "title": "\u2728 Exciting News! \u2728",
     "summary": "I\u2019m thrilled to share that I\u2019ve been offered the Cyber Security Intern position at SkillCraft Technology! \ud83d\ude80\ud83d\udd10\n\nThis one-month educational internship, starting from July 15, 2025, is a great opportunity for me to gain hands-on experience in the dynamic field of cybersecurity. I'm eager to learn, grow, and contribute meaningfully during this journey.\n\nA big thank you to SkillCraft Technology for this opportunity and to everyone who has supported me along the way. \ud83d\ude4c\n\n#CyberSecurity #InternshipOpportunity #SkillCraftTechnology #Grateful #LearningInProgress\n\n#CyberSecIntern #TechGrowth #InformationSecurity #CareerDevelopment #CyberAwareness\n\n#FutureInTech #StudentInternship #TechInternship #Infosec #CyberIntern #CyberJourney\n\n#SkillBuilding #DigitalSecurity #EthicalHacking\n\n#LearningByDoing #ITInternship #InternshipExperience",
     "date": "2025-08-15",
@@ -211,7 +201,7 @@ export const LINKEDIN_POSTS: LinkedInPost[] = [
     "image": "https://media.licdn.com/dms/image/v2/D561FAQHHu83XC9RUxw/feedshare-document-cover-images_480/B56Zfy3TX.HoBM-/0/1752126274735?e=1780484400&v=beta&t=KUoH-3OJXTyDbV-vg-d-L1K-jmxv3MNvVDOIW1z57lU"
   },
   {
-    "id": 21,
+    "id": 20,
     "title": "\ud83c\udf0d\u2728 Thrilled to Announce! \u2728\ud83c\udf0d",
     "summary": "I\u2019m incredibly excited to share that I\u2019ve joined the Intellexa REC Club at Rajalakshmi Engineering College as an IoT Team Member! \ud83e\udd16\ud83d\ude80\n\nJoining Intellexa REC marks a significant step in my journey toward exploring cutting-edge technology, innovation, and impactful collaboration. I\u2019m honored to be part of a dynamic team where creativity meets real-world solutions! \ud83d\udca1\ud83c\udf10\n\nA heartfelt thank you to my IoT team lead, AHAMED FAISAL, for your mentorship and belief in my potential \ud83d\ude4c \u2014 and to SivaRamaKrishnan R. the President of Intellexa REC Club, for trusting me with this opportunity and welcoming me into such a visionary space. \ud83d\ude4f\ud83d\udc68\u200d\ud83d\udcbc\n\nI\u2019m looking forward to working alongside brilliant minds, building projects that matter, and growing both technically and personally. Let\u2019s innovate, inspire, and make a difference \u2014 together! \ud83d\udcab\ud83d\udcaa\n\n#Intellexa #IoT #TechInnovation #RajalakshmiEngineeringCollege #GlobalTech #StudentInnovation #EngineeringExcellence #FutureReady #TechLeaders #SmartSolutions #REC #TeamIntellexa #DigitalTransformation #STEM #EmergingTech #Leadership #Gratitude #MakingImpact #IoTRevolution #VisionToReality #NextGenTech",
     "date": "2025-07-20",
@@ -221,7 +211,7 @@ export const LINKEDIN_POSTS: LinkedInPost[] = [
     "image": "https://media.licdn.com/dms/image/v2/D5622AQG-EHIN7d6HuA/feedshare-shrink_480/B56ZiHZvFOHcAY-/0/1754618328211?e=1781740800&v=beta&t=N_Lzk6LgKRv-xu8D4O8V_AVc_VGaQcdOHGj_wrC31wE"
   },
   {
-    "id": 22,
+    "id": 21,
     "title": "\ud83e\ude78 Giving the Gift of Life Through Blood Donation \ud83e\ude78",
     "summary": "I recently had the opportunity to donate 350ml of blood at Rajalakshmi Engineering College, where Christian Medical College hosted a blood donation camp in collaboration with the Uthiram Club and Rotary Club or Rotaract. It was an incredibly fulfilling experience, knowing that a simple act like this can help save lives. \u2764\ufe0f\n\nThe entire process was well-organized, and the medical team ensured a smooth and comfortable donation. As a token of appreciation, donors received a care pack \ud83c\udf81 with refreshments \ud83e\udd64\ud83c\udf6a and badges \ud83c\udf96\ufe0f\u2014a thoughtful gesture that made the experience even more memorable.\n\n\ud83d\udca1 Donating blood for the first time has been an eye-opening experience, and I encourage everyone who can to consider doing the same. A few minutes of our time can make a world of difference for someone in need! \ud83d\udcaa\ud83c\udffc\n\n#FirstBloodDonation \ud83e\ude78 #DonateBloodSaveLives \u2764\ufe0f #GivingBack \ud83e\udd1d #Healthcare \ud83c\udfe5 #CommunityImpact \ud83c\udf0d\n\n#BloodDonor \ud83d\udc89 #VolunteerWork \ud83d\ude4c #LifeSaver \ud83d\udc93 #StudentLife \ud83c\udf93 #MedicalAwareness \ud83e\udde0\n\n#YouthForChange \ud83c\udf31 #BloodDonationCamp \ud83c\udfeb #REC #CMC #RotaractClub #UthiramClub\n\n#BeTheChange #ServeSociety #KindnessMatters #HumanityFirst #SocialResponsibility",
     "date": "2025-04-10",
@@ -231,7 +221,7 @@ export const LINKEDIN_POSTS: LinkedInPost[] = [
     "image": "https://media.licdn.com/dms/image/v2/D5622AQESJJhxHBoOMQ/feedshare-shrink_160/B56ZYBYI8LGoAc-/0/1743779828057?e=1781740800&v=beta&t=8EwmVIegipLakUH-KWd-WzvqXuqY_hSucGu5FTCtkt0"
   },
   {
-    "id": 23,
+    "id": 22,
     "title": "\ud83c\udf1f Mission Accomplished! \ud83c\udf1f",
     "summary": "I\u2019m excited to share that I have successfully secured a spot in the root@localhost Capture The Flag (CTF) contest! \ud83c\udfc6\ud83d\udcbb\n\nThis wasn\u2019t just a competition\u2014it was an electrifying journey through the fascinating world of Cybersecurity. Each challenge tested my analytical skills, determination, and problem-solving abilities, making it a truly unforgettable experience.\n\n\ud83d\udca1 What Made This Experience Stand Out:\n\n\ud83d\udd10 Immersive Learning: Gained hands-on exposure to cutting-edge cybersecurity techniques.\n\n\ud83e\udd1d Collaborative Growth: Connected with and learned from an exceptional community of peers.\n\n\ud83d\ude80 Unparalleled Challenges: Pushed my boundaries to solve intricate problems with precision and creativity.\n\nReceiving this certificate of achievement \ud83c\udf93 is an incredible honor, and I owe my gratitude to the fantastic organizing team: CyberSentinels REC, Bhuvaneswaran B, Benedict J.N., Dr. P Kumar, Rajalakshmi Engineering College, Altered Security, XYZ. Your efforts made this journey truly remarkable. \ud83d\udc4f\ud83d\udc4f\n\nThis accomplishment is not just a milestone but a stepping stone. It fuels my passion to continue exploring, learning, and contributing to the cybersecurity landscape. Let\u2019s collaborate to build a safer and more resilient digital world! \ud83c\udf10\ud83d\udd10\n\nThank you to everyone RITHESH S, SHEMKUMAR P, SAMPATH KUMAR P, Jerin B S, HARISH D, Subhikshaa S, SIVASHANKAR S, @Suriya Sundaram K.S, Karan Balaji R S, Swathi S who made this event a success. Here\u2019s to new challenges, greater learning, and continued growth. \ud83d\ude80\n\n#rootatlocalhost #CyberSentinelsREC #CaptureTheFlag #CyberSecurity #CTFSuccess #Innovation #DigitalResilience #Hacking #CyberDefense #TechJourney #LearningNeverStops #ProblemSolving #CTFCommunity #RajalakshmiEngineeringCollege #CyberFuture #SecureTheFuture #EthicalHacking #InfoSec #BugBounty #DigitalTransformation #ThreatHunting #NetworkSecurity #PenTesting #CyberAwareness #TechInnovation #CloudSecurity #MalwareAnalysis #CyberForensics #DataPrivacy #DigitalSkills #TechSavvy #FutureOfTech #SkillDevelopment #ZeroTrust #HackThePlanet #ITSecurity #CyberTalent",
     "date": "2025-01-15",
