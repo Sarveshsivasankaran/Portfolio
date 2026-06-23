@@ -10,6 +10,7 @@ import Skills from './components/Skills'
 import Projects from './components/Projects'
 import Wins from './components/Wins'
 import Events from './components/Events'
+import Publications from './components/Publications'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import SystemEntry from './components/SystemEntry'
@@ -99,7 +100,7 @@ export default function App() {
 
     const ctx = gsap.context(() => {
       // Animate each content section as it scrolls into view
-      const sections = ['#skills', '#marquee-banner', '#projects', '#wins', '#events', '#contact']
+      const sections = ['#skills', '#marquee-banner', '#projects', '#wins', '#events', '#publications', '#contact']
       
       sections.forEach((selector) => {
         const el = document.querySelector(selector)
@@ -184,6 +185,7 @@ export default function App() {
           <Projects />
           <Wins />
           <Events />
+          <Publications />
           <Contact />
         </main>
         <Footer />
