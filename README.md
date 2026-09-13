@@ -125,3 +125,7 @@ Runs a local web server to preview the built production bundle exactly as it wil
 ---
 
 **Quest Status: ACTIVE // Ready for Guild Deployment.** 🛡️
+
+## LinkedIn activity management
+
+Wins & Activity now supports Supabase, Realtime, multi-image posts, and an authenticated `/admin/activities` editor. See [the setup and verification guide](docs/linkedin-activity-feed.md) for the migration, public environment variables, administrator allowlist, Storage policies, importing existing posts, and adding future activities without redeploying.

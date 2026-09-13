@@ -1,0 +1,25 @@
+.activities-admin { min-height: 100vh; max-width: 1000px; margin: auto; padding: 48px 24px; color: var(--ghost); overflow-wrap: anywhere; }
+.activities-admin .section-label { margin-top: 32px; }
+.activities-admin h2, .activities-admin h3 { font-family: Rajdhani, sans-serif; }
+.activities-admin h2 { font-size: 26px; }
+.activities-admin h3 { font-size: 21px; }
+.activities-admin p { margin: 16px 0; }
+.activities-admin a { color: var(--teal); }
+.admin-panel { padding: 24px; margin: 20px 0; border: 1px solid var(--border); border-radius: 16px; background: var(--dungeon); }
+.admin-login { max-width: 480px; }
+.activities-admin fieldset { border: 0; min-width: 0; margin: 0; padding: 0; }
+.activities-admin label { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; min-width: 0; }
+.activities-admin input, .activities-admin textarea { width: 100%; min-width: 0; box-sizing: border-box; background: var(--void); border: 1px solid var(--border); color: var(--ghost); border-radius: 6px; padding: 12px; font: inherit; color-scheme: dark; }
+.activities-admin textarea { resize: vertical; }
+.activities-admin small { color: var(--stone); }
+.admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.admin-checks, .admin-actions, .admin-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.admin-toolbar { justify-content: space-between; margin-top: 32px; }
+.admin-checks label { flex-direction: row; align-items: center; }
+.admin-checks input { width: 20px; height: 20px; }
+.activities-admin button { min-height: 44px; padding: 10px 16px; border: 1px solid var(--border); background: var(--dungeon); color: var(--ghost); border-radius: 6px; cursor: pointer; font: inherit; }
+.activities-admin button:disabled { opacity: .5; cursor: default; }
+.activities-admin :is(a, button, input, textarea):focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.admin-images > div { display: flex; align-items: center; gap: 20px; margin-bottom: 12px; }
+.activities-admin .admin-error { color: #fca5a5; }
+@media (max-width: 600px) { .activities-admin { padding: 32px 16px; } .admin-panel { padding: 18px; } .admin-form-row { grid-template-columns: 1fr; gap: 0; } }

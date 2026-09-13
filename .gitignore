@@ -8,3 +8,8 @@ dist
 linkedin_session.json
 *.html
 *.png
+
+# Local test artifacts
+playwright-report/
+test-results/
+!tests/e2e/harness.html

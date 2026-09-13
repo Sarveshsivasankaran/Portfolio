@@ -442,7 +442,7 @@ export default function Publications() {
             </p>
 
             {/* Book Theme Pill Badges */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
               <span style={{
                 fontFamily: 'Share Tech Mono, monospace',
                 fontSize: '11px',
@@ -485,8 +485,64 @@ export default function Publications() {
               </div>
             </div>
 
-            {/* Read/Explore CTA Button */}
-            <div style={{ marginTop: '16px' }}>
+            {/* Featured College Website Blog Release Card */}
+            <div style={{
+              marginTop: '8px',
+              padding: '18px 20px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.07) 0%, rgba(124, 58, 237, 0.05) 100%)',
+              border: '1px solid rgba(6, 182, 212, 0.25)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25), inset 0 0 15px rgba(6, 182, 212, 0.04)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <span style={{
+                  fontFamily: 'Share Tech Mono, monospace',
+                  fontSize: '10px',
+                  color: 'var(--teal)',
+                  background: 'rgba(6, 182, 212, 0.15)',
+                  border: '1px solid rgba(6, 182, 212, 0.3)',
+                  borderRadius: '4px',
+                  padding: '3px 8px',
+                  letterSpacing: '0.08em',
+                  fontWeight: 700,
+                }}>
+                  🎓 COLLEGE WEBSITE FEATURED BLOG
+                </span>
+                <span style={{
+                  fontFamily: 'Share Tech Mono, monospace',
+                  fontSize: '11px',
+                  color: 'rgba(255, 255, 255, 0.45)',
+                }}>
+                  Rajalakshmi Engineering College
+                </span>
+              </div>
+
+              <h4 style={{
+                fontFamily: 'Rajdhani, sans-serif',
+                fontSize: '18px',
+                fontWeight: 700,
+                color: 'var(--ghost)',
+                margin: 0,
+                lineHeight: 1.3,
+              }}>
+                Beyond Grades: Lessons That Shaped My Engineering Journey
+              </h4>
+
+              <p style={{
+                color: 'var(--silver)',
+                fontSize: '13.5px',
+                lineHeight: 1.5,
+                margin: 0,
+              }}>
+                An officially featured adaptation released on the college portal — a curated, high-impact version of <em>"The Faces Behind Faces"</em> sharing core engineering principles, resilience, and personal growth.
+              </p>
+            </div>
+
+            {/* Read / Explore Action Buttons */}
+            <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
               <a
                 href="https://the-faces-behind-faces-book.vercel.app/"
                 target="_blank"
@@ -497,7 +553,7 @@ export default function Publications() {
                   fontSize: '12px',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
-                  padding: '14px 28px',
+                  padding: '12px 24px',
                   borderRadius: '8px',
                   background: 'linear-gradient(135deg, var(--monarch), #5b21b6)',
                   border: '1px solid rgba(124, 58, 237, 0.4)',
@@ -505,9 +561,10 @@ export default function Publications() {
                   color: 'white',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 10,
+                  gap: 8,
                   transition: 'all 0.3s ease',
                   cursor: 'pointer',
+                  textDecoration: 'none',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.filter = 'brightness(1.15)'
@@ -521,7 +578,48 @@ export default function Publications() {
                 }}
               >
                 <FiExternalLink size={14} />
-                <span>READ THE BOOK</span>
+                <span>READ FULL BOOK</span>
+              </a>
+
+              <a
+                href="https://www.rajalakshmi.org/blogs/beyond-grades-lessons-that-shaped-my-engineering-journey"
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  fontFamily: 'Share Tech Mono, monospace',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  background: 'rgba(6, 182, 212, 0.1)',
+                  border: '1px solid rgba(6, 182, 212, 0.4)',
+                  boxShadow: '0 0 15px rgba(6, 182, 212, 0.15)',
+                  color: 'var(--teal)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(6, 182, 212, 0.25)'
+                  e.currentTarget.style.color = '#ffffff'
+                  e.currentTarget.style.borderColor = 'var(--teal)'
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(6, 182, 212, 0.4)'
+                  e.currentTarget.style.transform = 'scale(1.03) translateY(-2px)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(6, 182, 212, 0.1)'
+                  e.currentTarget.style.color = 'var(--teal)'
+                  e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.4)'
+                  e.currentTarget.style.boxShadow = '0 0 15px rgba(6, 182, 212, 0.15)'
+                  e.currentTarget.style.transform = 'none'
+                }}
+              >
+                <FiExternalLink size={14} />
+                <span>READ COLLEGE BLOG RELEASE</span>
               </a>
             </div>
 

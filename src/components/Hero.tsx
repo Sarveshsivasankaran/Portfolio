@@ -134,7 +134,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
           } catch (e) {
             try {
               splineApp.current.setZoom(1.0 - self.progress * 0.1)
-            } catch (err) {}
+            } catch (err) { }
           }
         }
       }
@@ -182,7 +182,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
       overflow: 'hidden',
     }}>
       {/* Sound Mute/Unmute Toggle Button */}
-      <button 
+      <button
         onClick={toggleMute}
         style={{
           position: 'absolute',
@@ -263,9 +263,9 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
             border: 'none',
             boxShadow: 'none',
           }} className="hero-framer-inner">
-            <CursorLens 
+            <CursorLens
               baseImage="/outer image-bgr.png"
-              revealImage="/beard image-inner-bdr.png"
+              revealImage="/animated-face-bg-removed.png"
               objectFit="cover"
               blobSize={260} // Adjusted cursor lens size as requested
               previewCursor={false} // Ensure the reveal lens is invisible when the cursor is not hovering
@@ -301,8 +301,8 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
             willChange: 'transform',
             display: splineLoaded ? 'block' : 'none',
           }}>
-            <Spline 
-              scene={SPLINE_URL} 
+            <Spline
+              scene={SPLINE_URL}
               onLoad={onSplineLoad}
               onError={() => setSplineError(true)}
             />

@@ -7,6 +7,9 @@ export interface LinkedInPost {
   type: 'post' | 'article' | 'certificate' | 'project'
   badge: string
   image: string
+  images?: string[]
+  category?: string
+  featured?: boolean
 }
 
 export const LINKEDIN_POSTS: LinkedInPost[] = [

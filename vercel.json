@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/admin/activities", "destination": "/index.html" },
+    { "source": "/admin/activities/", "destination": "/index.html" }
+  ]
+}

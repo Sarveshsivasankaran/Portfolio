@@ -2,7 +2,10 @@ import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { type LinkedInPost, LINKEDIN_POSTS } from '../data/linkedinPosts'
+import { type LinkedInPost } from '../data/linkedinPosts'
+import { useLinkedInPosts } from '../hooks/useLinkedInPosts'
+import { isLinkedInUrl } from '../lib/linkedinPosts'
+import ActivityImages from './ActivityImages'
 import { 
   FiChevronLeft, 
   FiChevronRight, 
@@ -10,8 +13,7 @@ import {
   FiExternalLink,
   FiX,
   FiMaximize2,
-  FiShield,
-  FiActivity
+  FiShield
 } from 'react-icons/fi'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
@@ -35,15 +37,14 @@ const TYPE_LABELS: Record<LinkedInPost['type'], string> = {
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' })
 }
 
 export default function Wins() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(1200)
   const splineApp = useRef<any>(null)
-  const [posts, setPosts] = useState<LinkedInPost[]>(LINKEDIN_POSTS)
-  const [loading, setLoading] = useState(false)
+  const { posts, loading } = useLinkedInPosts()
 
   const [wrRotateX, setWrRotateX] = useState(0)
   const [wrRotateY, setWrRotateY] = useState(0)
@@ -272,6 +273,15 @@ export default function Wins() {
   }
 
   const deckRef = useRef<HTMLDivElement>(null)
+  const [deckWidth, setDeckWidth] = useState(0)
+  useEffect(() => {
+    const deck = deckRef.current
+    if (!deck) return
+    const observer = new ResizeObserver(() => setDeckWidth(deck.clientWidth))
+    observer.observe(deck)
+    setDeckWidth(deck.clientWidth)
+    return () => observer.disconnect()
+  }, [])
 
   // Card dimensions
   const isMobile = viewportWidth < 768
@@ -281,14 +291,22 @@ export default function Wins() {
   const gap = 20
 
   // Calculate slide limit based on viewport constraints
-  const visibleCount = isMobile ? 1 : (isTablet ? 2 : 3)
+  const visibleCount = isMobile ? 1 : Math.max(1, Math.min(isTablet ? 2 : 3, Math.floor(((deckWidth || viewportWidth) + gap) / (cardWidth + gap))))
   const maxSlideIndex = Math.max(0, posts.length - visibleCount)
 
   // Bounds clamp index
   const safeActiveIndex = Math.min(activeIndex, maxSlideIndex)
 
+  // Reconcile navigation when Realtime removes cards or the viewport changes.
+  useEffect(() => {
+    if (activeIndex > maxSlideIndex) {
+      setActiveIndex(maxSlideIndex)
+      if (isMobile) deckRef.current?.scrollTo({ left: maxSlideIndex * (cardWidth + gap) })
+    }
+  }, [activeIndex, maxSlideIndex, isMobile, cardWidth])
+
   const handlePrev = () => {
-    const newIndex = activeIndex > 0 ? activeIndex - 1 : maxSlideIndex
+    const newIndex = safeActiveIndex > 0 ? safeActiveIndex - 1 : maxSlideIndex
     setActiveIndex(newIndex)
     if (isMobile && deckRef.current) {
       deckRef.current.scrollTo({
@@ -299,7 +317,7 @@ export default function Wins() {
   }
 
   const handleNext = () => {
-    const newIndex = activeIndex < maxSlideIndex ? activeIndex + 1 : 0
+    const newIndex = safeActiveIndex < maxSlideIndex ? safeActiveIndex + 1 : 0
     setActiveIndex(newIndex)
     if (isMobile && deckRef.current) {
       deckRef.current.scrollTo({
@@ -630,6 +648,7 @@ export default function Wins() {
                   <img
                     src={media.url}
                     alt={media.title}
+                    referrerPolicy="no-referrer"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -769,7 +788,11 @@ export default function Wins() {
         {/* Viewport sliding window */}
         <div 
           ref={deckRef}
-          className="wins-card-deck" 
+          className="wins-card-deck"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="LinkedIn activities"
+          aria-busy={loading}
           onScroll={handleScroll}
           style={{
             width: 'auto',
@@ -799,6 +822,8 @@ export default function Wins() {
                 />
               ))}
             </div>
+          ) : posts.length === 0 ? (
+            <p role="status" style={{ minHeight: 450, display: 'grid', placeItems: 'center', color: 'var(--stone)' }}>No recent activities yet.</p>
           ) : (
             <motion.div
               animate={{ x: isMobile ? 0 : slideX }}
@@ -821,6 +846,10 @@ export default function Wins() {
               return (
                 <motion.div
                   key={post.id}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${index + 1} of ${posts.length}: ${post.title}`}
+                  className="activity-card"
                   style={{
                     width: `${cardWidth}px`,
                     height: '450px',
@@ -848,9 +877,11 @@ export default function Wins() {
                   <div style={{
                     width: '100%',
                     height: '170px',
+                    flexShrink: 0,
                     position: 'relative',
                     overflow: 'hidden',
                     borderBottom: '1px solid var(--border)',
+                    background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(10, 10, 18, 0.98) 100%)',
                   }}>
                     {/* Glowing highlight strip */}
                     <div style={{
@@ -863,16 +894,12 @@ export default function Wins() {
                       zIndex: 5,
                     }} />
 
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        filter: isCurrentlyVisible ? 'grayscale(0) contrast(1.05)' : 'grayscale(0.3) contrast(0.95)',
-                        transition: 'transform 0.5s ease, filter 0.5s ease',
-                      }}
+                    <ActivityImages
+                      images={post.images ?? (post.image ? [post.image] : [])}
+                      title={post.title}
+                      color={TYPE_COLORS[post.type]}
+                      label={post.badge || TYPE_LABELS[post.type]}
+                      active={isCurrentlyVisible}
                     />
 
                     {/* LinkedIn badge */}
@@ -883,8 +910,8 @@ export default function Wins() {
                       width: '32px',
                       height: '32px',
                       borderRadius: '50%',
-                      background: 'rgba(10,102,194,0.15)',
-                      border: '1px solid rgba(10,102,194,0.3)',
+                      background: 'rgba(10,102,194,0.25)',
+                      border: '1px solid rgba(10,102,194,0.5)',
                       backdropFilter: 'blur(8px)',
                       display: 'flex',
                       alignItems: 'center',
@@ -892,6 +919,7 @@ export default function Wins() {
                       color: '#0A66C2',
                       fontSize: '15px',
                       zIndex: 10,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
                     }}>
                       <FiLinkedin />
                     </div>
@@ -904,7 +932,7 @@ export default function Wins() {
                       zIndex: 10,
                     }}>
                       <span className="pill" style={{
-                        background: 'rgba(17, 24, 39, 0.75)',
+                        background: 'rgba(17, 24, 39, 0.85)',
                         color: TYPE_COLORS[post.type],
                         border: `1px solid ${TYPE_COLORS[post.type]}88`,
                         backdropFilter: 'blur(6px)',
@@ -912,8 +940,12 @@ export default function Wins() {
                         fontSize: '9px',
                         letterSpacing: '0.08em',
                         padding: '4px 10px',
+                        maxWidth: 220,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}>
-                        {TYPE_LABELS[post.type]}
+                        {post.category || TYPE_LABELS[post.type]}
                       </span>
                     </div>
                   </div>
@@ -921,6 +953,8 @@ export default function Wins() {
                   {/* Body Content */}
                   <div style={{
                     padding: '20px 24px 24px',
+                    minHeight: 0,
+                    overflowWrap: 'anywhere',
                     display: 'flex',
                     flexDirection: 'column',
                     flex: 1,
@@ -976,6 +1010,7 @@ export default function Wins() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       marginTop: '12px',
+                      gap: '8px',
                       borderTop: '0.5px solid var(--border)',
                       paddingTop: '12px',
                     }}>
@@ -984,15 +1019,18 @@ export default function Wins() {
                         fontSize: '9px',
                         color: 'rgba(255,255,255,0.2)',
                       }}>
-                        QUEST: COMPLETED
+                        {post.featured ? 'FEATURED' : ''}
                       </span>
                       <a
                         href={post.url}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
+                        tabIndex={isMobile || isCurrentlyVisible ? 0 : -1}
                         style={{
                           fontFamily: 'Share Tech Mono, monospace',
-                          fontSize: '12px',
+                          fontSize: '11px',
+                          minHeight: '44px',
+                          whiteSpace: 'nowrap',
                           color: TYPE_COLORS[post.type],
                           textDecoration: 'none',
                           display: 'inline-flex',
@@ -1004,7 +1042,7 @@ export default function Wins() {
                         onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
                         onMouseLeave={e => (e.currentTarget.style.color = TYPE_COLORS[post.type])}
                       >
-                        <span>SYNC INTEL</span>
+                        <span>{isLinkedInUrl(post.url) ? 'View on LinkedIn' : 'View publication'}</span>
                         <FiExternalLink size={12} />
                       </a>
                     </div>
@@ -1028,6 +1066,8 @@ export default function Wins() {
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
             <button
               onClick={handlePrev}
+              aria-label="Previous activities"
+              disabled={loading || maxSlideIndex === 0}
               className="btn-ghost"
               style={{
                 width: '44px',
@@ -1059,11 +1099,14 @@ export default function Wins() {
 
             {/* Pagination Indicators - S-Rank Level Steps */}
             {!isMobile && (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '60vw' }}>
                 {Array.from({ length: maxSlideIndex + 1 }).map((_, i) => (
                   <button
                     key={i}
                     onClick={() => handleDotClick(i)}
+                    aria-label={`Go to activity ${i + 1}`}
+                    aria-current={i === safeActiveIndex ? 'step' : undefined}
+                    disabled={loading || posts.length === 0}
                     style={{
                       width: i === safeActiveIndex ? '28px' : '8px',
                       height: '8px',
@@ -1082,6 +1125,8 @@ export default function Wins() {
 
             <button
               onClick={handleNext}
+              aria-label="Next activities"
+              disabled={loading || maxSlideIndex === 0}
               className="btn-ghost"
               style={{
                 width: '44px',
@@ -1119,7 +1164,7 @@ export default function Wins() {
             letterSpacing: '0.05em',
             margin: 0,
           }}>
-            SYSTEM DECK: ACTIVE SCAN [0{safeActiveIndex + 1} / 0{maxSlideIndex + 1}]
+            SYSTEM DECK: {loading ? 'SYNCING' : posts.length === 0 ? 'NO ACTIVITIES' : `ACTIVE SCAN [${safeActiveIndex + 1} / ${maxSlideIndex + 1}]`}
           </p>
         </div>
       </div>
@@ -1399,6 +1444,9 @@ export default function Wins() {
       </AnimatePresence>
 
       <style>{`
+        #wins a:focus-visible, #wins button:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+        #wins button:disabled { opacity: 0.4; cursor: default; }
+
         #wins {
           background-image: 
             radial-gradient(rgba(245, 158, 11, 0.008) 1px, transparent 0),

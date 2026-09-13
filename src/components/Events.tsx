@@ -64,7 +64,9 @@ function EventImage({ src, alt, onClick }: EventImageProps) {
         src={src}
         alt={alt}
         loading="lazy"
+        referrerPolicy="no-referrer"
         onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
         style={{
           width: 'auto', // Dynamic proportional width
           height: '100%',
