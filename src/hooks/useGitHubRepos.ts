@@ -52,13 +52,9 @@ async function fetchRepos(): Promise<GitHubRepo[]> {
   } catch (err) {
     console.warn('[GitHub Hook] Serverless API proxy offline, falling back to direct client-side scan.', err)
 
-    // 2. Client-side resilient fallback (reads local dev credentials safely)
+    // Public fallback stays anonymous; credentials belong in the server proxy.
     const headers: Record<string, string> = {
       Accept: 'application/vnd.github+json',
-    }
-    const token = import.meta.env.VITE_GITHUB_TOKEN
-    if (token && !token.includes('your_')) {
-      headers['Authorization'] = `Bearer ${token}`
     }
 
     const { data } = await axios.get<GitHubRepo[]>(

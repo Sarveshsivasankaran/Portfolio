@@ -1,0 +1,12 @@
+.git/
+.vercel/
+.linkedin-sync/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+playwright-report/
+test-results/
+supabase/.temp/
+linkedin_session.json

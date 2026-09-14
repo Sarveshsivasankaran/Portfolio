@@ -1,8 +1,10 @@
 # LinkedIn activity feed
 
-The existing `src/components/Wins.tsx` carousel is preserved. This is a React 18 / TypeScript / Vite 5 SPA with inline styles, global CSS/Tailwind, Framer Motion carousel transitions, native mobile scroll snapping, and GSAP/Spline backgrounds. There was no router, admin login, Supabase client, migration system, or lint script. Vercel API functions already exist under `api/`; `vercel.json` adds only the two activity-admin path rewrites.
+The existing `src/components/Wins.tsx` carousel is preserved. This is a React 18 / TypeScript / Vite 5 SPA with inline styles, global CSS/Tailwind, Framer Motion carousel transitions, native mobile scroll snapping, and GSAP/Spline backgrounds. There was no router, admin login, Supabase client, migration system, or lint script. Vercel API functions already exist under `api/`; `vercel.json` includes the two activity-admin path rewrites and the daily import schedule.
 
 ## Configured project
+
+**Deployment-side daily import:** see [daily LinkedIn sync](./linkedin-daily-sync.md). The initial profile scan added 18 newer activities, for 39 total rows (latest 30 shown). The Codex automation is paused. The Vercel Cron endpoint is implemented and its database migration is applied. A hosted LinkedIn feed and production configuration are still required to activate automatic fetching.
 
 Created a dedicated **Sarvesh Portfolio** organization (`lbvilawkovddohbutiqa`) and **Portfolio** project (`fxnconsxvbmpkmsxjpjq`) on the free plan in Mumbai. [Open the project](https://supabase.com/dashboard/project/fxnconsxvbmpkmsxjpjq).
 
@@ -10,7 +12,7 @@ The schema migration and 21-post import are already applied. Storage, RLS, and R
 
 Live checks confirmed 21 public posts, denied anonymous INSERT/UPDATE/DELETE and image uploads, and a real UPDATE event followed by an authoritative re-fetch. The actual carousel displayed the 21 database entries in Chrome. Supabase's security advisor returned no findings. The Realtime probe only refreshed an existing row's `updated_at`; its content was unchanged.
 
-**Remaining activation steps:** create and allowlist your own Auth user (step 3 below) to use the protected editor. Until then, manage `linkedin_posts` through the project's Table Editor. Set the two public environment variables in Vercel and deploy the frontend once; this task has not published the frontend changes. Future content updates need no deployment.
+**Remaining activation steps:** create and allowlist your own Auth user (step 3 below) to use the protected editor. Until then, manage `linkedin_posts` through the project's Table Editor. The public Supabase variables and frontend are deployed to Vercel. Automatic imports still need the server key and hosted source described in the daily sync guide. Future content updates need no deployment.
 
 ## One-time Supabase setup
 

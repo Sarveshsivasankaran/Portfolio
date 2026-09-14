@@ -1,13 +1,9 @@
-import { useState, useEffect, useRef, Suspense, lazy } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useGitHubRepos } from '../hooks/useGitHubRepos'
+import { useEffect, useState } from 'react'
+import { useGitHubRepos, type GitHubRepo } from '../hooks/useGitHubRepos'
+import ArsenalScene from './ArsenalScene'
+import './Arsenal.css'
 
-const Spline = lazy(() => import('@splinetool/react-spline'))
-const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode'
-
-gsap.registerPlugin(ScrollTrigger)
+const EMPTY_REPOS: GitHubRepo[] = []
 
 type Category = 'All' | 'Language' | 'Frontend' | 'Backend' | 'Cloud' | 'Tools'
 
@@ -26,9 +22,9 @@ interface Skill {
 const CATEGORY_COLORS: Record<Exclude<Category, 'All'>, string> = {
   Language: 'var(--gate)',
   Frontend: 'var(--teal)',
-  Backend:  'var(--monarch)',
-  Cloud:    'var(--gold)',
-  Tools:    'var(--stone)',
+  Backend: 'var(--monarch)',
+  Cloud: 'var(--gold)',
+  Tools: 'var(--stone)',
 }
 
 // Complete technology mapping dictionary for real-time scanning
@@ -61,453 +57,36 @@ const TECH_MAP: Record<string, {
   linux: { name: 'Linux', icon: 'devicon-linux-plain colored', category: 'Tools', baseLevel: 80, keywords: ['linux', 'ubuntu', 'bash', 'shell'] },
 }
 
-interface SkillCardProps {
-  skill: Skill
-  index: number
-}
-
-function SkillCard({ skill, index }: SkillCardProps) {
-  const baseBarRef = useRef<HTMLDivElement>(null)
-  const boostBarRef = useRef<HTMLDivElement>(null)
-
-  const githubCount = skill.githubCount
-  const computedLevel = skill.level
-  const boost = Math.max(0, computedLevel - skill.baseLevel)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (baseBarRef.current) {
-        gsap.fromTo(
-          baseBarRef.current,
-          { width: 0 },
-          {
-            width: `${skill.baseLevel}%`,
-            duration: 0.8,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: baseBarRef.current,
-              start: 'top 90%',
-              once: true,
-            },
-          }
-        )
-      }
-      if (boostBarRef.current && boost > 0) {
-        gsap.fromTo(
-          boostBarRef.current,
-          { width: 0 },
-          {
-            width: `${boost}%`,
-            duration: 0.6,
-            delay: 0.4,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: boostBarRef.current,
-              start: 'top 90%',
-              once: true,
-            },
-          }
-        )
-      }
-    })
-    return () => ctx.revert()
-  }, [skill.baseLevel, boost])
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.88 }}
-      transition={{ duration: 0.25 }}
-      whileHover={{
-        y: -6,
-        scale: 1.04,
-        borderColor: CATEGORY_COLORS[skill.category],
-        boxShadow: `0 10px 30px ${CATEGORY_COLORS[skill.category]}22`,
-      }}
-      className="card"
-      style={{
-        padding: '1.25rem',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 10,
-        cursor: 'default',
-        position: 'relative',
-        border: githubCount > 0 ? '1px solid rgba(6, 182, 212, 0.25)' : '0.5px solid var(--border)',
-        boxShadow: githubCount > 0 ? '0 8px 24px rgba(6, 182, 212, 0.05)' : 'none',
-        transition: 'border-color 0.2s, box-shadow 0.2s',
-      }}
-    >
-      {/* Icon */}
-      <i className={skill.icon} style={{ fontSize: 38 }} />
-
-      {/* Name */}
-      <span style={{
-        fontFamily: 'Rajdhani, sans-serif',
-        fontWeight: 700,
-        fontSize: 14,
-        color: 'var(--ghost)',
-        textAlign: 'center',
-      }}>
-        {skill.name}
-      </span>
-
-      {/* Verification Badge */}
-      <span style={{
-        fontFamily: 'Share Tech Mono, monospace',
-        fontSize: '9px',
-        padding: '2px 8px',
-        borderRadius: '4px',
-        background: githubCount > 0 ? 'rgba(6, 182, 212, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-        color: githubCount > 0 ? 'var(--teal)' : 'var(--stone)',
-        border: githubCount > 0 ? '1px solid rgba(6, 182, 212, 0.3)' : '1px solid rgba(255, 255, 255, 0.05)',
-        textShadow: githubCount > 0 ? '0 0 5px rgba(6, 182, 212, 0.3)' : 'none',
-      }}>
-        {githubCount > 0 ? `⚡ VIBE CODED: ${githubCount} REP` : '🛡️ HARDCODED KNOWLEDGE'}
-      </span>
-
-      {/* Category badge */}
-      <span className="pill" style={{
-        background: `${CATEGORY_COLORS[skill.category]}18`,
-        color: CATEGORY_COLORS[skill.category],
-        border: `1px solid ${CATEGORY_COLORS[skill.category]}33`,
-      }}>
-        {skill.category}
-      </span>
-
-      {/* Proficiency bar */}
-      <div style={{
-        width: '100%',
-        height: 6,
-        background: 'var(--mist)',
-        borderRadius: 2,
-        overflow: 'hidden',
-        marginTop: 6,
-        position: 'relative',
-        display: 'flex',
-      }}>
-        <div
-          ref={baseBarRef}
-          style={{
-            height: '100%',
-            background: 'linear-gradient(90deg, var(--monarch), var(--gate))',
-            borderRadius: boost > 0 ? '2px 0 0 2px' : '2px',
-            width: 0,
-          }}
-        />
-        {boost > 0 && (
-          <div
-            ref={boostBarRef}
-            style={{
-              height: '100%',
-              background: 'linear-gradient(90deg, var(--teal), #06b6d4)',
-              borderRadius: '0 2px 2px 0',
-              width: 0,
-              boxShadow: '0 0 8px rgba(6,182,212,0.6)',
-            }}
-          />
-        )}
-      </div>
-
-      {/* Dynamic Breakdown Percentage Labels */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 3,
-        width: '100%',
-        marginTop: 4,
-        borderTop: '0.5px solid rgba(255, 255, 255, 0.05)',
-        paddingTop: 6
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'Share Tech Mono, monospace' }}>
-          <span style={{ color: 'var(--stone)' }}>HARDCODED:</span>
-          <span style={{ color: 'var(--ghost)' }}>{skill.baseLevel}%</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'Share Tech Mono, monospace' }}>
-          <span style={{ color: githubCount > 0 ? 'var(--teal)' : 'var(--stone)' }}>VIBE CODED:</span>
-          <span style={{ color: githubCount > 0 ? 'var(--teal)' : 'var(--stone)' }}>
-            {githubCount > 0 ? `+${boost}%` : 'OFFLINE'}
-          </span>
-        </div>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          fontSize: 11, 
-          fontFamily: 'Rajdhani, sans-serif', 
-          fontWeight: 700, 
-          borderTop: '0.5px dotted rgba(255,255,255,0.1)', 
-          paddingTop: 3, 
-          marginTop: 2 
-        }}>
-          <span style={{ color: 'var(--stone)' }}>TOTAL KNOWN:</span>
-          <span style={{ color: githubCount > 0 ? 'var(--teal)' : 'var(--ghost)', textShadow: githubCount > 0 ? '0 0 5px rgba(6,182,212,0.3)' : 'none' }}>
-            {computedLevel}%
-          </span>
-        </div>
-      </div>
-    </motion.div>
-  )
-}
 
 export default function Skills() {
   const [activeCategory, setActiveCategory] = useState<Category>('All')
   const [vibeFilter, setVibeFilter] = useState<'All' | 'Vibe Coded' | 'Hardcoded'>('All')
-  const { data: repos = [], isLoading } = useGitHubRepos()
-  const splineApp = useRef<any>(null)
+  const { data: repos = EMPTY_REPOS, isLoading } = useGitHubRepos()
   const [dynamicSkills, setDynamicSkills] = useState<Skill[]>([])
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-
-
-  // Cybernetic Diagonal Stripe Light Travelling Background Animation
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    let animationFrameId: number
-    let width = (canvas.width = canvas.offsetWidth)
-    let height = (canvas.height = canvas.offsetHeight)
-
-    const handleResize = () => {
-      if (!canvas) return
-      width = canvas.width = canvas.offsetWidth
-      height = canvas.height = canvas.offsetHeight
-    }
-    window.addEventListener('resize', handleResize)
-
-    const stripeSpacing = 90
-    // Generate static lines covering the width + height
-    const getStripeCoords = (index: number) => {
-      const x1 = index * stripeSpacing - height
-      const y1 = 0
-      const x2 = x1 + height
-      const y2 = height
-      return { x1, y1, x2, y2 }
-    }
-
-    // Active light pulses (decreased count for subtler side background presence)
-    const pulseCount = 6
-    const pulses: Array<{
-      stripeIndex: number
-      progress: number
-      speed: number
-      alpha: number
-      beamLength: number
-      colorCore: string
-      colorGlow: string
-    }> = []
-
-    const resetPulse = (p: typeof pulses[0]) => {
-      const totalStripes = Math.ceil((width + height) / stripeSpacing) + 5
-      p.stripeIndex = Math.floor(Math.random() * totalStripes) - 2
-      p.progress = -0.15 - Math.random() * 0.2 // Start off-screen
-      p.speed = 0.002 + Math.random() * 0.0035 // Slower speed
-      p.alpha = 0.15 + Math.random() * 0.25 // Highly translucent/dimmer core
-      p.beamLength = 100 + Math.random() * 120
-      // Faint high-tech light colors (white and cyan/teal glow)
-      p.colorCore = `rgba(255, 255, 255, ${p.alpha})`
-      p.colorGlow = `rgba(6, 182, 212, ${p.alpha * 0.3})`
-    }
-
-    for (let i = 0; i < pulseCount; i++) {
-      pulses.push({
-        stripeIndex: 0,
-        progress: 0,
-        speed: 0,
-        alpha: 0,
-        beamLength: 0,
-        colorCore: '',
-        colorGlow: '',
-      })
-      resetPulse(pulses[i])
-      // Randomize initial progress to space them out at the start
-      pulses[i].progress = Math.random()
-    }
-
-    const render = () => {
-      ctx.clearRect(0, 0, width, height)
-
-      const totalStripes = Math.ceil((width + height) / stripeSpacing) + 5
-
-      // 1. Draw static background diagonal stripes (subtler line opacity)
-      ctx.lineWidth = 1
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.006)'
-      for (let i = -2; i < totalStripes; i++) {
-        const { x1, y1, x2, y2 } = getStripeCoords(i)
-        ctx.beginPath()
-        ctx.moveTo(x1, y1)
-        ctx.lineTo(x2, y2)
-        ctx.stroke()
-      }
-
-      // 2. Draw active light transmission pulses traveling down the stripes
-      pulses.forEach((p) => {
-        p.progress += p.speed
-        if (p.progress > 1.2) {
-          resetPulse(p)
-        }
-
-        const { x1, y1, x2, y2 } = getStripeCoords(p.stripeIndex)
-
-        // Calculate visual progression coordinates
-        const progressX = x1 + p.progress * height
-        const progressY = p.progress * height
-
-        // Convert beam length to progress ratios
-        const halfLengthRatio = (p.beamLength / 2) / height
-        const pStart = Math.max(0, p.progress - halfLengthRatio)
-        const pEnd = Math.min(1, p.progress + halfLengthRatio)
-
-        if (pEnd > pStart) {
-          const sx = x1 + pStart * height
-          const sy = pStart * height
-          const ex = x1 + pEnd * height
-          const ey = pEnd * height
-
-          // Draw neon glowing trace
-          const gradient = ctx.createLinearGradient(sx, sy, ex, ey)
-          gradient.addColorStop(0, 'rgba(6, 182, 212, 0)')
-          gradient.addColorStop(0.3, p.colorGlow)
-          gradient.addColorStop(0.5, p.colorCore) // Bright white laser-like traveling core
-          gradient.addColorStop(0.7, p.colorGlow)
-          gradient.addColorStop(1, 'rgba(6, 182, 212, 0)')
-
-          ctx.lineWidth = 2.5
-          ctx.strokeStyle = gradient
-          ctx.beginPath()
-          ctx.moveTo(sx, sy)
-          ctx.lineTo(ex, ey)
-          ctx.stroke()
-
-          // Draw an S-rank bright focus particle in the center of the beam
-          if (p.progress >= 0 && p.progress <= 1) {
-            ctx.fillStyle = '#ffffff'
-            ctx.shadowBlur = 12
-            ctx.shadowColor = 'rgba(6, 182, 212, 0.8)'
-            ctx.beginPath()
-            ctx.arc(progressX, progressY, 1.8, 0, Math.PI * 2)
-            ctx.fill()
-            
-            // Reset canvas shadow state to prevent performance degradation
-            ctx.shadowBlur = 0
-          }
-        }
-      })
-
-      animationFrameId = requestAnimationFrame(render)
-    }
-
-    render()
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      cancelAnimationFrame(animationFrameId)
-    }
-  }, [])
-
-  useEffect(() => {
-    // 3D container scroll parallax animation using GPU-accelerated CSS transitions
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.skills-spline-wrapper',
-        { rotation: 0, scale: 1.05, y: -50 },
-        {
-          rotation: -40, // Rotate opposite direction
-          scale: 1.25,   // Zoom in parallax
-          y: 100,        // Downward vertical displacement
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '#skills',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.2,
-          }
-        }
-      )
-    })
-    return () => ctx.revert()
-  }, [])
-
-  function onSplineLoad(app: any) {
-    splineApp.current = app
-
-    // Hook scroll updates to animate properties of the 3D spline scene dynamically
-    gsap.to({}, {
-      scrollTrigger: {
-        trigger: '#skills',
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1.2, // Smooth scrubbing interaction
-        onUpdate: (self) => {
-          if (!splineApp.current) return
-          try {
-            const camera = splineApp.current.findObjectByName('Camera')
-            if (camera) {
-              // Rotate camera on Y-axis as user scrolls down, and tilt vertically
-              camera.rotation.y = self.progress * Math.PI * 0.8 // Elegant 144 degree camera orbit
-              camera.rotation.x = -0.3 + self.progress * 0.4 // Subtle vertical swing
-            } else {
-              // Fallback: zoom scene dynamically
-              splineApp.current.setZoom(1.0 + self.progress * 0.2)
-            }
-          } catch (e) {
-            try {
-              splineApp.current.setZoom(1.0 + self.progress * 0.15)
-            } catch (err) {}
-          }
-        }
-      }
-    })
-  }
-
-  // Scroll-triggered entrance animations for content elements
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Section header fade-up
-      gsap.fromTo('#skills .section-label, #skills .section-heading',
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power2.out',
-          scrollTrigger: { trigger: '#skills', start: 'top 85%', once: true }
-        }
-      )
-      // GitHub status badge
-      gsap.fromTo('#skills [style*="LINK"]',
-        { opacity: 0, x: 20 },
-        { opacity: 1, x: 0, duration: 0.6, delay: 0.3, ease: 'power2.out',
-          scrollTrigger: { trigger: '#skills', start: 'top 85%', once: true }
-        }
-      )
-    })
-    return () => ctx.revert()
-  }, [])
-
   // Real-time aggregation engine that runs when GitHub query returns data
   useEffect(() => {
     // 1. High-fidelity static database (always acts as solid baseline / zero-network fallback)
     const defaultSkills: Skill[] = [
-      { name: 'Python',      icon: 'devicon-python-plain colored',      level: 94, baseLevel: 88, category: 'Language', keywords: ['python', 'py'], githubCount: 2 },
-      { name: 'TypeScript',  icon: 'devicon-typescript-plain colored',  level: 82, baseLevel: 82, category: 'Language', keywords: ['typescript', 'ts'], githubCount: 0 },
-      { name: 'JavaScript',  icon: 'devicon-javascript-plain colored',  level: 85, baseLevel: 85, category: 'Language', keywords: ['javascript', 'js'], githubCount: 0 },
-      { name: 'Java',        icon: 'devicon-java-plain colored',        level: 83, baseLevel: 80, category: 'Language', keywords: ['java'], githubCount: 1 },
-      { name: 'C',           icon: 'devicon-c-plain colored',           level: 73, baseLevel: 70, category: 'Language', keywords: [' c ', '^c$', 'gcc', 'clang'], githubCount: 1 },
-      { name: 'C++',         icon: 'devicon-cplusplus-plain colored',   level: 81, baseLevel: 72, category: 'Language', keywords: ['cpp', 'c\\+\\+', 'g\\+\\+'], githubCount: 3 },
-      { name: 'R',           icon: 'devicon-r-plain colored',           level: 65, baseLevel: 65, category: 'Language', keywords: [' r ', '^r$', 'rstudio'], githubCount: 0 },
-      { name: 'React',       icon: 'devicon-react-original colored',    level: 87, baseLevel: 87, category: 'Frontend', keywords: ['react', 'vite', 'nextjs'], githubCount: 0 },
+      { name: 'Python', icon: 'devicon-python-plain colored', level: 94, baseLevel: 88, category: 'Language', keywords: ['python', 'py'], githubCount: 2 },
+      { name: 'TypeScript', icon: 'devicon-typescript-plain colored', level: 82, baseLevel: 82, category: 'Language', keywords: ['typescript', 'ts'], githubCount: 0 },
+      { name: 'JavaScript', icon: 'devicon-javascript-plain colored', level: 85, baseLevel: 85, category: 'Language', keywords: ['javascript', 'js'], githubCount: 0 },
+      { name: 'Java', icon: 'devicon-java-plain colored', level: 83, baseLevel: 80, category: 'Language', keywords: ['java'], githubCount: 1 },
+      { name: 'C', icon: 'devicon-c-plain colored', level: 73, baseLevel: 70, category: 'Language', keywords: [' c ', '^c$', 'gcc', 'clang'], githubCount: 1 },
+      { name: 'C++', icon: 'devicon-cplusplus-plain colored', level: 81, baseLevel: 72, category: 'Language', keywords: ['cpp', 'c\\+\\+', 'g\\+\\+'], githubCount: 3 },
+      { name: 'R', icon: 'devicon-r-plain colored', level: 65, baseLevel: 65, category: 'Language', keywords: [' r ', '^r$', 'rstudio'], githubCount: 0 },
+      { name: 'React', icon: 'devicon-react-original colored', level: 87, baseLevel: 87, category: 'Frontend', keywords: ['react', 'vite', 'nextjs'], githubCount: 0 },
       { name: 'TailwindCSS', icon: 'devicon-tailwindcss-plain colored', level: 84, baseLevel: 84, category: 'Frontend', keywords: ['tailwind', 'css'], githubCount: 0 },
-      { name: 'HTML5',       icon: 'devicon-html5-plain colored',       level: 95, baseLevel: 86, category: 'Frontend', keywords: ['html', 'web', 'frontend'], githubCount: 3 },
-      { name: 'Node.js',     icon: 'devicon-nodejs-plain colored',      level: 80, baseLevel: 80, category: 'Backend',  keywords: ['node', 'express', 'backend'], githubCount: 0 },
-      { name: 'FastAPI',     icon: 'devicon-fastapi-plain colored',     level: 75, baseLevel: 75, category: 'Backend',  keywords: ['fastapi', 'python', 'api'], githubCount: 0 },
-      { name: 'Express.js',  icon: 'devicon-express-original colored',  level: 78, baseLevel: 78, category: 'Backend',  keywords: ['express', 'node', 'api'], githubCount: 0 },
-      { name: 'Azure',       icon: 'devicon-azure-plain colored',       level: 70, baseLevel: 70, category: 'Cloud',    keywords: ['azure', 'cloud', 'deployment'], githubCount: 0 },
-      { name: 'Supabase',    icon: 'devicon-supabase-plain colored',    level: 76, baseLevel: 76, category: 'Cloud',    keywords: ['supabase', 'database', 'postgres'], githubCount: 0 },
-      { name: 'PostgreSQL',  icon: 'devicon-postgresql-plain colored',  level: 74, baseLevel: 74, category: 'Cloud',    keywords: ['postgres', 'sql', 'database'], githubCount: 0 },
-      { name: 'Git',         icon: 'devicon-git-plain colored',         level: 95, baseLevel: 85, category: 'Tools',    keywords: ['git', 'github', 'version'], githubCount: 12 },
-      { name: 'Docker',      icon: 'devicon-docker-plain colored',      level: 65, baseLevel: 65, category: 'Tools',    keywords: ['docker', 'container', 'compose'], githubCount: 0 },
-      { name: 'Figma',       icon: 'devicon-figma-plain colored',       level: 72, baseLevel: 72, category: 'Tools',    keywords: ['figma', 'design', 'ui', 'ux'], githubCount: 0 },
-      { name: 'Linux',       icon: 'devicon-linux-plain colored',       level: 80, baseLevel: 80, category: 'Tools',    keywords: ['linux', 'ubuntu', 'bash', 'shell'], githubCount: 0 },
+      { name: 'HTML5', icon: 'devicon-html5-plain colored', level: 95, baseLevel: 86, category: 'Frontend', keywords: ['html', 'web', 'frontend'], githubCount: 3 },
+      { name: 'Node.js', icon: 'devicon-nodejs-plain colored', level: 80, baseLevel: 80, category: 'Backend', keywords: ['node', 'express', 'backend'], githubCount: 0 },
+      { name: 'FastAPI', icon: 'devicon-fastapi-plain colored', level: 75, baseLevel: 75, category: 'Backend', keywords: ['fastapi', 'python', 'api'], githubCount: 0 },
+      { name: 'Express.js', icon: 'devicon-express-original colored', level: 78, baseLevel: 78, category: 'Backend', keywords: ['express', 'node', 'api'], githubCount: 0 },
+      { name: 'Azure', icon: 'devicon-azure-plain colored', level: 70, baseLevel: 70, category: 'Cloud', keywords: ['azure', 'cloud', 'deployment'], githubCount: 0 },
+      { name: 'Supabase', icon: 'devicon-supabase-plain colored', level: 76, baseLevel: 76, category: 'Cloud', keywords: ['supabase', 'database', 'postgres'], githubCount: 0 },
+      { name: 'PostgreSQL', icon: 'devicon-postgresql-plain colored', level: 74, baseLevel: 74, category: 'Cloud', keywords: ['postgres', 'sql', 'database'], githubCount: 0 },
+      { name: 'Git', icon: 'devicon-git-plain colored', level: 95, baseLevel: 85, category: 'Tools', keywords: ['git', 'github', 'version'], githubCount: 12 },
+      { name: 'Docker', icon: 'devicon-docker-plain colored', level: 65, baseLevel: 65, category: 'Tools', keywords: ['docker', 'container', 'compose'], githubCount: 0 },
+      { name: 'Figma', icon: 'devicon-figma-plain colored', level: 72, baseLevel: 72, category: 'Tools', keywords: ['figma', 'design', 'ui', 'ux'], githubCount: 0 },
+      { name: 'Linux', icon: 'devicon-linux-plain colored', level: 80, baseLevel: 80, category: 'Tools', keywords: ['linux', 'ubuntu', 'bash', 'shell'], githubCount: 0 },
     ]
 
     if (!repos || repos.length === 0) {
@@ -534,7 +113,7 @@ export default function Skills() {
 
         // Check if primary language matches
         if (
-          primaryLang === key || 
+          primaryLang === key ||
           (key === 'cpp' && primaryLang === 'c++') ||
           (key === 'html5' && primaryLang === 'html')
         ) {
@@ -574,7 +153,7 @@ export default function Skills() {
     const compiledSkills: Skill[] = []
     Object.entries(TECH_MAP).forEach(([key, tech]) => {
       const { repoCount, stars } = stats[key]
-      
+
       // Calculate dynamic level boost: +3% proficiency per matching public repository, up to max 95%
       const levelBoost = repoCount * 3
       const level = Math.min(95, tech.baseLevel + levelBoost)
@@ -609,208 +188,28 @@ export default function Skills() {
       return true
     })
 
+
   return (
-    <section id="skills" style={{
-      padding: '96px 64px 80px',
-      background: 'var(--dungeon)',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* HTML5 Cybernetic Diagonal Stripe Light Travelling Canvas - Limited to Screen Sides */}
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 2,
-          pointerEvents: 'none',
-          opacity: 0.85,
-          maskImage: 'linear-gradient(to right, black 0%, transparent 18%, transparent 82%, black 100%)',
-          WebkitMaskImage: 'linear-gradient(to right, black 0%, transparent 18%, transparent 82%, black 100%)',
-        }}
-      />
-
-      {/* 3D Interactive Spline Background Canvas */}
-      <Suspense fallback={null}>
-        <div className="skills-spline-wrapper" style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: 'none',
-          opacity: 0.16, // Premium soft cyber visibility
-          willChange: 'transform',
-        }}>
-          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
-        </div>
-      </Suspense>
-
-      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 5 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40, flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <p className="section-label">// SYSTEM.SKILLS</p>
-            <h2 className="section-heading" style={{ margin: 0 }}>Arsenal</h2>
-          </div>
-          {isLoading ? (
-            <span style={{
-              fontFamily: 'Share Tech Mono, monospace',
-              fontSize: '12px',
-              color: 'var(--teal)',
-              textShadow: '0 0 8px rgba(6,182,212,0.4)',
-              background: 'rgba(6,182,212,0.05)',
-              padding: '6px 12px',
-              border: '1px solid rgba(6,182,212,0.2)',
-              borderRadius: '4px',
-            }}>
-              ⚙️ SCANNING GITHUB SYSTEM STATS...
-            </span>
-          ) : repos.length > 0 ? (
-            <span style={{
-              fontFamily: 'Share Tech Mono, monospace',
-              fontSize: '12px',
-              color: 'var(--teal)',
-              textShadow: '0 0 8px rgba(6,182,212,0.4)',
-              background: 'rgba(6,182,212,0.05)',
-              padding: '6px 12px',
-              border: '1px solid rgba(6,182,212,0.25)',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              boxShadow: '0 0 10px rgba(6,182,212,0.1)'
-            }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--teal)', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-              <span>LINK ACTIVE: GITHUB SECURED</span>
-            </span>
-          ) : (
-            <span style={{
-              fontFamily: 'Share Tech Mono, monospace',
-              fontSize: '12px',
-              color: 'var(--gold)',
-              textShadow: '0 0 8px rgba(251,191,36,0.4)',
-              background: 'rgba(251,191,36,0.05)',
-              padding: '6px 12px',
-              border: '1px solid rgba(251,191,36,0.2)',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}>
-              <span>⚠️ LINK OFFLINE: RESILIENT CACHE ENGAGED</span>
-            </span>
-          )}
-        </div>
-
-        {/* Telemetry/Filter Categorization Toggles */}
-        <div style={{ 
-          display: 'flex', 
-          gap: 12, 
-          flexWrap: 'wrap', 
-          marginBottom: 32, 
-          borderBottom: '1px solid rgba(255, 255, 255, 0.05)', 
-          paddingBottom: 20 
-        }}>
-          {/* Tech category pills */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: '1 1 auto' }}>
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                style={{
-                  fontFamily: 'Share Tech Mono, monospace',
-                  fontSize: 11,
-                  padding: '6px 14px',
-                  borderRadius: 4,
-                  border: activeCategory === cat ? '1px solid var(--gate)' : '1px solid var(--border)',
-                  background: activeCategory === cat ? 'rgba(59,130,246,0.1)' : 'var(--mist)',
-                  color: activeCategory === cat ? 'white' : 'var(--stone)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {cat.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          {/* Telemetry class filter pills */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ 
-              fontFamily: 'Share Tech Mono, monospace', 
-              fontSize: 11, 
-              color: 'var(--stone)', 
-              marginRight: 4 
-            }}>
-              CLASS:
-            </span>
-            {(['All', 'Vibe Coded', 'Hardcoded'] as const).map(type => (
-              <button
-                key={type}
-                onClick={() => setVibeFilter(type)}
-                style={{
-                  fontFamily: 'Share Tech Mono, monospace',
-                  fontSize: 11,
-                  padding: '6px 14px',
-                  borderRadius: 4,
-                  border: vibeFilter === type 
-                    ? (type === 'Vibe Coded' ? '1px solid var(--teal)' : '1px solid var(--monarch)') 
-                    : '1px solid var(--border)',
-                  background: vibeFilter === type 
-                    ? (type === 'Vibe Coded' ? 'rgba(6,182,212,0.1)' : 'rgba(124,58,237,0.1)') 
-                    : 'var(--mist)',
-                  color: vibeFilter === type 
-                    ? (type === 'Vibe Coded' ? 'var(--teal)' : 'var(--monarch)') 
-                    : 'var(--stone)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  textShadow: vibeFilter === type ? '0 0 4px currentColor' : 'none'
-                }}
-              >
-                {type.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Grid */}
-        <motion.div
-          layout
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-            gap: 12,
-          }}
-        >
-          <AnimatePresence mode="popLayout">
-            {filtered.map((skill, i) => (
-              <SkillCard
-                key={skill.name}
-                skill={skill}
-                index={i}
-              />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+    <section id="skills" className="arsenal-section">
+      <div className="arsenal-heading">
+        <div><p className="section-label">// SYSTEM.SKILLS</p><h2 className="section-heading">Arsenal</h2></div>
+        <p className="arsenal-status" role="status">
+          <span className={isLoading ? 'is-scanning' : ''} />
+          {isLoading ? 'Syncing skills with GitHub' : repos.length ? 'Connected to GitHub' : 'Showing saved skills'}
+        </p>
       </div>
-
-      <style>{`
-        #skills {
-          background-image: 
-          radial-gradient(rgba(59, 130, 246, 0.012) 1px, transparent 0),
-          radial-gradient(rgba(124, 58, 237, 0.012) 1px, transparent 0);
-          background-size: 20px 20px;
-          background-position: 0 0, 10px 10px;
-        }
-        @keyframes pulse {
-          0% { opacity: 0.35; }
-          50% { opacity: 1; }
-          100% { opacity: 0.35; }
-        }
-        @media (max-width: 768px) {
-          #skills { padding: 96px 24px 64px !important; }
-        }
-      `}</style>
+      <div className="arsenal-intro"><h3>Every skill.<br /><span>A new possibility.</span></h3><p>The tools behind the ideas.<br />Explore my evolving arsenal.</p></div>
+      <div className="arsenal-filters">
+        <div role="group" aria-label="Skill category">
+          {CATEGORIES.map(category => <button key={category} type="button" aria-pressed={activeCategory === category} onClick={() => setActiveCategory(category)}>{category}</button>)}
+        </div>
+        <label>Experience
+          <select aria-label="Filter skill experience" value={vibeFilter} onChange={event => setVibeFilter(event.target.value as typeof vibeFilter)}>
+            <option value="All">All skills</option><option value="Vibe Coded">Used in repositories</option><option value="Hardcoded">Other skills</option>
+          </select>
+        </label>
+      </div>
+      <ArsenalScene skills={filtered} loading={isLoading} />
     </section>
   )
 }

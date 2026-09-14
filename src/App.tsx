@@ -14,6 +14,8 @@ import Publications from './components/Publications'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import SystemEntry from './components/SystemEntry'
+import ScrollMotionLoader from './components/ScrollMotionLoader'
+import ParallaxBackground from './components/ParallaxBackground'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -28,20 +30,26 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false)
   const [showScrollTop, setShowScrollTop] = useState(false)
 
-  // Scroll listener to show/hide go-up button
+  // Scroll listener to show/hide go-up button with throttling
   useEffect(() => {
     if (!hasEntered) return
 
+    let ticking = false
     const handleScroll = () => {
-      // Appear exactly after scrolling out of the Hero section (which is 100vh)
-      if (window.scrollY > window.innerHeight - 80) {
-        setShowScrollTop(true)
-      } else {
-        setShowScrollTop(false)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY > window.innerHeight - 80) {
+            setShowScrollTop(true)
+          } else {
+            setShowScrollTop(false)
+          }
+          ticking = false
+        })
+        ticking = true
       }
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [hasEntered])
 
@@ -94,60 +102,85 @@ export default function App() {
     }
   }, [hasEntered])
 
-  // Global scroll-driven section entrance animations
+  // Global scroll-driven multi-plane section parallax animations (60fps)
   useEffect(() => {
     if (!hasEntered) return
 
     const ctx = gsap.context(() => {
-      // Animate each content section as it scrolls into view
       const sections = ['#skills', '#marquee-banner', '#projects', '#wins', '#events', '#publications', '#contact']
       
       sections.forEach((selector) => {
         const el = document.querySelector(selector)
         if (!el) return
 
+        // Section container entry motion
         gsap.fromTo(el,
           { 
             opacity: 0, 
-            y: 60,
-            scale: 0.97,
+            y: 45,
+            scale: 0.985,
           },
           {
             opacity: 1,
             y: 0,
             scale: 1,
-            duration: 0.9,
-            ease: 'power3.out',
+            duration: 0.75,
+            ease: 'power2.out',
+            force3D: true,
             scrollTrigger: {
               trigger: el,
-              start: 'top 90%',
+              start: 'top 88%',
               end: 'top 50%',
-              toggleActions: 'restart none none reset',
+              toggleActions: 'play none none reverse',
             }
           }
         )
       })
 
-      // Smooth parallax depth effect on all sections during scroll
+      // Multi-plane parallax shifts on section sub-elements during scroll
       const parallaxSections = document.querySelectorAll('section[id]')
       parallaxSections.forEach((section) => {
         const id = section.getAttribute('id')
-        if (id === 'hero') return // Hero already has its own parallax
+        if (id === 'hero') return
 
-        // Create a subtle vertical parallax shift as each section scrolls through viewport
-        gsap.fromTo(section.querySelector('.section-label, .section-heading') || section,
-          { y: 30 },
-          {
-            y: 0,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top bottom',
-              end: 'top center',
-              scrub: 0.8,
+        const heading = section.querySelector('.section-label, .section-heading')
+        const bgDeco = section.querySelector('.room-atmosphere, canvas, .marquee-3d-container')
+
+        // Header parallax float
+        if (heading) {
+          gsap.fromTo(heading,
+            { y: 35 },
+            {
+              y: -25,
+              ease: 'none',
+              force3D: true,
+              scrollTrigger: {
+                trigger: section,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: 0.6,
+              }
             }
-          }
-        )
+          )
+        }
+
+        // Background decorative element parallax shift
+        if (bgDeco) {
+          gsap.fromTo(bgDeco,
+            { y: -50 },
+            {
+              y: 50,
+              ease: 'none',
+              force3D: true,
+              scrollTrigger: {
+                trigger: section,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: 1.1,
+              }
+            }
+          )
+        }
       })
     })
 
@@ -173,10 +206,21 @@ export default function App() {
           to { opacity: 1; transform: none; }
         }
         .main-reveal {
-          animation: mainFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: mainFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          will-change: opacity, transform;
+          position: relative;
+          z-index: 1;
+        }
+        section[id] {
+          will-change: transform, opacity;
+          transform: translate3d(0, 0, 0);
+          position: relative;
+          z-index: 2;
         }
       ` }} />
+      <ParallaxBackground />
       <div className="main-reveal">
+        <ScrollMotionLoader />
         <Navbar />
         <main>
           <Hero isMuted={isMuted} toggleMute={toggleMute} />

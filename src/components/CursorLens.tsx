@@ -40,15 +40,15 @@ export default function CursorLens({
     blobOutlineColor = "rgba(59, 130, 246, 0.3)",
     parallaxStrength = 8,
     showBackground = true,
-    bgBlobCount = 12,
+    bgBlobCount = 8,
     bgBlobSize = 100,
-    bgBlobComplexity = 40,
+    bgBlobComplexity = 25,
     bgBlobSpeed = 0.7,
     blobStrokeWidth = 1.5,
     previewCursor = false,
     blobSize = 120,
     shapeComplexity = 0.7,
-    roughness = 15,
+    roughness = 12,
     speed = 250,
     viscosity = 1.2,
     scale = 1.0,
@@ -58,10 +58,64 @@ export default function CursorLens({
     const [isHovering, setIsHovering] = React.useState(false)
     const isActive = isHovering || previewCursor
 
-    // Reference to the container for coordinate math
+    // Container reference and cached bounding boxes to prevent layout thrashing
     const containerRef = React.useRef<HTMLDivElement>(null)
+    const boundsRef = React.useRef<{
+        width: number
+        height: number
+        left: number
+        top: number
+        targetLeft: number
+        targetRight: number
+        targetTop: number
+        targetBottom: number
+    }>({
+        width: 1,
+        height: 1,
+        left: 0,
+        top: 0,
+        targetLeft: 0,
+        targetRight: 0,
+        targetTop: 0,
+        targetBottom: 0,
+    })
 
-    // --- 1. SETUP BACKGROUND BLOBS ---
+    // Update cached bounds efficiently on resize and scroll
+    const updateBounds = React.useCallback(() => {
+        if (!containerRef.current) return
+        const rect = containerRef.current.getBoundingClientRect()
+        const targetEl = trackingTargetId ? document.getElementById(trackingTargetId) : null
+        const targetRect = targetEl ? targetEl.getBoundingClientRect() : rect
+
+        boundsRef.current = {
+            width: rect.width || 1,
+            height: rect.height || 1,
+            left: rect.left,
+            top: rect.top,
+            targetLeft: targetRect.left,
+            targetRight: targetRect.right,
+            targetTop: targetRect.top,
+            targetBottom: targetRect.bottom,
+        }
+    }, [trackingTargetId])
+
+    React.useEffect(() => {
+        updateBounds()
+        let rafId: number
+        const onResizeOrScroll = () => {
+            cancelAnimationFrame(rafId)
+            rafId = requestAnimationFrame(updateBounds)
+        }
+        window.addEventListener("resize", onResizeOrScroll, { passive: true })
+        window.addEventListener("scroll", onResizeOrScroll, { passive: true })
+        return () => {
+            cancelAnimationFrame(rafId)
+            window.removeEventListener("resize", onResizeOrScroll)
+            window.removeEventListener("scroll", onResizeOrScroll)
+        }
+    }, [updateBounds])
+
+    // --- 1. BACKGROUND BLOBS ---
     const random = (min: number, max: number) => Math.random() * (max - min) + min
 
     const backgroundBlobs = React.useMemo(() => {
@@ -89,7 +143,7 @@ export default function CursorLens({
     const mouseXRatio = useMotionValue(0)
     const mouseYRatio = useMotionValue(0)
 
-    const smoothOptions = { damping: 50, stiffness: 400 }
+    const smoothOptions = { damping: 40, stiffness: 350 }
     const smoothX = useSpring(mouseXRatio, smoothOptions)
     const smoothY = useSpring(mouseYRatio, smoothOptions)
 
@@ -103,100 +157,89 @@ export default function CursorLens({
         [-1, 1],
         [parallaxStrength, -parallaxStrength]
     )
-    const revealX = useTransform(
-        smoothX,
-        [-1, 1],
-        [parallaxStrength * 2.5, -parallaxStrength * 2.5]
-    )
-    const revealY = useTransform(
-        smoothY,
-        [-1, 1],
-        [parallaxStrength * 2.5, -parallaxStrength * 2.5]
-    )
 
-    // --- 2.5. AUTOMATIC IDLE PREVIEW ANIMATION ---
-    // If the user is not actively hovering, we smoothly glide the lens in a slow, S-rank
-    // figure-8 loop (Lissajous curve) to keep the portal alive and display the 3D effect.
+    // --- 2.5. AUTOMATIC IDLE PREVIEW ANIMATION (USES CACHED BOUNDS) ---
     useAnimationFrame((t) => {
-        if (!isHovering && containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect()
-            const centerX = rect.width / 2
-            const centerY = rect.height / 2
+        if (!isHovering && boundsRef.current.width > 1) {
+            const { width, height } = boundsRef.current
+            const centerX = width / 2
+            const centerY = height / 2
 
-            // Figure-8 pattern parameters
-            const radiusX = rect.width * 0.22
-            const radiusY = rect.height * 0.22
-            const speedX = 0.0008 // Elegant slow sweeping speed
-            const speedY = 0.0016 // Twice as fast in Y for figure-8 geometry
+            const radiusX = width * 0.22
+            const radiusY = height * 0.22
+            const speedX = 0.0008
+            const speedY = 0.0016
 
             const x = centerX + Math.sin(t * speedX) * radiusX
             const y = centerY + Math.sin(t * speedY) * radiusY
 
             mouseX.set(x)
             mouseY.set(y)
-            mouseXRatio.set((x / rect.width) * 2 - 1)
-            mouseYRatio.set((y / rect.height) * 2 - 1)
+            mouseXRatio.set((x / width) * 2 - 1)
+            mouseYRatio.set((y / height) * 2 - 1)
         }
     })
 
-    // --- 3. GLOBAL TRACKING LOGIC ---
+    // --- 3. THROTTLED GLOBAL MOUSE TRACKING ---
     React.useEffect(() => {
+        let mouseRafId: number | null = null
+
         const handleGlobalMove = (e: MouseEvent | TouchEvent) => {
-            if (!containerRef.current) return
+            if (mouseRafId !== null) return
 
-            const rect = containerRef.current.getBoundingClientRect()
-            
-            let clientX: number
-            let clientY: number
+            mouseRafId = requestAnimationFrame(() => {
+                mouseRafId = null
+                const bounds = boundsRef.current
 
-            if ("touches" in e && e.touches.length > 0) {
-                clientX = e.touches[0].clientX
-                clientY = e.touches[0].clientY
-            } else if ("clientX" in e) {
-                clientX = (e as MouseEvent).clientX
-                clientY = (e as MouseEvent).clientY
-            } else {
-                return
-            }
+                let clientX: number
+                let clientY: number
 
-            // Check if the mouse is physically inside the designated target area (e.g. entire hero section)
-            const targetEl = trackingTargetId ? document.getElementById(trackingTargetId) : null
-            const targetRect = targetEl ? targetEl.getBoundingClientRect() : rect
+                if ("touches" in e && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX
+                    clientY = e.touches[0].clientY
+                } else if ("clientX" in e) {
+                    clientX = (e as MouseEvent).clientX
+                    clientY = (e as MouseEvent).clientY
+                } else {
+                    return
+                }
 
-            const isInside =
-                clientX >= targetRect.left &&
-                clientX <= targetRect.right &&
-                clientY >= targetRect.top &&
-                clientY <= targetRect.bottom
+                const isInside =
+                    clientX >= bounds.targetLeft &&
+                    clientX <= bounds.targetRight &&
+                    clientY >= bounds.targetTop &&
+                    clientY <= bounds.targetBottom
 
-            setIsHovering(isInside)
+                setIsHovering(isInside)
 
-            if (isInside) {
-                const x = clientX - rect.left
-                const y = clientY - rect.top
+                if (isInside) {
+                    const x = clientX - bounds.left
+                    const y = clientY - bounds.top
 
-                mouseX.set(x)
-                mouseY.set(y)
-                mouseXRatio.set((x / rect.width) * 2 - 1)
-                mouseYRatio.set((y / rect.height) * 2 - 1)
-            } else {
-                mouseXRatio.set(0)
-                mouseYRatio.set(0)
-            }
+                    mouseX.set(x)
+                    mouseY.set(y)
+                    mouseXRatio.set((x / bounds.width) * 2 - 1)
+                    mouseYRatio.set((y / bounds.height) * 2 - 1)
+                } else {
+                    mouseXRatio.set(0)
+                    mouseYRatio.set(0)
+                }
+            })
         }
 
-        window.addEventListener("mousemove", handleGlobalMove)
-        window.addEventListener("touchstart", handleGlobalMove)
-        window.addEventListener("touchmove", handleGlobalMove)
+        window.addEventListener("mousemove", handleGlobalMove, { passive: true })
+        window.addEventListener("touchstart", handleGlobalMove, { passive: true })
+        window.addEventListener("touchmove", handleGlobalMove, { passive: true })
 
         return () => {
+            if (mouseRafId !== null) cancelAnimationFrame(mouseRafId)
             window.removeEventListener("mousemove", handleGlobalMove)
             window.removeEventListener("touchstart", handleGlobalMove)
             window.removeEventListener("touchmove", handleGlobalMove)
         }
-    }, [mouseX, mouseY, mouseXRatio, mouseYRatio, trackingTargetId])
+    }, [mouseX, mouseY, mouseXRatio, mouseYRatio])
 
-    // --- 4. FLUID CURSOR PHYSICS ---
+    // --- 4. FLUID CURSOR WAKE PHYSICS ---
     const time = useTime()
 
     const createWake = (index: number) => {
@@ -249,7 +292,7 @@ export default function CursorLens({
                                 <feTurbulence
                                     type="fractalNoise"
                                     baseFrequency="0.008"
-                                    numOctaves="3"
+                                    numOctaves="1"
                                     result="noise"
                                 />
                                 <feDisplacementMap
@@ -288,7 +331,7 @@ export default function CursorLens({
                                     fill="none"
                                     stroke={blobOutlineColor}
                                     strokeWidth={blobStrokeWidth}
-                                    strokeOpacity={0.5}
+                                    strokeOpacity={0.4}
                                 />
                             ))}
                         </g>
@@ -307,7 +350,7 @@ export default function CursorLens({
                         <feTurbulence
                             type="fractalNoise"
                             baseFrequency="0.015"
-                            numOctaves="2"
+                            numOctaves="1"
                             result="noise"
                         />
                         <feDisplacementMap
@@ -320,13 +363,13 @@ export default function CursorLens({
                         />
                         <feGaussianBlur
                             in="distorted"
-                            stdDeviation="12"
+                            stdDeviation="8"
                             result="blur"
                         />
                         <feColorMatrix
                             in="blur"
                             mode="matrix"
-                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"
+                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
                             result="goo"
                         />
                         <feComposite
@@ -352,99 +395,38 @@ export default function CursorLens({
                         <g filter={`url(#${cursorFilterId})`}>
                             <motion.g
                                 animate={{ opacity: isActive ? 1 : 0 }}
-                                transition={{ duration: 0.3 }}
+                                transition={{ duration: 0.25 }}
                             >
-                                <motion.circle
-                                    cx={sat1X}
-                                    cy={sat1Y}
-                                    r={blobSize * 0.6}
-                                    fill="white"
-                                />
-                                <motion.circle
-                                    cx={sat2X}
-                                    cy={sat2Y}
-                                    r={blobSize * 0.5}
-                                    fill="white"
-                                />
-                                <motion.circle
-                                    cx={head.x}
-                                    cy={head.y}
-                                    r={blobSize * 0.7}
-                                    fill="white"
-                                />
-                                <motion.circle
-                                    cx={body1.x}
-                                    cy={body1.y}
-                                    r={blobSize * 0.6}
-                                    fill="white"
-                                />
-                                <motion.circle
-                                    cx={body2.x}
-                                    cy={body2.y}
-                                    r={blobSize * 0.5}
-                                    fill="white"
-                                />
-                                <motion.circle
-                                    cx={tail.x}
-                                    cy={tail.y}
-                                    r={blobSize * 0.3}
-                                    fill="white"
-                                />
+                                <motion.circle cx={sat1X} cy={sat1Y} r={blobSize * 0.6} fill="white" />
+                                <motion.circle cx={sat2X} cy={sat2Y} r={blobSize * 0.5} fill="white" />
+                                <motion.circle cx={head.x} cy={head.y} r={blobSize * 0.7} fill="white" />
+                                <motion.circle cx={body1.x} cy={body1.y} r={blobSize * 0.6} fill="white" />
+                                <motion.circle cx={body2.x} cy={body2.y} r={blobSize * 0.5} fill="white" />
+                                <motion.circle cx={tail.x} cy={tail.y} r={blobSize * 0.3} fill="white" />
                             </motion.g>
                         </g>
                     </mask>
 
-                    {/* Subtractive mask for the base image layer (renders base image everywhere EXCEPT inside the hover portal circles) */}
                     <mask id={baseMaskId}>
                         <rect x="0" y="0" width="100%" height="100%" fill="white" />
                         <g filter={`url(#${cursorFilterId})`}>
                             <motion.g
                                 animate={{ opacity: isActive ? 1 : 0 }}
-                                transition={{ duration: 0.3 }}
+                                transition={{ duration: 0.25 }}
                             >
-                                <motion.circle
-                                    cx={sat1X}
-                                    cy={sat1Y}
-                                    r={blobSize * 0.6}
-                                    fill="black"
-                                />
-                                <motion.circle
-                                    cx={sat2X}
-                                    cy={sat2Y}
-                                    r={blobSize * 0.5}
-                                    fill="black"
-                                />
-                                <motion.circle
-                                    cx={head.x}
-                                    cy={head.y}
-                                    r={blobSize * 0.7}
-                                    fill="black"
-                                />
-                                <motion.circle
-                                    cx={body1.x}
-                                    cy={body1.y}
-                                    r={blobSize * 0.6}
-                                    fill="black"
-                                />
-                                <motion.circle
-                                    cx={body2.x}
-                                    cy={body2.y}
-                                    r={blobSize * 0.5}
-                                    fill="black"
-                                />
-                                <motion.circle
-                                    cx={tail.x}
-                                    cy={tail.y}
-                                    r={blobSize * 0.3}
-                                    fill="black"
-                                />
+                                <motion.circle cx={sat1X} cy={sat1Y} r={blobSize * 0.6} fill="black" />
+                                <motion.circle cx={sat2X} cy={sat2Y} r={blobSize * 0.5} fill="black" />
+                                <motion.circle cx={head.x} cy={head.y} r={blobSize * 0.7} fill="black" />
+                                <motion.circle cx={body1.x} cy={body1.y} r={blobSize * 0.6} fill="black" />
+                                <motion.circle cx={body2.x} cy={body2.y} r={blobSize * 0.5} fill="black" />
+                                <motion.circle cx={tail.x} cy={tail.y} r={blobSize * 0.3} fill="black" />
                             </motion.g>
                         </g>
                     </mask>
                 </defs>
             </svg>
 
-            {/* Base Image Layer (with subtractive mask applied to cut out the hover circles) */}
+            {/* Base Image Layer */}
             <div style={{ 
                 ...layerContainerStyle, 
                 mask: `url(#${baseMaskId})`,
@@ -464,7 +446,7 @@ export default function CursorLens({
                 />
             </div>
 
-            {/* Reveal Image Layer (with standard reveal mask applied to only show inside the hover circles) */}
+            {/* Reveal Image Layer */}
             <motion.div
                 style={{
                     ...layerContainerStyle,
@@ -501,7 +483,7 @@ export default function CursorLens({
                 <g filter={`url(#${cursorFilterId})`}>
                     <motion.g
                         animate={{ opacity: isActive ? 1 : 0 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.25 }}
                     >
                         <motion.circle
                             cx={sat1X}
@@ -509,8 +491,7 @@ export default function CursorLens({
                             r={blobSize * 0.6}
                             fill="none"
                             stroke="url(#portalOutlineGradient)"
-                            strokeWidth="5"
-                            style={{ filter: 'drop-shadow(0 0 10px rgba(124, 58, 237, 0.85)) drop-shadow(0 0 16px rgba(168, 85, 247, 0.6))' }}
+                            strokeWidth="4"
                         />
                         <motion.circle
                             cx={sat2X}
@@ -518,8 +499,7 @@ export default function CursorLens({
                             r={blobSize * 0.5}
                             fill="none"
                             stroke="url(#portalOutlineGradient)"
-                            strokeWidth="5"
-                            style={{ filter: 'drop-shadow(0 0 10px rgba(168, 85, 247, 0.85))' }}
+                            strokeWidth="4"
                         />
                         <motion.circle
                             cx={head.x}
@@ -527,8 +507,7 @@ export default function CursorLens({
                             r={blobSize * 0.7}
                             fill="none"
                             stroke="url(#portalOutlineGradient)"
-                            strokeWidth="6.5"
-                            style={{ filter: 'drop-shadow(0 0 14px rgba(124, 58, 237, 0.95)) drop-shadow(0 0 24px rgba(168, 85, 247, 0.75))' }}
+                            strokeWidth="5"
                         />
                         <motion.circle
                             cx={body1.x}
@@ -536,8 +515,7 @@ export default function CursorLens({
                             r={blobSize * 0.6}
                             fill="none"
                             stroke="url(#portalOutlineGradient)"
-                            strokeWidth="5"
-                            style={{ filter: 'drop-shadow(0 0 10px rgba(168, 85, 247, 0.85))' }}
+                            strokeWidth="4"
                         />
                         <motion.circle
                             cx={body2.x}
@@ -545,8 +523,7 @@ export default function CursorLens({
                             r={blobSize * 0.5}
                             fill="none"
                             stroke="url(#portalOutlineGradient)"
-                            strokeWidth="5"
-                            style={{ filter: 'drop-shadow(0 0 10px rgba(124, 58, 237, 0.85))' }}
+                            strokeWidth="4"
                         />
                         <motion.circle
                             cx={tail.x}
@@ -554,8 +531,7 @@ export default function CursorLens({
                             r={blobSize * 0.3}
                             fill="none"
                             stroke="url(#portalOutlineGradient)"
-                            strokeWidth="4"
-                            style={{ filter: 'drop-shadow(0 0 8px rgba(124, 58, 237, 0.8))' }}
+                            strokeWidth="3"
                         />
                     </motion.g>
                 </g>
@@ -570,6 +546,7 @@ const containerStyle: React.CSSProperties = {
     height: "100%",
     overflow: "hidden",
     borderRadius: "24px",
+    transform: "translate3d(0, 0, 0)",
 }
 
 const layerContainerStyle: React.CSSProperties = {
@@ -579,6 +556,7 @@ const layerContainerStyle: React.CSSProperties = {
     width: "100%",
     height: "100%",
     pointerEvents: "none",
+    transform: "translate3d(0, 0, 0)",
 }
 
 const imageStyle: React.CSSProperties = {
@@ -587,4 +565,7 @@ const imageStyle: React.CSSProperties = {
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     willChange: "transform",
+    transform: "translate3d(0, 0, 0)",
+    backfaceVisibility: "hidden",
 }
+

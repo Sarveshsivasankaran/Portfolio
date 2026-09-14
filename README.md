@@ -129,3 +129,5 @@ Runs a local web server to preview the built production bundle exactly as it wil
 ## LinkedIn activity management
 
 Wins & Activity now supports Supabase, Realtime, multi-image posts, and an authenticated `/admin/activities` editor. See [the setup and verification guide](docs/linkedin-activity-feed.md) for the migration, public environment variables, administrator allowlist, Storage policies, importing existing posts, and adding future activities without redeploying.
+
+See the [deployment-side daily import guide](docs/linkedin-daily-sync.md) for Vercel Cron, server configuration, feed requirements, and activation status. The Codex automation is paused; a server-accessible LinkedIn feed still needs to be connected.

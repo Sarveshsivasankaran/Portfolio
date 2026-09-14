@@ -8,8 +8,19 @@ dist
 linkedin_session.json
 *.html
 *.png
+!public/characters/*.png
 
 # Local test artifacts
 playwright-report/
 test-results/
 !tests/e2e/harness.html
+
+# Local LinkedIn sync ledger and prepared imports (no cookies or credentials)
+.linkedin-sync/
+
+# Local deployment metadata
+.vercel/
+supabase/.temp/
+
+.env.*
+!.env.example
