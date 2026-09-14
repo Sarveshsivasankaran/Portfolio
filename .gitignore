@@ -8,7 +8,8 @@ dist
 linkedin_session.json
 *.html
 *.png
-!public/characters/*.png
+!public/*.png
+!public/**/*.png
 
 # Local test artifacts
 playwright-report/
