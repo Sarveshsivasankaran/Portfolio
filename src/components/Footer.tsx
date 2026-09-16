@@ -34,7 +34,7 @@ export default function Footer() {
         marginBottom: 12,
       }}>
         <img 
-          src="/logo.png" 
+          src="logo.png" 
           alt="Sarvesh Sivasankaran Logo" 
           style={{ 
             height: '42px', 
