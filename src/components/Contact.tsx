@@ -460,7 +460,7 @@ export default function Contact() {
                   REWARDS:
                 </span>
                 <span style={{ color: 'var(--stone)', fontSize: 13, lineHeight: 1.5 }}>
-                  Collaborative synergy, top-tier engineering solutions, lightning-fast development, guild expansion.
+                  Engineering solutions, fast development, and long-term collaboration.
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 12 }}>

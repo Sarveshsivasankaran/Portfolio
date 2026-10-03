@@ -438,7 +438,7 @@ export default function Publications() {
               lineHeight: 1.6,
               margin: 0,
             }}>
-              A deep psychological and narrative dive into identity, human behavior, and the internal shadows we choose to reveal or lock away. <em>The Faces Behind Faces</em> uncovers the system of layers that humanity builds to adapt, survive, and pursue growth, while balancing ambition with isolation. Written by <strong>Sarvesh Sivasankaran (Solo-P-Leveller)</strong>, it translates emotional states into legendary chronicles of self-exploration.
+              A book exploring identity, human behavior, and the internal shadows we choose to reveal or lock away. <em>The Faces Behind Faces</em> examines how people adapt and grow while balancing ambition with isolation. Written by <strong>Sarvesh Sivasankaran (Solo-P-Leveller)</strong>.
             </p>
 
             {/* Book Theme Pill Badges */}

@@ -5,16 +5,16 @@ const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode
 
 const BOOT = [
   { t: "MONARCH OS — AWAKENING SEQUENCE INITIATED", c: "#4B5563", d: 0 },
-  { t: "LOADING DIMENSIONAL CORE... [OK]", c: "#4B5563", d: 550 },
-  { t: "SCANNING LOCAL MANA FREQUENCY...", c: "#6B7280", d: 1100 },
-  { t: "> FREQ: 9,847.33 Hz  [IRREGULAR]", c: "#3B82F6", d: 1650 },
-  { t: "CROSS-REFERENCING HUNTER REGISTRY...", c: "#6B7280", d: 2100 },
-  { t: "> STATUS: NOT REGISTERED  [ANOMALY]", c: "#F59E0B", d: 2600 },
-  { t: "WARNING — IRREGULAR MANA SIGNATURE DETECTED", c: "#DC2626", d: 3100 },
-  { t: "DIMENSIONAL RANK ASSESSMENT: IMMEASURABLE", c: "#7C3AED", d: 3650 },
-  { t: "INITIATING EMERGENCY PROTOCOL ARISE-7...", c: "#6B7280", d: 4100 },
-  { t: "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%", c: "#7C3AED", d: 4600 },
-  { t: "NEW PLAYER DETECTED — CALIBRATING SYSTEM...", c: "#06B6D4", d: 5100 },
+  { t: "LOADING DIMENSIONAL CORE... [OK]", c: "#4B5563", d: 200 },
+  { t: "SCANNING LOCAL MANA FREQUENCY...", c: "#6B7280", d: 400 },
+  { t: "> FREQ: 9,847.33 Hz  [IRREGULAR]", c: "#3B82F6", d: 600 },
+  { t: "CROSS-REFERENCING HUNTER REGISTRY...", c: "#6B7280", d: 800 },
+  { t: "> STATUS: NOT REGISTERED  [ANOMALY]", c: "#F59E0B", d: 1000 },
+  { t: "WARNING — IRREGULAR MANA SIGNATURE DETECTED", c: "#DC2626", d: 1200 },
+  { t: "DIMENSIONAL RANK ASSESSMENT: IMMEASURABLE", c: "#7C3AED", d: 1400 },
+  { t: "INITIATING EMERGENCY PROTOCOL ARISE-7...", c: "#6B7280", d: 1600 },
+  { t: "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%", c: "#7C3AED", d: 1800 },
+  { t: "NEW PLAYER DETECTED — CALIBRATING SYSTEM...", c: "#06B6D4", d: 2000 },
 ]
 
 interface SystemEntryProps {
@@ -56,7 +56,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
         if (index === BOOT.length - 1) {
           const alertId = window.setTimeout(() => {
             setStatus('sync') // Transition to sync state once all texts are loaded
-          }, 900)
+          }, 400)
           timeoutsRef.current.push(alertId)
         }
       }, line.d)
@@ -119,13 +119,13 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
     audio.addEventListener('ended', transition)
     
     audio.play().then(() => {
-      // safety timeout of 5 seconds max so user is never stuck
-      const safetyId = window.setTimeout(transition, 5000)
+      // safety timeout of 3 seconds max so user is never stuck
+      const safetyId = window.setTimeout(transition, 3000)
       timeoutsRef.current.push(safetyId)
     }).catch(err => {
       console.warn('Arise sound playback was prevented by the browser:', err)
       // Fallback timer if browser blocks audio autoplay
-      const fallbackId = window.setTimeout(transition, 2800)
+      const fallbackId = window.setTimeout(transition, 1500)
       timeoutsRef.current.push(fallbackId)
     })
   }
@@ -432,7 +432,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
           display: flex;
           align-items: center;
           justify-content: center;
-          animation: portal-open 2.2s ease forwards;
+          animation: portal-open 1.5s ease forwards;
           position: relative;
         }
         @keyframes portal-open {
@@ -447,7 +447,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
           height: 70px;
           border-radius: 50%;
           border: 1px solid #3B82F6;
-          animation: portal-open 2.2s ease .15s forwards;
+          animation: portal-open 1.5s ease .1s forwards;
           opacity: 0;
         }
 
@@ -461,7 +461,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          animation: fadein 1s ease 1.8s forwards;
+          animation: fadein 0.8s ease 1s forwards;
           opacity: 0;
           white-space: nowrap;
           text-align: center;
@@ -473,7 +473,7 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
           color: #3B82F6;
           letter-spacing: .2em;
           margin-top: 60px;
-          animation: fadein 1s ease 2.2s forwards;
+          animation: fadein 0.8s ease 1.2s forwards;
           opacity: 0;
         }
 
@@ -1147,8 +1147,8 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
 
               {/* Actions */}
               <div className="sl-notification-actions">
-                <button className="sl-btn sl-btn-accept" onClick={handleAccept}>ACCEPT</button>
                 <button className="sl-btn sl-btn-deny" onClick={handleDeny}>DENY</button>
+                <button className="sl-btn sl-btn-accept" onClick={handleAccept}>ACCEPT</button>
               </div>
             </div>
           </div>
