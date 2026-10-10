@@ -13,11 +13,11 @@ export function getFolderId(): string {
   return '1ULYV5aIjArhpxQP_0V8slDRYkBNdBop2' // Hardcoded public Google Drive folder ID
 }
 
-async function fetchDriveImages(): Promise<DriveImage[]> {
+async function fetchDriveImages(folderId: string): Promise<DriveImage[]> {
   try {
     // 1. Query the secure Vercel Serverless Proxy first (hides tokens in production)
     // Add dynamic cache-busting timestamp parameter to bypass CDN/browser caches
-    const { data } = await axios.get<DriveImage[]>(`/api/drive?t=${Date.now()}`, {
+    const { data } = await axios.get<DriveImage[]>(`/api/drive?folderId=${folderId}&t=${Date.now()}`, {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
@@ -38,7 +38,6 @@ async function fetchDriveImages(): Promise<DriveImage[]> {
     }
 
     try {
-      const folderId = getFolderId()
       const cb = Date.now()
       const { data } = await axios.get('https://www.googleapis.com/drive/v3/files', {
         params: {
@@ -64,11 +63,11 @@ async function fetchDriveImages(): Promise<DriveImage[]> {
   }
 }
 
-export function useDriveImages() {
-  const activeFolderId = getFolderId()
+export function useDriveImages(folderId?: string) {
+  const activeFolderId = folderId || getFolderId()
   return useQuery({
     queryKey: ['drive-images', activeFolderId], // Make folder ID part of queryKey for instant cache invalidation on dynamic edits
-    queryFn: fetchDriveImages,
+    queryFn: () => fetchDriveImages(activeFolderId),
     staleTime: 0, // Immediately mark stale to pull fresh lists
     refetchInterval: 1000 * 15, // Continuously fetch in background every 15 seconds
     refetchOnWindowFocus: true, // Refresh list when window is focused

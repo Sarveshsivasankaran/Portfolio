@@ -8,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(412).json({ error: 'Google API credentials not configured on the server side proxy' })
   }
 
-  const folderId = '1ULYV5aIjArhpxQP_0V8slDRYkBNdBop2' // Hardcoded public Google Drive folder ID
+  const folderId = (req.query.folderId as string) || '1ULYV5aIjArhpxQP_0V8slDRYkBNdBop2'
 
   try {
     const cb = Date.now()

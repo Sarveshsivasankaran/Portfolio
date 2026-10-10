@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { type LinkedInPost } from '../data/linkedinPosts'
 import { useLinkedInPosts } from '../hooks/useLinkedInPosts'
 import { isLinkedInUrl } from '../lib/linkedinPosts'
@@ -18,9 +16,6 @@ import {
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
 const SPLINE_URL = 'https://prod.spline.design/kZiQZ1hp09EE5chm/scene.splinecode'
-
-gsap.registerPlugin(ScrollTrigger)
-
 
 const TYPE_COLORS: Record<LinkedInPost['type'], string> = {
   post:        '#06b6d4', // Cyan
@@ -41,6 +36,11 @@ function formatDate(dateStr: string) {
 }
 
 export default function Wins() {
+  const containerRef = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  })
   const [activeIndex, setActiveIndex] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(1200)
   const splineApp = useRef<any>(null)
@@ -204,72 +204,20 @@ export default function Wins() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.wins-spline-wrapper',
-        { rotation: 0, scale: 1.1, y: -50 },
-        {
-          rotation: -45, // Rotate opposite direction to hero
-          scale: 1.3,
-          y: 80,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '#wins',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.2,
-          }
-        }
-      )
-    })
-    return () => ctx.revert()
-  }, [])
-
-  // Scroll-triggered entrance animations for wins content
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('#wins .section-label, #wins .section-heading',
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.15, ease: 'power2.out',
-          scrollTrigger: { trigger: '#wins', start: 'top 85%', once: true }
-        }
-      )
-      gsap.fromTo('.wins-card-deck',
-        { opacity: 0, y: 60 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out',
-          scrollTrigger: { trigger: '#wins', start: 'top 75%', once: true }
-        }
-      )
-    })
-    return () => ctx.revert()
-  }, [])
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    if (!splineApp.current) return
+    try {
+      const camera = splineApp.current.findObjectByName('Camera')
+      if (camera) {
+        camera.rotation.y = latest * Math.PI * 0.4
+      } else {
+        splineApp.current.setZoom(1.0 - latest * 0.1)
+      }
+    } catch (e) {}
+  })
 
   function onSplineLoad(app: any) {
     splineApp.current = app
-    
-    gsap.to({}, {
-      scrollTrigger: {
-        trigger: '#wins',
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1.2,
-        onUpdate: (self) => {
-          if (!splineApp.current) return
-          try {
-            const camera = splineApp.current.findObjectByName('Camera')
-            if (camera) {
-              camera.rotation.y = self.progress * Math.PI * 0.4
-            } else {
-              splineApp.current.setZoom(1.0 - self.progress * 0.1)
-            }
-          } catch (e) {
-            try {
-              splineApp.current.setZoom(1.0 - self.progress * 0.1)
-            } catch (err) {}
-          }
-        }
-      }
-    })
   }
 
   const deckRef = useRef<HTMLDivElement>(null)
@@ -382,8 +330,8 @@ export default function Wins() {
   const slideX = -safeActiveIndex * (cardWidth + gap)
 
   return (
-    <section id="wins" style={{
-      padding: isTabletOrMobile ? '80px 20px 60px' : '96px 64px 80px',
+    <section id="wins" ref={containerRef} style={{
+      padding: isTabletOrMobile ? '64px 20px 48px' : '80px 64px 64px',
       background: 'var(--void)',
       position: 'relative',
       overflow: 'hidden',
@@ -404,16 +352,19 @@ export default function Wins() {
 
       {/* 3D Interactive Spline Background Canvas */}
       <Suspense fallback={null}>
-        <div className="wins-spline-wrapper" style={{
+        <motion.div className="wins-spline-wrapper" style={{
           position: 'absolute',
           inset: 0,
           zIndex: 1,
           pointerEvents: 'none',
           opacity: 0.12, // Cohesive premium subtle depth
           willChange: 'transform',
+          rotate: useTransform(scrollYProgress, [0, 1], [0, -45]),
+          scale: useTransform(scrollYProgress, [0, 1], [1.1, 1.3]),
+          y: useTransform(scrollYProgress, [0, 1], [-50, 80]),
         }}>
           <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
-        </div>
+        </motion.div>
       </Suspense>
 
       {/* Ambient glowing fields */}
@@ -437,8 +388,74 @@ export default function Wins() {
       }} />
 
       <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 5 }}>
-        <p className="section-label">// CORE.ACHIEVEMENTS</p>
-        <h2 className="section-heading" style={{ marginBottom: 48 }}>Wins &amp; Activity</h2>
+
+        {/* Top Header Bar */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            paddingTop: 16,
+            marginBottom: 64,
+          }}
+        >
+          <span style={{
+            fontFamily: 'Share Tech Mono, monospace',
+            fontSize: 12,
+            color: 'var(--stone)',
+            letterSpacing: '0.1em'
+          }}>
+            <span style={{ color: 'var(--monarch)' }}>04</span> HALL OF FAME
+          </span>
+          <span style={{
+            fontFamily: 'serif',
+            fontStyle: 'italic',
+            color: 'var(--stone)',
+            fontSize: 14
+          }}>
+            Where effort meets recognition
+          </span>
+        </motion.div>
+
+        {/* Huge Title */}
+        <motion.h2 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{
+            fontFamily: 'Rajdhani, sans-serif',
+            fontSize: 'clamp(32px, 5vw, 80px)',
+            fontWeight: 800,
+            lineHeight: 1,
+            textTransform: 'uppercase',
+            color: 'var(--ghost)',
+            marginBottom: 64,
+            letterSpacing: '-0.02em',
+            textAlign: 'left'
+          }}
+        >
+          WHERE <br className="mobile-break" />
+          <span style={{
+            fontFamily: 'serif',
+            fontStyle: 'italic',
+            textTransform: 'lowercase',
+            fontWeight: 400,
+            background: 'linear-gradient(135deg, var(--monarch), var(--gate))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '0'
+          }}>
+            effort
+          </span>
+          <br />
+          MEETS RECOGNITION.
+        </motion.h2>
 
         {/* --- A. NEW INTEGRATED FEATURED WORLD RECORD CERTIFICATE --- */}
         <div className="featured-record-card" style={{
@@ -743,12 +760,12 @@ export default function Wins() {
                 href="https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644"
                 target="_blank"
                 rel="noreferrer"
-                className="btn-primary"
                 onClick={(e) => {
                   e.stopPropagation()
                   window.open("https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644", "_blank")
                 }}
                 style={{
+                  textDecoration: 'none',
                   fontFamily: 'Share Tech Mono, monospace',
                   fontSize: '11px',
                   fontWeight: 700,
@@ -771,11 +788,13 @@ export default function Wins() {
                   e.currentTarget.style.background = 'linear-gradient(135deg, var(--gold), var(--monarch))'
                   e.currentTarget.style.color = '#000'
                   e.currentTarget.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.4)'
+                  e.currentTarget.style.transform = 'none'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 58, 237, 0.15))'
                   e.currentTarget.style.color = 'var(--gold)'
                   e.currentTarget.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.15)'
+                  e.currentTarget.style.transform = 'none'
                 }}
               >
                 <FiExternalLink size={13} />
@@ -786,7 +805,7 @@ export default function Wins() {
         </div>
 
         {/* Viewport sliding window */}
-        <div 
+        <motion.div 
           ref={deckRef}
           className="wins-card-deck"
           role="region"
@@ -794,6 +813,10 @@ export default function Wins() {
           aria-label="LinkedIn activities"
           aria-busy={loading}
           onScroll={handleScroll}
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
           style={{
             width: 'auto',
             overflowX: isMobile ? 'auto' : 'hidden',
@@ -1052,7 +1075,7 @@ export default function Wins() {
             })}
           </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Dynamic Holographic Controls and Progress dots */}
         <div style={{

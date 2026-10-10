@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { FiExternalLink, FiBookOpen } from 'react-icons/fi'
-
-gsap.registerPlugin(ScrollTrigger)
-
 const BOOK_THEMES = [
   'Innocence',
   'Friendship',
@@ -158,42 +153,7 @@ export default function Publications() {
     }
   }, [])
 
-  // GSAP scroll trigger for section entrance
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('#publications .section-label, #publications .section-heading',
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          stagger: 0.15,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: '#publications',
-            start: 'top 85%',
-            once: true,
-          }
-        }
-      )
-      
-      gsap.fromTo('.publications-content-wrapper',
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '#publications',
-            start: 'top 75%',
-            once: true,
-          }
-        }
-      )
-    })
-    return () => ctx.revert()
-  }, [])
+
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = e.currentTarget
@@ -218,8 +178,7 @@ export default function Publications() {
 
   return (
     <section id="publications" style={{
-      padding: '96px 64px 80px',
-      background: 'var(--void)',
+      padding: '80px 64px 64px',
       position: 'relative',
       overflow: 'hidden',
     }}>
@@ -258,11 +217,83 @@ export default function Publications() {
       }} />
 
       <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 5 }}>
-        <p className="section-label">// SYSTEM.QUEST.ARCHIVE</p>
-        <h2 className="section-heading" style={{ marginBottom: 48 }}>Book Publications</h2>
+
+        {/* Top Header Bar */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            paddingTop: 16,
+            marginBottom: 64,
+          }}
+        >
+          <span style={{
+            fontFamily: 'Share Tech Mono, monospace',
+            fontSize: 12,
+            color: 'var(--stone)',
+            letterSpacing: '0.1em'
+          }}>
+            <span style={{ color: 'var(--monarch)' }}>02</span> PUBLICATIONS
+          </span>
+          <span style={{
+            fontFamily: 'serif',
+            fontStyle: 'italic',
+            color: 'var(--stone)',
+            fontSize: 14
+          }}>
+            Where words meet pages
+          </span>
+        </motion.div>
+
+        {/* Huge Title */}
+        <motion.h2 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{
+            fontFamily: 'Rajdhani, sans-serif',
+            fontSize: 'clamp(32px, 5vw, 80px)',
+            fontWeight: 800,
+            lineHeight: 1,
+            textTransform: 'uppercase',
+            color: 'var(--ghost)',
+            marginBottom: 64,
+            letterSpacing: '-0.02em',
+            textAlign: 'left'
+          }}
+        >
+          WHERE <br className="mobile-break" />
+          <span style={{
+            fontFamily: 'serif',
+            fontStyle: 'italic',
+            textTransform: 'lowercase',
+            fontWeight: 400,
+            background: 'linear-gradient(135deg, var(--monarch), var(--gate))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '0'
+          }}>
+            stories
+          </span>
+          <br />
+          MEET LEGACY.
+        </motion.h2>
 
         {/* Content Wrapper */}
-        <div className="publications-content-wrapper" style={{
+        <motion.div 
+          className="publications-content-wrapper" 
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(280px, 1.1fr) minmax(320px, 1.9fr)',
           gap: '56px',
@@ -470,7 +501,7 @@ export default function Publications() {
                       e.currentTarget.style.borderColor = 'var(--monarch)'
                       e.currentTarget.style.color = 'var(--ghost)'
                       e.currentTarget.style.boxShadow = '0 0 8px rgba(124, 58, 237, 0.25)'
-                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.transform = 'none'
                     }}
                     onMouseLeave={e => {
                       e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
@@ -547,7 +578,6 @@ export default function Publications() {
                 href="https://the-faces-behind-faces-book.vercel.app/"
                 target="_blank"
                 rel="noreferrer"
-                className="btn-primary"
                 style={{
                   fontFamily: 'Share Tech Mono, monospace',
                   fontSize: '12px',
@@ -569,7 +599,7 @@ export default function Publications() {
                 onMouseEnter={e => {
                   e.currentTarget.style.filter = 'brightness(1.15)'
                   e.currentTarget.style.boxShadow = '0 0 30px rgba(124, 58, 237, 0.5)'
-                  e.currentTarget.style.transform = 'scale(1.03) translateY(-2px)'
+                  e.currentTarget.style.transform = 'none'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.filter = 'none'
@@ -608,7 +638,7 @@ export default function Publications() {
                   e.currentTarget.style.color = '#ffffff'
                   e.currentTarget.style.borderColor = 'var(--teal)'
                   e.currentTarget.style.boxShadow = '0 0 25px rgba(6, 182, 212, 0.4)'
-                  e.currentTarget.style.transform = 'scale(1.03) translateY(-2px)'
+                  e.currentTarget.style.transform = 'none'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.background = 'rgba(6, 182, 212, 0.1)'
@@ -624,7 +654,7 @@ export default function Publications() {
             </div>
 
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <style>{`
@@ -636,7 +666,7 @@ export default function Publications() {
           }
         }
         @media (max-width: 768px) {
-          #publications { padding: 96px 24px 64px !important; }
+          #publications { padding: 64px 24px 48px !important; }
         }
       `}</style>
     </section>

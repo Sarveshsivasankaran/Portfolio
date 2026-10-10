@@ -1,14 +1,10 @@
 import { Suspense, lazy, useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import Typewriter from 'typewriter-effect'
 import { FaGithub, FaLinkedin } from 'react-icons/fa'
 import { FiArrowDown } from 'react-icons/fi'
 import CursorLens from './CursorLens'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
-
+import HeroNameReveal from './HeroNameReveal'
 // Lazy-load Spline to avoid blocking initial render
 const Spline = lazy(() => import('@splinetool/react-spline'))
 
@@ -107,38 +103,34 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
   const [splineLoaded, setSplineLoaded] = useState(false)
   const [splineError, setSplineError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const containerRef = useRef<HTMLElement>(null)
   const splineApp = useRef<any>(null)
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  })
+
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    if (!splineApp.current) return
+    try {
+      const camera = splineApp.current.findObjectByName('Camera')
+      if (camera) {
+        camera.rotation.y = latest * Math.PI * 0.4
+        camera.position.y = latest * 150
+      } else {
+        splineApp.current.setZoom(1.0 - latest * 0.15)
+      }
+    } catch (e) {
+      try {
+        splineApp.current.setZoom(1.0 - latest * 0.1)
+      } catch (err) {}
+    }
+  })
 
   function onSplineLoad(app: any) {
     splineApp.current = app
     setSplineLoaded(true)
-
-    // Build dynamic scroll-based camera and vortex rotation animation
-    gsap.to({}, {
-      scrollTrigger: {
-        trigger: '#hero',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1.0, // Smooth real-time scrubbing
-        onUpdate: (self) => {
-          if (!splineApp.current) return
-          try {
-            const camera = splineApp.current.findObjectByName('Camera')
-            if (camera) {
-              // Rotate particle vortex around Y-axis as user scrolls, and add slight roll angle
-              camera.rotation.y = self.progress * Math.PI * 0.4 // Orbit camera 72 degrees
-              camera.position.y = self.progress * 150 // Scroll up/down camera parallax
-            } else {
-              splineApp.current.setZoom(1.0 - self.progress * 0.15) // Subtle zoom out parallax
-            }
-          } catch (e) {
-            try {
-              splineApp.current.setZoom(1.0 - self.progress * 0.1)
-            } catch (err) { }
-          }
-        }
-      }
-    })
   }
 
   useEffect(() => {
@@ -148,100 +140,32 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  useEffect(() => {
-    // 3D container scroll parallax animation using GPU-accelerated CSS transitions
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.hero-spline-wrapper',
-        { rotation: 0, scale: 1.02, y: 0 },
-        {
-          rotation: 30, // Smooth elegant tilt
-          scale: 1.25,  // Deepening zoom
-          y: 150,       // Interactive scroll speed offset
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '#hero',
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 1.0,
-          }
-        }
-      )
-    })
-    return () => ctx.revert()
-  }, [])
 
   const scrollToProjects = () => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
 
   return (
-    <section id="hero" style={{
+    <section id="hero" ref={containerRef} style={{
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
-      padding: '0px 64px 64px',
+      padding: '0px 64px 40px',
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Sound Mute/Unmute Toggle Button */}
-      <button
-        onClick={toggleMute}
-        style={{
-          position: 'absolute',
-          top: '32px',
-          right: '32px',
-          zIndex: 100,
-          background: 'rgba(10, 10, 18, 0.65)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1.5px solid rgba(0, 212, 255, 0.45)',
-          boxShadow: '0 0 15px rgba(0, 212, 255, 0.15)',
-          borderRadius: '50%',
-          width: '50px',
-          height: '50px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          color: isMuted ? 'rgba(255, 255, 255, 0.35)' : '#00d4ff',
-          transition: 'all 0.2s ease-in-out',
-        }}
-        className="sound-toggle-btn"
-        aria-label={isMuted ? 'Unmute Background Music' : 'Mute Background Music'}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = isMuted ? 'rgba(255,255,255,0.6)' : '#00d4ff'
-          e.currentTarget.style.boxShadow = isMuted ? '0 0 15px rgba(255,255,255,0.2)' : '0 0 25px rgba(0, 212, 255, 0.45)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = isMuted ? 'rgba(0, 212, 255, 0.25)' : 'rgba(0, 212, 255, 0.45)'
-          e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 212, 255, 0.15)'
-        }}
-      >
-        {isMuted ? (
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-          </svg>
-        ) : (
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-            </svg>
-            <span className="sound-wave wave-1"></span>
-            <span className="sound-wave wave-2"></span>
-          </div>
-        )}
-      </button>
+
+
       {/* 1. Full-Screen Height Interactive 3D CursorLens Background Portrait */}
       <div className="hero-framer-container" style={{
         position: 'absolute',
-        top: '0px',
-        bottom: 0,
-        right: 0,
-        left: 'auto', // Don't stretch to left edge — keep anchored right
-        width: '56vw', // Narrower container matching image's near-square aspect ratio to eliminate 47% vertical crop
-        zIndex: 5, // Raised above ribbons (3) and vignette (4)
+        top: '90px', // Adjusted to make room for navbar
+        bottom: '20px', // Provide bottom margin
+        right: '4%', // Slightly shifted from edge
+        left: 'auto',
+        width: '45vw', // Made smaller for better alignment
+        zIndex: 5,
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'flex-end',
+        alignItems: 'center', // Align centrally within its space
         pointerEvents: 'none',
       }}>
         <div style={{
@@ -292,7 +216,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
       )}
       {!splineError && (
         <Suspense fallback={null}>
-          <div className="hero-spline-wrapper" style={{
+          <motion.div className="hero-spline-wrapper" style={{
             position: 'absolute',
             inset: 0,
             zIndex: 2,
@@ -300,13 +224,16 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
             opacity: 0.25,
             willChange: 'transform',
             display: splineLoaded ? 'block' : 'none',
+            rotate: useTransform(scrollYProgress, [0, 1], [0, 30]),
+            scale: useTransform(scrollYProgress, [0, 1], [1.02, 1.25]),
+            y: useTransform(scrollYProgress, [0, 1], [0, 150]),
           }}>
             <Spline
               scene={SPLINE_URL}
               onLoad={onSplineLoad}
               onError={() => setSplineError(true)}
             />
-          </div>
+          </motion.div>
         </Suspense>
       )}
 
@@ -411,10 +338,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
         style={{ position: 'relative', zIndex: 10, maxWidth: 720 }}
         className="hero-text-pane"
       >
-        {/* Section label */}
-        <motion.p variants={stagger.item} className="section-label">
-          // INITIALIZING SYSTEM
-        </motion.p>
+
 
         {/* Name */}
         <motion.h1 variants={stagger.item} style={{
@@ -425,13 +349,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
           marginBottom: 4,
           textShadow: '0 4px 12px rgba(10, 10, 18, 0.5)',
         }}>
-          Sarvesh
-          <br />
-          <span style={{
-            color: '#F59E0B',
-          }}>
-            Sivasankaran
-          </span>
+          <HeroNameReveal />
         </motion.h1>
 
         {/* Typewriter subtitle */}
@@ -460,16 +378,34 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
         {/* Blurb */}
         <motion.p variants={stagger.item} style={{
           color: 'var(--stone)',
-          fontSize: 17,
+          fontSize: 16,
           lineHeight: 1.7,
-          maxWidth: 500,
-          marginBottom: 32,
+          maxWidth: 600,
+          marginBottom: 24,
           textShadow: '0 2px 8px rgba(10, 10, 18, 0.5)',
         }}>
-          Building things that matter.
-          <br />
-          From Chennai, India.
+          Pre-Final year CSE student building end-to-end systems across AI/ML, IoT, robotics and full-stack development — from intelligent edge devices and autonomous systems to AI-powered applications and scalable backends.
         </motion.p>
+
+        {/* CGPA Capsule */}
+        <motion.div variants={stagger.item} style={{ marginBottom: 32 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '8px 16px',
+            background: 'rgba(124, 58, 237, 0.1)',
+            border: '1px solid rgba(124, 58, 237, 0.3)',
+            borderRadius: '9999px',
+            color: '#a78bfa',
+            fontFamily: 'Share Tech Mono, monospace',
+            fontSize: '13px',
+            letterSpacing: '0.05em',
+            boxShadow: '0 4px 15px rgba(124, 58, 237, 0.1)'
+          }}>
+            <span style={{ fontWeight: 'bold', marginRight: '6px', color: 'var(--ghost)' }}>CGPA:</span> 
+            8.09 / 10 till 4th semester of 8 semesters
+          </div>
+        </motion.div>
 
         {/* CTA row */}
         <motion.div variants={stagger.item} style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 36 }} className="hero-cta-row">
@@ -477,14 +413,16 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
             View Projects
           </button>
           <a
-            href="https://drive.google.com/uc?export=download&id=19Czf6xdxeH9e7yNvngj3-Sg3CWG6h35X"
-            target="_blank"
-            rel="noreferrer"
+            href="#contact"
             className="btn-ghost"
-            id="hero-download-resume"
+            id="hero-contact-button"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+            }}
             style={{ background: 'rgba(17, 24, 39, 0.4)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
           >
-            Download Resume
+            Let's Talk
           </a>
         </motion.div>
 
@@ -528,30 +466,39 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
       </motion.div>
 
       <style>{`
+        @keyframes purpleBlackFlames {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .aura-flame-text {
+          background: linear-gradient(90deg, #18181b, #7c3aed, #000000, #9333ea, #18181b);
+          background-size: 300% 300%;
+          animation: purpleBlackFlames 3s ease infinite;
+          -webkit-background-clip: text !important;
+          -webkit-text-fill-color: transparent !important;
+          /* Optional dark purple drop shadow for extra depth without muddying the text */
+          filter: drop-shadow(0 0 12px rgba(124, 58, 237, 0.4));
+        }
+
         .sound-toggle-btn:active {
           transform: scale(0.92);
         }
-        .sound-wave {
-          position: absolute;
-          border: 1.5px solid #00d4ff;
-          border-radius: 50%;
-          opacity: 0;
-          pointer-events: none;
+        .sound-bar {
+          display: inline-block;
+          width: 3px;
+          height: 100%;
+          background-color: #00d4ff;
+          border-radius: 2px;
+          animation: sound-bar-bounce 1s ease-in-out infinite alternate;
         }
-        .wave-1 {
-          width: 32px;
-          height: 32px;
-          animation: sound-pulse 1.8s infinite linear;
+        @keyframes sound-bar-bounce {
+          0% { transform: scaleY(0.3); }
+          100% { transform: scaleY(1); }
         }
-        .wave-2 {
-          width: 44px;
-          height: 44px;
-          animation: sound-pulse 1.8s infinite linear 0.9s;
-        }
-        @keyframes sound-pulse {
-          0% { transform: scale(0.6); opacity: 0; }
-          50% { opacity: 0.35; }
-          100% { transform: scale(1.4); opacity: 0; }
+        
+        .magnetic-btn {
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .typewriter-cursor { color: var(--gate) !important; }
@@ -565,7 +512,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
         }
         @media (max-width: 1024px) {
           #hero {
-            padding: 0px 24px 60px !important;
+            padding: 0px 24px 40px !important;
             flex-direction: column !important;
             justify-content: center !important;
             text-align: center !important;

@@ -1,4 +1,4 @@
-.arsenal-section { padding: 96px 4vw 80px; background: var(--dungeon); position: relative; overflow: hidden; }
+.arsenal-section { padding: 80px 4vw 64px; background: var(--dungeon); position: relative; overflow: hidden; }
 .arsenal-heading, .arsenal-intro, .arsenal-filters, .arsenal-universe { max-width: 1440px; margin-inline: auto; }
 .arsenal-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; }
 .arsenal-heading h2 { margin:0; }

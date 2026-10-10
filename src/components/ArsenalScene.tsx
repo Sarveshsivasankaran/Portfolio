@@ -3,13 +3,13 @@ import { useInView } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { FiPause, FiPlay, FiArrowUpRight } from 'react-icons/fi'
-import { SiPython, SiTypescript, SiJavascript, SiC, SiCplusplus, SiR, SiReact, SiTailwindcss, SiHtml5, SiNodedotjs, SiFastapi, SiExpress, SiSupabase, SiPostgresql, SiGit, SiDocker, SiFigma, SiLinux } from 'react-icons/si'
+import { SiPython, SiTypescript, SiJavascript, SiC, SiCplusplus, SiR, SiReact, SiTailwindcss, SiHtml5, SiNodedotjs, SiFastapi, SiExpress, SiSupabase, SiPostgresql, SiGit, SiDocker, SiFigma, SiLinux, SiN8N, SiCrewai } from 'react-icons/si'
 import { FaJava, FaCloud } from 'react-icons/fa'
 import type { IconType } from 'react-icons'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const icons: Record<string, IconType> = { Python: SiPython, TypeScript: SiTypescript, JavaScript: SiJavascript, Java: FaJava, C: SiC, 'C++': SiCplusplus, R: SiR, React: SiReact, TailwindCSS: SiTailwindcss, HTML5: SiHtml5, 'Node.js': SiNodedotjs, FastAPI: SiFastapi, 'Express.js': SiExpress, Azure: FaCloud, Supabase: SiSupabase, PostgreSQL: SiPostgresql, Git: SiGit, Docker: SiDocker, Figma: SiFigma, Linux: SiLinux }
+const icons: Record<string, IconType> = { Python: SiPython, TypeScript: SiTypescript, JavaScript: SiJavascript, Java: FaJava, C: SiC, 'C++': SiCplusplus, R: SiR, React: SiReact, TailwindCSS: SiTailwindcss, HTML5: SiHtml5, 'Node.js': SiNodedotjs, FastAPI: SiFastapi, 'Express.js': SiExpress, Azure: FaCloud, Supabase: SiSupabase, PostgreSQL: SiPostgresql, Git: SiGit, Docker: SiDocker, Figma: SiFigma, Linux: SiLinux, n8n: SiN8N, CrewAI: SiCrewai }
 
 interface ArsenalSkill {
   name: string
@@ -40,14 +40,13 @@ export default function ArsenalScene({ skills, loading, videoSrc = import.meta.e
   const auraId = useId().replace(/:/g, '')
   const visible = useInView(scene, { margin: '0px' })
   const [reduced, setReduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const [paused, setPaused] = useState(false)
   const [pageVisible, setPageVisible] = useState(true)
   const [selectedName, setSelectedName] = useState('')
   const [imageReady, setImageReady] = useState(false)
   const [imageFailed, setImageFailed] = useState(false)
   const [videoReady, setVideoReady] = useState(false)
   const [videoFailed, setVideoFailed] = useState(false)
-  const moving = visible && pageVisible && !paused && !reduced
+  const moving = visible && pageVisible && !reduced
   const selected = skills.find(skill => skill.name === selectedName) || skills[0]
   const SelectedIcon = selected ? icons[selected.name] || FiArrowUpRight : FiArrowUpRight
   const skillKey = skills.map(skill => skill.name).join('|')
@@ -135,15 +134,7 @@ export default function ArsenalScene({ skills, loading, videoSrc = import.meta.e
       </div>
       <div className="arsenal-scene-controls">
         <p role="status">{loading ? 'Loading skill activity…' : `${skills.length} skills in this arsenal`}{!imageReady && !imageFailed && <span className="arsenal-loading-line" aria-label="Loading character" />}</p>
-        <button type="button" onClick={() => setPaused(value => !value)} disabled={!!reduced} aria-label={paused ? 'Resume arsenal motion' : 'Pause arsenal motion'}>
-          {paused || reduced ? <FiPlay aria-hidden="true" /> : <FiPause aria-hidden="true" />}{reduced ? 'Reduced motion' : paused ? 'Motion paused' : 'Pause motion'}
-        </button>
       </div>
-      {selected && <div className="arsenal-skill-detail" aria-live="polite">
-        <SelectedIcon className="arsenal-detail-icon" aria-hidden="true" />
-        <div><p className="section-label">{selected.category} / SELECTED SKILL</p><h3>{selected.name}</h3></div>
-        <p>{selected.githubCount ? `Used across ${selected.githubCount} public ${selected.githubCount === 1 ? 'repository' : 'repositories'}.` : 'Part of my toolkit.'}<span>Select another tile to explore.</span></p>
-      </div>}
     </div>
   )
 }

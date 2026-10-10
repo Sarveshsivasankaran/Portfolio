@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { useGitHubRepos, type GitHubRepo } from '../hooks/useGitHubRepos'
 import ArsenalScene from './ArsenalScene'
+import EventsBackground from './EventsBackground'
 import './Arsenal.css'
 
 const EMPTY_REPOS: GitHubRepo[] = []
@@ -55,10 +57,13 @@ const TECH_MAP: Record<string, {
   docker: { name: 'Docker', icon: 'devicon-docker-plain colored', category: 'Tools', baseLevel: 65, keywords: ['docker', 'container', 'compose'] },
   figma: { name: 'Figma', icon: 'devicon-figma-plain colored', category: 'Tools', baseLevel: 72, keywords: ['figma', 'design', 'ui', 'ux'] },
   linux: { name: 'Linux', icon: 'devicon-linux-plain colored', category: 'Tools', baseLevel: 80, keywords: ['linux', 'ubuntu', 'bash', 'shell'] },
+  crewai: { name: 'CrewAI', icon: 'devicon-python-plain colored', category: 'Tools', baseLevel: 75, keywords: ['crewai', 'ai agents', 'llm'] },
+  n8n: { name: 'n8n', icon: 'devicon-nodejs-plain colored', category: 'Tools', baseLevel: 78, keywords: ['n8n', 'automation', 'workflow'] },
 }
 
 
 export default function Skills() {
+  const containerRef = useRef<HTMLElement>(null)
   const [activeCategory, setActiveCategory] = useState<Category>('All')
   const [vibeFilter, setVibeFilter] = useState<'All' | 'Vibe Coded' | 'Hardcoded'>('All')
   const { data: repos = EMPTY_REPOS, isLoading } = useGitHubRepos()
@@ -87,6 +92,8 @@ export default function Skills() {
       { name: 'Docker', icon: 'devicon-docker-plain colored', level: 65, baseLevel: 65, category: 'Tools', keywords: ['docker', 'container', 'compose'], githubCount: 0 },
       { name: 'Figma', icon: 'devicon-figma-plain colored', level: 72, baseLevel: 72, category: 'Tools', keywords: ['figma', 'design', 'ui', 'ux'], githubCount: 0 },
       { name: 'Linux', icon: 'devicon-linux-plain colored', level: 80, baseLevel: 80, category: 'Tools', keywords: ['linux', 'ubuntu', 'bash', 'shell'], githubCount: 0 },
+      { name: 'CrewAI', icon: 'devicon-python-plain colored', level: 75, baseLevel: 75, category: 'Tools', keywords: ['crewai', 'ai agents', 'llm'], githubCount: 0 },
+      { name: 'n8n', icon: 'devicon-nodejs-plain colored', level: 78, baseLevel: 78, category: 'Tools', keywords: ['n8n', 'automation', 'workflow'], githubCount: 0 },
     ]
 
     if (!repos || repos.length === 0) {
@@ -190,15 +197,73 @@ export default function Skills() {
 
 
   return (
-    <section id="skills" className="arsenal-section">
-      <div className="arsenal-heading">
-        <div><p className="section-label">// SYSTEM.SKILLS</p><h2 className="section-heading">Arsenal</h2></div>
-        <p className="arsenal-status" role="status">
-          <span className={isLoading ? 'is-scanning' : ''} />
-          {isLoading ? 'Syncing skills with GitHub' : repos.length ? 'Connected to GitHub' : 'Showing saved skills'}
-        </p>
-      </div>
-      <div className="arsenal-intro"><h3>Every skill.<br /><span>A new possibility.</span></h3><p>The tools behind the ideas.<br />Explore my evolving arsenal.</p></div>
+    <section id="skills" ref={containerRef} className="arsenal-section">
+      <EventsBackground containerRef={containerRef} />
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          paddingTop: 16,
+          marginBottom: 64,
+        }}
+      >
+        <span style={{
+          fontFamily: 'Share Tech Mono, monospace',
+          fontSize: 12,
+          color: 'var(--stone)',
+          letterSpacing: '0.1em'
+        }}>
+          <span style={{ color: 'var(--monarch)' }}>03</span> ARSENAL
+        </span>
+        <span style={{
+          fontFamily: 'serif',
+          fontStyle: 'italic',
+          color: 'var(--stone)',
+          fontSize: 14
+        }}>
+          Tools of the trade
+        </span>
+      </motion.div>
+      <motion.h2 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        style={{
+          fontFamily: 'Rajdhani, sans-serif',
+          fontSize: 'clamp(32px, 5vw, 80px)',
+          fontWeight: 800,
+          lineHeight: 1,
+          textTransform: 'uppercase',
+          color: 'var(--ghost)',
+          marginBottom: 64,
+          marginTop: 64,
+          letterSpacing: '-0.02em',
+          textAlign: 'left'
+        }}
+      >
+        EVERY <br className="mobile-break" />
+        <span style={{
+          fontFamily: 'serif',
+          fontStyle: 'italic',
+          textTransform: 'lowercase',
+          fontWeight: 400,
+          background: 'linear-gradient(135deg, var(--monarch), var(--gate))',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          letterSpacing: '0'
+        }}>
+          skill
+        </span>
+        <br />
+        A NEW POSSIBILITY.
+      </motion.h2>
       <div className="arsenal-filters">
         <div role="group" aria-label="Skill category">
           {CATEGORIES.map(category => <button key={category} type="button" aria-pressed={activeCategory === category} onClick={() => setActiveCategory(category)}>{category}</button>)}

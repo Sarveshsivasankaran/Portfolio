@@ -43,12 +43,15 @@ async function fetchRepos(): Promise<GitHubRepo[]> {
 
   try {
     // 1. Query the secure Vercel Serverless Proxy first (hides tokens in production)
-    const { data } = await axios.get<GitHubRepo[]>('/api/github')
-    if (!Array.isArray(data)) {
+    const res = await axios.get('/api/github')
+    
+    // Check if the response is actually JSON and an array (prevents Vite HTML fallback from crashing)
+    if (String(res.headers['content-type'])?.includes('application/json') && Array.isArray(res.data)) {
+      setCache(res.data)
+      return res.data
+    } else {
       throw new Error('Proxy response did not return a valid list of repositories')
     }
-    setCache(data)
-    return data
   } catch (err) {
     console.warn('[GitHub Hook] Serverless API proxy offline, falling back to direct client-side scan.', err)
 
