@@ -215,9 +215,11 @@ export default function App() {
         }
         .main-reveal {
           animation: mainFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          will-change: opacity, transform;
           position: relative;
           z-index: 1;
+          overflow-x: clip;
+          max-width: 100vw;
+          width: 100%;
         }
         section[id] {
           will-change: transform, opacity;
@@ -242,6 +244,7 @@ export default function App() {
           zIndex: 999999
         }}
       />
+      <Navbar isMuted={isMuted} toggleMute={toggleMute} />
       <div className="main-reveal">
         {/* Non-sticky Logo */}
         <img 
@@ -342,7 +345,6 @@ export default function App() {
             )}
           </button>
         </div>
-        <Navbar isMuted={isMuted} toggleMute={toggleMute} />
         <main>
           <Hero isMuted={isMuted} toggleMute={toggleMute} />
           <About />

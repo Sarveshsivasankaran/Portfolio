@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useDriveImages } from '../hooks/useDriveImages'
+import { FaLinkedin, FaGithub } from 'react-icons/fa'
+import { FiGitBranch, FiUsers, FiShield, FiCpu, FiExternalLink } from 'react-icons/fi'
 
 export default function About() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -15,6 +17,51 @@ export default function About() {
 
   const { data: driveImages, isLoading } = useDriveImages('1D2nRTRmMdrnR9cB8wDbzzbBERkTQmeH_')
   const [activeIndex, setActiveIndex] = useState(0)
+
+  // Live dynamic telemetry stats
+  const [stats, setStats] = useState({
+    linkedinFollowers: 5259,
+    githubFollowers: 33,
+    githubRepos: 22,
+    isLive: false,
+  })
+
+  useEffect(() => {
+    let active = true
+
+    // Direct GitHub user telemetry (CORS enabled by GitHub)
+    fetch('https://api.github.com/users/Sarveshsivasankaran')
+      .then(res => res.json())
+      .then(data => {
+        if (!active) return
+        if (typeof data.followers === 'number' || typeof data.public_repos === 'number') {
+          setStats(prev => ({
+            ...prev,
+            githubFollowers: typeof data.followers === 'number' ? data.followers : prev.githubFollowers,
+            githubRepos: typeof data.public_repos === 'number' ? data.public_repos : prev.githubRepos,
+            isLive: true,
+          }))
+        }
+      })
+      .catch(() => {})
+
+    // Serverless stats endpoint for LinkedIn & GitHub telemetry
+    fetch('/api/stats')
+      .then(res => res.json())
+      .then(data => {
+        if (!active || !data) return
+        setStats(prev => ({
+          ...prev,
+          linkedinFollowers: data.linkedinFollowers || prev.linkedinFollowers,
+          githubFollowers: data.githubFollowers || prev.githubFollowers,
+          githubRepos: data.githubRepos || prev.githubRepos,
+          isLive: true,
+        }))
+      })
+      .catch(() => {})
+
+    return () => { active = false }
+  }, [])
 
   const handleNextCard = () => {
     if (driveImages && driveImages.length > 0) {
@@ -217,81 +264,459 @@ I enjoy taking on difficult problems, learning along the way and figuring things
               </p>
             </motion.div>
 
-            {/* 2x2 Feature Grid */}
-            <div className="feature-grid" style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: 24,
-              marginTop: 32,
-              paddingTop: 40,
-              borderTop: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-              {[
-                {
-                  label: 'TECHNICAL DEPTH',
-                  title: 'Pixels to possibilities.',
-                  desc: 'I explore AI/ML, IoT, robotics and full-stack development, building at the intersection of software and hardware. I enjoy breaking down complex problems, experimenting with ideas and turning them into practical solutions.'
-                },
-                {
-                  label: 'LEADERSHIP & COMMUNITY',
-                  title: 'Build people, not just products.',
-                  desc: 'I lead, collaborate and contribute to student tech communities, creating spaces for people to learn, share ideas and grow together. I believe meaningful leadership is about empowering others and building opportunities beyond yourself.'
-                },
-                {
-                  label: 'CREATIVITY & EXPRESSION',
-                  title: 'Ideas deserve a voice.',
-                  desc: 'Beyond technology, I enjoy writing books, public speaking and sharing what I learn. Whether through words, conversations or code, I see creativity as a way to express ideas, challenge perspectives and connect with people.'
-                },
-                {
-                  label: 'MINDSET & GROWTH',
-                  title: 'Level up. Build. Repeat.',
-                  desc: "I embrace unfamiliar challenges, learn through experimentation and keep pushing beyond what I already know. For me, growth isn't about having every answer — it's about staying curious, taking action and becoming better with every attempt."
-                }
-              ].map((item, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  whileHover={{ 
-                    y: -5, 
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    borderColor: 'rgba(255, 255, 255, 0.15)',
-                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)'
-                  }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
+            {/* LIVE DYNAMIC NETWORK TELEMETRY */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              style={{
+                marginTop: 16,
+                padding: '24px',
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.7) 0%, rgba(10, 10, 18, 0.85) 100%)',
+                border: '1.5px solid rgba(168, 85, 247, 0.25)',
+                boxShadow: '0 20px 45px rgba(0, 0, 0, 0.5), inset 0 0 25px rgba(168, 85, 247, 0.05)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                position: 'relative',
+              }}
+            >
+              {/* Telemetry Header */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 20,
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                paddingBottom: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span className="live-dot" style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: '#10b981',
+                    boxShadow: '0 0 10px #10b981',
+                    display: 'inline-block',
+                    animation: 'livePulse 1.8s infinite ease-in-out'
+                  }} />
+                  <span style={{
+                    fontFamily: 'Share Tech Mono, monospace',
+                    fontSize: 11,
+                    letterSpacing: '0.12em',
+                    color: '#10b981',
+                    fontWeight: 700,
+                  }}>
+                    LIVE NETWORK TELEMETRY
+                  </span>
+                </div>
+                <span style={{
+                  fontFamily: 'Share Tech Mono, monospace',
+                  fontSize: 10,
+                  color: 'var(--stone)',
+                  letterSpacing: '0.08em',
+                }}>
+                  [ AUTO-SYNCED ]
+                </span>
+              </div>
+
+              {/* 3 Telemetry Cards */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: 16,
+              }}>
+                {/* LinkedIn Followers */}
+                <a
+                  href="https://in.linkedin.com/in/sarvesh-sivasankaran"
+                  target="_blank"
+                  rel="noreferrer"
                   style={{
-                    padding: '24px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '16px',
                     borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    background: 'rgba(255, 255, 255, 0.01)',
-                    transition: 'border-color 0.3s ease, background-color 0.3s ease'
+                    background: 'rgba(6, 182, 212, 0.05)',
+                    border: '1px solid rgba(6, 182, 212, 0.25)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.7)'
+                    e.currentTarget.style.backgroundColor = 'rgba(6, 182, 212, 0.12)'
+                    e.currentTarget.style.transform = 'translateY(-3px)'
+                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(6, 182, 212, 0.2)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.25)'
+                    e.currentTarget.style.backgroundColor = 'rgba(6, 182, 212, 0.05)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = 'none'
                   }}
                 >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <FaLinkedin size={18} color="#06b6d4" />
+                    <FiExternalLink size={12} color="#06b6d4" style={{ opacity: 0.6 }} />
+                  </div>
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif',
+                    fontSize: 32,
+                    fontWeight: 800,
+                    color: 'var(--ghost)',
+                    lineHeight: 1,
+                    marginBottom: 4,
+                  }}>
+                    {stats.linkedinFollowers.toLocaleString()}+
+                  </div>
                   <div style={{
                     fontFamily: 'Share Tech Mono, monospace',
-                    color: 'var(--monarch)',
-                    fontSize: 11,
-                    letterSpacing: '0.1em',
-                    marginBottom: 12
+                    fontSize: 10,
+                    letterSpacing: '0.08em',
+                    color: '#06b6d4',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
                   }}>
-                    {item.label}
+                    LinkedIn Followers
                   </div>
-                  <h4 style={{
-                    fontFamily: 'serif',
-                    fontStyle: 'italic',
-                    fontSize: 22,
+                  <div style={{ color: 'var(--stone)', fontSize: 11, marginTop: 4 }}>
+                    Industry reach &amp; builders
+                  </div>
+                </a>
+
+                {/* GitHub Followers */}
+                <a
+                  href="https://github.com/Sarveshsivasankaran"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    textDecoration: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    background: 'rgba(168, 85, 247, 0.05)',
+                    border: '1px solid rgba(168, 85, 247, 0.25)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.7)'
+                    e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.12)'
+                    e.currentTarget.style.transform = 'translateY(-3px)'
+                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(168, 85, 247, 0.2)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.25)'
+                    e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.05)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <FaGithub size={18} color="#a855f7" />
+                    <FiExternalLink size={12} color="#a855f7" style={{ opacity: 0.6 }} />
+                  </div>
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif',
+                    fontSize: 32,
+                    fontWeight: 800,
                     color: 'var(--ghost)',
-                    marginBottom: 12,
-                    fontWeight: 400
+                    lineHeight: 1,
+                    marginBottom: 4,
                   }}>
-                    {item.title}
-                  </h4>
-                  <p style={{ color: 'var(--stone)', fontSize: 14, lineHeight: 1.6 }}>
-                    {item.desc}
+                    {stats.githubFollowers.toLocaleString()}+
+                  </div>
+                  <div style={{
+                    fontFamily: 'Share Tech Mono, monospace',
+                    fontSize: 10,
+                    letterSpacing: '0.08em',
+                    color: '#a855f7',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                  }}>
+                    GitHub Followers
+                  </div>
+                  <div style={{ color: 'var(--stone)', fontSize: 11, marginTop: 4 }}>
+                    Active OSS developers
+                  </div>
+                </a>
+
+                {/* GitHub Public Repositories */}
+                <a
+                  href="https://github.com/Sarveshsivasankaran?tab=repositories"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    textDecoration: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    background: 'rgba(245, 158, 11, 0.05)',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.7)'
+                    e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.12)'
+                    e.currentTarget.style.transform = 'translateY(-3px)'
+                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(245, 158, 11, 0.2)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.25)'
+                    e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.05)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <FiGitBranch size={18} color="#f59e0b" />
+                    <FiExternalLink size={12} color="#f59e0b" style={{ opacity: 0.6 }} />
+                  </div>
+                  <div style={{
+                    fontFamily: 'Rajdhani, sans-serif',
+                    fontSize: 32,
+                    fontWeight: 800,
+                    color: 'var(--ghost)',
+                    lineHeight: 1,
+                    marginBottom: 4,
+                  }}>
+                    {stats.githubRepos.toLocaleString()}+
+                  </div>
+                  <div style={{
+                    fontFamily: 'Share Tech Mono, monospace',
+                    fontSize: 10,
+                    letterSpacing: '0.08em',
+                    color: '#f59e0b',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                  }}>
+                    Public Repositories
+                  </div>
+                  <div style={{ color: 'var(--stone)', fontSize: 11, marginTop: 4 }}>
+                    AI/ML, Web, Hardware &amp; Tools
+                  </div>
+                </a>
+              </div>
+            </motion.div>
+
+            {/* GUILDS & COMMUNITY LEADERSHIP SECTION */}
+            <div style={{ marginTop: 20 }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 16,
+              }}>
+                <span style={{
+                  fontFamily: 'Share Tech Mono, monospace',
+                  color: 'var(--monarch)',
+                  fontSize: 12,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                }}>
+                  COMMUNITY ALLIANCES &amp; LEADERSHIP
+                </span>
+                <span style={{
+                  fontFamily: 'serif',
+                  fontStyle: 'italic',
+                  color: 'var(--stone)',
+                  fontSize: 13,
+                }}>
+                  Sourced from LinkedIn
+                </span>
+              </div>
+
+              {/* 3 Interactive Community Cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                
+                {/* 1. CodeSapiens */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  whileHover={{ y: -4, borderColor: 'rgba(6, 182, 212, 0.45)', backgroundColor: 'rgba(6, 182, 212, 0.03)' }}
+                  style={{
+                    padding: '24px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgba(10, 10, 18, 0.6)',
+                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
+                    transition: 'border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FiUsers size={18} color="#06b6d4" />
+                        <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20, fontWeight: 700, color: 'var(--ghost)', margin: 0 }}>
+                          CodeSapiens
+                        </h4>
+                        <span style={{ color: 'var(--stone)', fontSize: 13 }}>— The Student Community of Coders</span>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontFamily: 'Share Tech Mono, monospace',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: '#06b6d4',
+                      background: 'rgba(6, 182, 212, 0.12)',
+                      border: '1px solid rgba(6, 182, 212, 0.35)',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      letterSpacing: '0.06em',
+                    }}>
+                      🎙️ SPEAKER &amp; EVENT SPEAKER MANAGER
+                    </span>
+                  </div>
+
+                  <p style={{ color: 'var(--stone)', fontSize: 14, lineHeight: 1.7, margin: '0 0 14px 0' }}>
+                    Active core contributor driving developer initiatives across Chennai and beyond. Served as <strong>Event Speaker Manager</strong> for <em>CodeSapiens Summer Fest 2026</em>, curating high-impact speaker tracks, workshops, and championships alongside Nexora, MLSA, and Google Student Ambassadors. Delivered keynote tech sessions at the <em>February 2K26 Meetup</em> on <strong>Open Source Contribution &amp; GitHub Usage</strong> with live PR reviews, built a full-stack AI web crawler under the D3 &times; CodeSapiens Mentorship Program, and received the <strong>Best Post Keychain Award</strong> for tech community advocacy.
                   </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {['Summer Fest 2026 Speaker Manager', 'Feb 2K26 Keynote Speaker', 'D3 AI Mentorship Graduate', 'Best Post Award Winner'].map((tag, idx) => (
+                      <span key={idx} style={{
+                        fontFamily: 'Share Tech Mono, monospace',
+                        fontSize: 10,
+                        color: 'rgba(255, 255, 255, 0.65)',
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </motion.div>
-              ))}
+
+                {/* 2. Intellexa REC Club */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  whileHover={{ y: -4, borderColor: 'rgba(168, 85, 247, 0.45)', backgroundColor: 'rgba(168, 85, 247, 0.03)' }}
+                  style={{
+                    padding: '24px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgba(10, 10, 18, 0.6)',
+                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
+                    transition: 'border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FiCpu size={18} color="#a855f7" />
+                        <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20, fontWeight: 700, color: 'var(--ghost)', margin: 0 }}>
+                          Intellexa REC Club
+                        </h4>
+                        <span style={{ color: 'var(--stone)', fontSize: 13 }}>— Rajalakshmi Engineering College</span>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontFamily: 'Share Tech Mono, monospace',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: '#a855f7',
+                      background: 'rgba(168, 85, 247, 0.12)',
+                      border: '1px solid rgba(168, 85, 247, 0.35)',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      letterSpacing: '0.06em',
+                    }}>
+                      👑 VICE PRESIDENT (2026–2027)
+                    </span>
+                  </div>
+
+                  <p style={{ color: 'var(--stone)', fontSize: 14, lineHeight: 1.7, margin: '0 0 14px 0' }}>
+                    Officially appointed <strong>Vice President</strong> for the 2026–2027 tenure, spearheading club direction, technical member incubation, and college-wide innovation. Represented the club as <strong>SPOC at Titanium 2K26</strong> (India's Largest Techfest), organizing flagship challenges including <em>IoT Olympics</em> and <em>HackRush</em> &mdash; where all three teams under his direct mentorship swept the entire podium. Maintains the open-source Intellexa REC Website repository and actively pioneers embedded systems and smart IoT prototypes.
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {['Appointed Vice President (2026-27)', 'Titanium 2K26 SPOC Lead', 'HackRush Triple Podium Mentor', 'Website Maintainer'].map((tag, idx) => (
+                      <span key={idx} style={{
+                        fontFamily: 'Share Tech Mono, monospace',
+                        fontSize: 10,
+                        color: 'rgba(255, 255, 255, 0.65)',
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* 3. Cyber Sentinels Club */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  whileHover={{ y: -4, borderColor: 'rgba(245, 158, 11, 0.45)', backgroundColor: 'rgba(245, 158, 11, 0.03)' }}
+                  style={{
+                    padding: '24px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgba(10, 10, 18, 0.6)',
+                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
+                    transition: 'border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FiShield size={18} color="#f59e0b" />
+                        <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20, fontWeight: 700, color: 'var(--ghost)', margin: 0 }}>
+                          Cyber Sentinels Club
+                        </h4>
+                        <span style={{ color: 'var(--stone)', fontSize: 13 }}>— Rajalakshmi Engineering College</span>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontFamily: 'Share Tech Mono, monospace',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: '#f59e0b',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      letterSpacing: '0.06em',
+                    }}>
+                      🎨 CLUB DESIGN LEAD &amp; CTF OPS
+                    </span>
+                  </div>
+
+                  <p style={{ color: 'var(--stone)', fontSize: 14, lineHeight: 1.7, margin: '0 0 14px 0' }}>
+                    Stepping into the role of <strong>Design Lead</strong> at the Investiture Ceremony, elevating brand identity, UI design, and creative direction across all club initiatives. Core organizing member for <strong>0xTi CTF</strong> &mdash; an intense 24-hour Capture The Flag competition partnered with Altered Security and Titanium 2K26. Competitive CTF hacker: secured 21st place in <em>What's The Flag 2025</em> with team F-Society and competed solo in <em>root@localhost</em>, breaking challenges in Cryptography, Web Exploitation, and OSINT.
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {['Club Design Lead', '0xTi 24-Hour CTF Organizer', "What's The Flag 2025 (Top 21)", 'root@localhost Competitor'].map((tag, idx) => (
+                      <span key={idx} style={{
+                        fontFamily: 'Share Tech Mono, monospace',
+                        fontSize: 10,
+                        color: 'rgba(255, 255, 255, 0.65)',
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+
+              </div>
             </div>
 
           </div>

@@ -403,7 +403,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
             boxShadow: '0 4px 15px rgba(124, 58, 237, 0.1)'
           }}>
             <span style={{ fontWeight: 'bold', marginRight: '6px', color: 'var(--ghost)' }}>CGPA:</span> 
-            8.09 / 10 till 4th semester of 8 semesters
+            8.09 / 10
           </div>
         </motion.div>
 

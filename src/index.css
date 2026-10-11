@@ -23,14 +23,27 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
 }
 
 body {
   background-color: var(--void);
   color: var(--ghost);
   font-family: 'Inter', sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
   caret-color: transparent;
+}
+
+#root {
+  overflow-x: clip;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
 }
 
 input, textarea, [contenteditable="true"] {
@@ -42,9 +55,18 @@ input, textarea, [contenteditable="true"] {
   color: #fff;
 }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--dungeon); }
-::-webkit-scrollbar-thumb { background: var(--gate); border-radius: 2px; }
+/* Completely remove blue right-side scrolling border / scrollbar */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+html, body, #root {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
 
 /* Typography helpers */
 .section-label {
@@ -288,8 +310,11 @@ section {
 }
 
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
   width: 100%;
+  pointer-events: none;
 }

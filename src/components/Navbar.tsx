@@ -25,26 +25,46 @@ export default function Navbar({ isMuted, toggleMute }: NavbarProps) {
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
 
+  const updateActiveSection = () => {
+    // If near the bottom of the page, highlight Contact
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80) {
+      setActive('contact')
+      return
+    }
+
+    // Check each section relative to the navbar probe line (200px from top)
+    const probe = 200
+    for (const id of SECTIONS) {
+      const el = document.getElementById(id)
+      if (el) {
+        const rect = el.getBoundingClientRect()
+        if (rect.top <= probe && rect.bottom > probe) {
+          setActive(id)
+          return
+        }
+      }
+    }
+
+    if (window.scrollY < 200) {
+      setActive('hero')
+    }
+  }
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (latest > 50) {
       setHidden(false) // Navbar stays visible
     }
+    updateActiveSection()
   })
 
-  // Track active section via IntersectionObserver
   useEffect(() => {
-    const observers: IntersectionObserver[] = []
-    SECTIONS.forEach(id => {
-      const el = document.getElementById(id)
-      if (!el) return
-      const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActive(id) },
-        { threshold: 0.3 }
-      )
-      obs.observe(el)
-      observers.push(obs)
-    })
-    return () => observers.forEach(o => o.disconnect())
+    updateActiveSection()
+    window.addEventListener('scroll', updateActiveSection, { passive: true })
+    window.addEventListener('resize', updateActiveSection, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection)
+      window.removeEventListener('resize', updateActiveSection)
+    }
   }, [])
 
   const handleNav = (href: string) => {

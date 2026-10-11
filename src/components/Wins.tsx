@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion'
 import { type LinkedInPost } from '../data/linkedinPosts'
 import { useLinkedInPosts } from '../hooks/useLinkedInPosts'
 import { isLinkedInUrl } from '../lib/linkedinPosts'
-import ActivityImages from './ActivityImages'
+
 import { 
   FiChevronLeft, 
   FiChevronRight, 
@@ -35,37 +35,275 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' })
 }
 
+import FeaturedRecordCard, { type EventRecord } from './FeaturedRecordCard';
+
+const ALL_EVENTS: EventRecord[] = [
+  {
+    id: 0,
+    title: "World Record: Students Use Robots to Plant a Micro Forest in Chennai",
+    category: "World Record",
+    issuer: "TIFA",
+    year: "2020",
+    badge: "⭐ S-RANK RECORD ACHIEVEMENT",
+    description: (
+      <>
+        <p style={{ margin: 0 }}>On January 25, 2020, at the Anna University campus in Chennai, a remarkable world record attempt took place — instead of humans planting trees, it was student-built robots that did the work. The robots were programmed to pick up saplings, lower them into the soil, and water them. A total of 326 students from 20 centres of SP Robotics Maker Lab, aged between 7 and 17, built and operated these robots to create what is recognized as the world's first micro forest planted by robots.</p>
+        <p style={{ margin: 0 }}>The robots were controlled via smartphones over Bluetooth, with one team assembling and operating the robots while another team coded the watering mechanism. The planted saplings were committed to be nurtured for three years by SP Robotics in collaboration with Communitree.</p>
+        <p style={{ margin: 0 }}>The initiative was inspired when a student submitted a project featuring a robot planting trees and a friend's robot watering them. The Maker Lab Head, Aarthi Muralitharan, scaled up the idea into a world record attempt to demonstrate that technology can be harnessed to fight climate change and benefit nature.</p>
+        <p style={{ margin: 0 }}>The event set the world record for <strong style={{ color: 'var(--gold)' }}>"Most Participants with Robots to Create a Micro Forest"</strong> and received a World Record Certificate in recognition of this achievement.</p>
+      </>
+    ),
+    link: "https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644",
+    linkText: "READ OFFICIAL NDTV REPORT",
+    media: [
+      { url: '/tifa_micro_forest_certificate.jpg', title: 'World Record Certificate', type: 'certificate' },
+      { url: '/micro_forest_event_1.jpg', title: 'Robotics Team World Record Group', type: 'photo' },
+      { url: '/micro_forest_event_2.jpg', title: 'Student Team Lead holding record card', type: 'photo' },
+      { url: '/micro_forest_event_3.jpg', title: 'World Record presentation ceremony', type: 'photo' },
+      { url: '/micro_forest_event_4.jpg', title: 'Participants with the planting robots', type: 'photo' },
+      { url: '/micro_forest_event_5.jpg', title: 'Student Operator with autonomous robot', type: 'photo' },
+    ]
+  },
+  {
+    id: 6,
+    title: "Presented to Honourable AI Minister - AI Nexus 2026 EXPO",
+    category: "AI Expo Showcase",
+    issuer: "Rajalakshmi Engineering College",
+    year: "2026",
+    badge: "⭐ EXPO PRESENTATION",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>At the <strong>AI Nexus 2026 EXPO</strong>, our team had the tremendous honor of presenting <strong>NOTEZILLA</strong>, our full-stack academic notes management platform, directly to the <strong>Honourable Minister for AI of Tamil Nadu</strong>.</p>
+        <p style={{ margin: 0 }}>Notezilla is built for Rajalakshmi Engineering College, offering a centralized hub with role-based access, featuring advanced AI capabilities via Google Generative AI and LangChain (with Ollama). Showcasing our solution to the Honourable Minister and industry leaders was a defining moment in our technical journey, validating the real-world impact of our platform.</p>
+      </>
+    ),
+    link: "https://lnkd.in/p/g2YZjSQ6",
+    linkText: "VIEW POST",
+    linkIcon: "linkedin",
+    media: [
+      { url: '/ainexus_1.jpg', title: 'Team Notezilla at the AI Nexus 2026 EXPO Stall', type: 'photo' },
+      { url: '/ainexus_2.jpg', title: 'Group Photo at AI Nexus 2026 EXPO', type: 'photo' },
+      { url: '/ainexus_3.jpg', title: 'Notezilla Project Details Poster', type: 'photo' }
+    ]
+  },
+  {
+    id: 7,
+    title: "Acentra Health 'Build to Care' Hackathon 2026 - Grand Finalist",
+    category: "Healthcare AI & FWA Intelligence",
+    issuer: "Hackforge.ai × Acentra Health",
+    year: "2026",
+    badge: "⭐ GRAND FINALIST (TOP 34 OF 650+)",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>Our team advanced to the Grand Finals of the <strong>Hackforge.ai × Acentra Health &ldquo;Build to Care&rdquo; Hackathon 2026</strong>, emerging among the <strong>Top 34 finalist teams selected from 650+ teams</strong> spanning Chennai, Hyderabad, Bengaluru, and beyond. Representing Rajalakshmi Engineering College, we were one of the 9 finalist teams out of 11 shortlisted from our institution.</p>
+        <p style={{ margin: 0, marginBottom: 12 }}>Tackling Problem Statement 3 &mdash; <em>Healthcare Fraud, Waste, and Abuse (FWA) Intelligence</em> &mdash; we architected <strong>ClaimShield Nexus</strong>. Designed for healthcare payers and Special Investigation Units (SIUs), our platform combines ML anomaly detection, explainable risk scoring, graph network analysis to uncover fraudulent collusions, an audit-ready evidence ledger, and an Elasticsearch-powered &ldquo;Second Brain&rdquo; semantic retrieval copilot with human-in-the-loop workflows.</p>
+        <p style={{ margin: 0 }}>Over an intense 36-hour sprint of development, debugging, and pitching against fierce competition, this hackathon tested our resilience, systems thinking, and presentation skills under high pressure. Built together with teammates S. Rithika Saran, Sabnish Seetharaman, and Nandhini VS, this journey delivered immense growth in building scalable healthcare AI and communicating architectural value.</p>
+      </>
+    ),
+    link: "https://github.com/Sarveshsivasankaran/ClaimShield_Nexus",
+    linkText: "VIEW PROJECT",
+    linkIcon: "github",
+    secondaryLink: "https://lnkd.in/p/gdiunmfi",
+    secondaryLinkText: "VIEW POST",
+    secondaryLinkIcon: "linkedin",
+    media: [
+      { url: '/acentra_hackathon_1.png', title: 'Build to Care Finals - The Finalist Badge', type: 'certificate' },
+      { url: '/acentra_hackathon_4.png', title: 'Certificate of Participation & Goodies', type: 'certificate' },
+      { url: '/acentra_hackathon_2.png', title: 'Grand Finals Stage - 34 Finalist Teams from 650+', type: 'certificate' },
+      { url: '/acentra_hackathon_3.png', title: 'Team & Mentor Experience at Acentra Health', type: 'certificate' }
+    ]
+  },
+  {
+    id: 8,
+    title: "Featured in Texplore Magazine 2026 - REC CSE Department",
+    category: "Official Department Publication",
+    issuer: "Rajalakshmi Engineering College",
+    year: "2026",
+    badge: "⭐ STUDENT SPOTLIGHT FEATURE",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>Honored to be spotlighted in <strong>Texplore Magazine 2026 (Jan–Mar Edition)</strong>, the official digital publication of the Department of Computer Science &amp; Engineering at Rajalakshmi Engineering College. Recognized under the alias <strong>Solo-P-Leveller</strong> (&ldquo;Code. Create. Conquer.&rdquo;), the feature celebrates my active technical journey and community contributions.</p>
+        <p style={{ margin: 0, marginBottom: 12 }}>Highlighted in the magazine&rsquo;s <strong>Student Spotlights</strong> for my work as a speaker at the <em>Codesapiens Meetup 2K26</em>, this recognition reflects months of stepping beyond conventional coursework &mdash; leading speaker sessions, coordinating technical fests, building impactful projects, and actively driving student tech initiatives.</p>
+        <p style={{ margin: 0 }}>Special gratitude to Thiyaga B Sir, Keerthana M G, and the entire CodeSapiens family for providing platforms where students can step forward, share knowledge, and lead. A defining milestone proving that showing up consistently, building in public, and embracing every opportunity creates meaningful, lasting impact.</p>
+      </>
+    ),
+    link: "https://recmagazine.vercel.app/",
+    linkText: "VIEW MAGAZINE",
+    linkIcon: "external",
+    secondaryLink: "https://lnkd.in/p/gbe2Sgep",
+    secondaryLinkText: "VIEW POST",
+    secondaryLinkIcon: "linkedin",
+    media: [
+      { url: '/texplore_magazine_2026.png', title: 'Texplore Magazine 2026 - Solo-P-Leveller Feature', type: 'certificate' }
+    ]
+  },
+  {
+    id: 1,
+    title: "SIH 2025 - Software Edition Internal Hackathon Winner",
+    category: "Disaster Management Statement",
+    issuer: "SIH 2025",
+    year: "2025",
+    badge: "⭐ HACKATHON WINNER",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>Our team <strong>Code-O-Philes</strong> made it to the Top 50 among 160+ teams in the SIH Internal Hackathon 2025 (Software Edition) conducted at Rajalakshmi Engineering College. The past month has been transformative — countless brainstorming sessions, continuous iterations, and late-night discussions all shaped our solution.</p>
+        <p style={{ margin: 0, marginBottom: 12 }}>During the 30-hour hackathon, we faced unexpected issues with our hardware sensors on the first night. We worked through the night, barely managing an hour of inconsistent sleep, until we solved the problem and got everything back on track. This experience pushed us to stay calm under pressure, troubleshoot effectively, and find solutions despite fatigue and constraints.</p>
+        <p style={{ margin: 0 }}>Participating in this hackathon gave us an incredible opportunity to strengthen our technical skills, improve our problem-solving approach, and experience the excitement of building something meaningful under time pressure. It was a month-long journey of growth, collaboration, and learning.</p>
+      </>
+    ),
+    link: "https://lnkd.in/p/gsaDTfV8",
+    linkText: "VIEW POST",
+    linkIcon: "linkedin",
+    media: [
+      { url: '/sih_hackathon_1.png', title: 'Code-O-Philes Team at SIH 2025', type: 'photo' },
+      { url: '/sih_hackathon_2.png', title: 'SIH 2025 Hackathon Prize', type: 'photo' },
+      { url: '/sih_hackathon_3.png', title: 'Team Code-O-Philes Hackathon Workspace', type: 'photo' },
+      { url: '/sih_hackathon_4.png', title: 'Team Collaborating at SIH 2025', type: 'photo' },
+      { url: '/sih_hackathon_5.png', title: 'Troubleshooting Hardware at SIH 2025', type: 'photo' }
+    ]
+  },
+  {
+    id: 2,
+    title: "Appointed as Vice President - Intellexa REC Club",
+    category: "Student Leadership",
+    issuer: "Intellexa REC, Rajalakshmi Engineering College",
+    year: "2026",
+    badge: "⭐ LEADERSHIP APPOINTMENT",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>On August 12, 2026, I was officially appointed as the <strong>Vice President of the Intellexa REC Club</strong> for the 2026-2027 academic tenure. This role represents a major step in my leadership journey, allowing me to spearhead club activities and strengthen member participation.</p>
+        <p style={{ margin: 0 }}>Stepping into this role, I am committed to fostering a positive environment where innovation thrives, members can actively develop their technical skills, and creative ideas can grow. I'm excited to work closely with the President and fellow club leads to achieve our shared vision for the upcoming year.</p>
+      </>
+    ),
+    link: "https://lnkd.in/p/gDGfM5MX",
+    linkText: "VIEW POST",
+    linkIcon: "linkedin",
+    media: [
+      { url: '/intellexa_vp_1.png', title: 'Vice President Announcement', type: 'photo' },
+      { url: '/intellexa_vp_3.png', title: 'Official Letter of Appointment', type: 'photo' },
+      { url: '/intellexa_vp_2.png', title: 'Intellexa Tenure 2026-2027 Group Photo', type: 'photo' },
+      { url: '/intellexa_vp_4.png', title: 'Addressing the Club as Vice President', type: 'photo' }
+    ]
+  },
+  {
+    id: 3,
+    title: "ICC World Cup Project - Cheering & Cleaning Robot",
+    category: "National Level",
+    issuer: "SP Robotics Works",
+    year: "2019",
+    badge: "⭐ NATIONAL LEVEL PROJECT",
+    description: (
+      <>
+        <p style={{ margin: 0 }}>On July 6, 2019, I actively participated in the National Level ICC World Cup robotics competition organized by SP Robotics Maker Lab. For my entry, I designed and built a functional prototype titled the <strong>"Cheering & Cleaning Robot"</strong>.</p>
+        <p style={{ margin: 0, marginTop: 12 }}>This unique edutainment robot combined the excitement of the game with real-world utility. I created a video presentation showcasing the prototype in action, demonstrating my ability to integrate sensors and programming logic to solve practical problems. I was awarded a Certification for Appreciation for my invaluable participation and excellent technical showcase.</p>
+      </>
+    ),
+    link: "",
+    linkText: "",
+    media: [
+      { url: '/icc_certificate_rotated.png', title: 'ICC World Cup Project Certificate', type: 'certificate' }
+    ]
+  },
+  {
+    id: 4,
+    title: "Featured on REC Official Website",
+    category: "Beyond Grades: The Lessons That Shaped My Engineering Journey",
+    issuer: "Rajalakshmi Engineering College",
+    year: "2026",
+    badge: "⭐ PROUD MILESTONE",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>I am incredibly proud to see my writing go live on the front page blog section of the official Rajalakshmi Engineering College website. The published article, <strong>"Beyond Grades: The Lessons That Shaped My Engineering Journey"</strong>, is a specially adapted version of my book <em>'The Faces Behind Faces'</em>.</p>
+        <p style={{ margin: 0 }}>The piece explores how learning goes far beyond classrooms and academic performance, focusing instead on the invaluable lessons learned through real-world experiences, challenges, and relationships. It was an honor to share my journey and insights with the entire college community.</p>
+      </>
+    ),
+    link: "https://www.rajalakshmi.org/blogs/beyond-grades-lessons-that-shaped-my-engineering-journey",
+    linkText: "VIEW BLOG",
+    linkIcon: "external",
+    secondaryLink: "https://lnkd.in/p/gjA9Zhvk",
+    secondaryLinkText: "VIEW POST",
+    secondaryLinkIcon: "linkedin",
+    media: [
+      { url: '/rec_blog_feature.png', title: 'Featured on REC Website Blog', type: 'photo' }
+    ]
+  },
+  {
+    id: 5,
+    title: "Guest Speaker - Codesapiens February Meetup 2k26",
+    category: "Tech Talk & Knowledge Sharing",
+    issuer: "Codesapiens",
+    year: "2026",
+    badge: "⭐ GUEST SPEAKER",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>I had the incredible opportunity to be a guest speaker at the <strong>Codesapiens February Meetup 2k26</strong>. It was a fantastic experience taking the stage to share my insights on productivity, time management, and mastering technical skills with an enthusiastic crowd of peers.</p>
+        <p style={{ margin: 0 }}>The vibe was absolutely amazing—everyone was eager to learn, think deeply about their goals, and find purpose in their work. Engaging with such a vibrant community of developers and sharing ideas in such a chill, collaborative environment was truly inspiring.</p>
+      </>
+    ),
+    link: "https://lnkd.in/p/gaqrxNR4",
+    linkText: "VIEW POST",
+    linkIcon: "linkedin",
+    media: [
+      { url: '/codesapiens_speaker_main.png', title: 'Guest Speaker at Codesapiens', type: 'photo' },
+      { url: '/codesapiens_collage.png', title: 'Speaking Engagements', type: 'photo' },
+      { url: '/codesapiens_1.png', title: 'Speaking at Codesapiens Meetup', type: 'photo' },
+      { url: '/codesapiens_2.png', title: 'Sharing Insights on Purpose and Mastery', type: 'photo' },
+      { url: '/codesapiens_3.png', title: 'Engaging with the Audience', type: 'photo' },
+      { url: '/codesapiens_4.png', title: 'The Vibe: Chill, Think, and Connect', type: 'photo' }
+    ]
+  }
+];
 export default function Wins() {
   const containerRef = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"]
-  })
-  const [activeIndex, setActiveIndex] = useState(0)
   const [viewportWidth, setViewportWidth] = useState(1200)
+  const isTabletOrMobile = viewportWidth < 1024
   const splineApp = useRef<any>(null)
-  const { posts, loading } = useLinkedInPosts()
+  const splineCamera = useRef<any>(null)
 
-  const [wrRotateX, setWrRotateX] = useState(0)
-  const [wrRotateY, setWrRotateY] = useState(0)
-  const [wrSheenX, setWrSheenX] = useState(50)
-  const [wrSheenY, setWrSheenY] = useState(50)
-  const [wrHovered, setWrHovered] = useState(false)
-  const [wrLightbox, setWrLightbox] = useState(false)
+  const sliderContainerRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: sliderContainerRef,
+    offset: ["start start", "end end"]
+  })
 
-  // World Record Gallery Media List
-  const wrMediaList = [
-    { url: '/tifa_micro_forest_certificate.jpg', title: 'World Record Certificate', type: 'certificate' },
-    { url: '/micro_forest_event_1.jpg', title: 'Robotics Team World Record Group', type: 'photo' },
-    { url: '/micro_forest_event_2.jpg', title: 'Student Team Lead holding record card', type: 'photo' },
-    { url: '/micro_forest_event_3.jpg', title: 'World Record presentation ceremony', type: 'photo' },
-    { url: '/micro_forest_event_4.jpg', title: 'Participants with the planting robots', type: 'photo' },
-    { url: '/micro_forest_event_5.jpg', title: 'Student Operator with autonomous robot', type: 'photo' },
-  ]
-  const [featuredMediaIndex, setFeaturedMediaIndex] = useState(0)
+  // Physics-based spring smoothing to eliminate stepped mouse-wheel jitter
+  const smoothProgress = useSpring(scrollYProgress, {
+    damping: 28,
+    stiffness: 140,
+    mass: 0.16
+  })
+  const x = useTransform(smoothProgress, [0, 1], ["0vw", `-${(ALL_EVENTS.length - 1) * 100}vw`])
+
+  const [sliderIndex, setSliderIndex] = useState(0)
+
+  useMotionValueEvent(smoothProgress, "change", (latest: number) => {
+    const idx = Math.min(ALL_EVENTS.length - 1, Math.max(0, Math.round(latest * (ALL_EVENTS.length - 1))))
+    if (idx !== sliderIndex) {
+      setSliderIndex(idx)
+    }
+  })
+
+  const scrollToCard = (index: number) => {
+    if (!sliderContainerRef.current) return
+    const rect = sliderContainerRef.current.getBoundingClientRect()
+    const scrollTop = window.scrollY + rect.top
+    const totalScrollable = sliderContainerRef.current.offsetHeight - window.innerHeight
+    if (totalScrollable <= 0) return
+    const target = scrollTop + (index / (ALL_EVENTS.length - 1)) * totalScrollable
+    window.scrollTo({ top: target, behavior: 'smooth' })
+  }
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    scrollToCard(Math.max(0, sliderIndex - 1))
+  }
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    scrollToCard(Math.min(ALL_EVENTS.length - 1, sliderIndex + 1))
+  }
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
   // High-Performance HTML5 Canvas Grid & Particle Background Animation
   useEffect(() => {
     const canvas = canvasRef.current
@@ -84,8 +322,8 @@ export default function Wins() {
     }
     window.addEventListener('resize', handleResize)
 
-    // Particle pool
-    const particleCount = 45
+    // Lightweight particle pool for smooth 60fps performance
+    const particleCount = 24
     const particles: Array<{
       x: number
       y: number
@@ -150,7 +388,7 @@ export default function Wins() {
       ctx.lineTo(width, scanY)
       ctx.stroke()
 
-      // Render coordinates particles and neon networking strings
+      // Render lightweight coordinates particles
       particles.forEach((p) => {
         p.y += p.speedY
         if (p.y < 0) {
@@ -167,20 +405,6 @@ export default function Wins() {
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
         ctx.fill()
-
-        particles.forEach((p2) => {
-          const dx = p.x - p2.x
-          const dy = p.y - p2.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 100) {
-            ctx.strokeStyle = `rgba(124, 58, 237, ${0.08 * (1 - dist / 100)})`
-            ctx.lineWidth = 0.5
-            ctx.beginPath()
-            ctx.moveTo(p.x, p.y)
-            ctx.lineTo(p2.x, p2.y)
-            ctx.stroke()
-          }
-        })
       })
 
       animationFrameId = requestAnimationFrame(render)
@@ -204,137 +428,26 @@ export default function Wins() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (!splineApp.current) return
+  useMotionValueEvent(scrollYProgress, "change", (latest: number) => {
+    if (!splineCamera.current) return
     try {
-      const camera = splineApp.current.findObjectByName('Camera')
-      if (camera) {
-        camera.rotation.y = latest * Math.PI * 0.4
-      } else {
-        splineApp.current.setZoom(1.0 - latest * 0.1)
-      }
+      splineCamera.current.rotation.y = latest * Math.PI * 0.4
     } catch (e) {}
   })
 
   function onSplineLoad(app: any) {
     splineApp.current = app
+    try {
+      splineCamera.current = app.findObjectByName('Camera')
+    } catch (e) {}
   }
 
-  const deckRef = useRef<HTMLDivElement>(null)
-  const [deckWidth, setDeckWidth] = useState(0)
-  useEffect(() => {
-    const deck = deckRef.current
-    if (!deck) return
-    const observer = new ResizeObserver(() => setDeckWidth(deck.clientWidth))
-    observer.observe(deck)
-    setDeckWidth(deck.clientWidth)
-    return () => observer.disconnect()
-  }, [])
-
-  // Card dimensions
-  const isMobile = viewportWidth < 768
-  const isTablet = viewportWidth >= 768 && viewportWidth < 1024
-  const isTabletOrMobile = viewportWidth < 1024
-  const cardWidth = isMobile ? 290 : (isTablet ? 320 : 360)
-  const gap = 20
-
-  // Calculate slide limit based on viewport constraints
-  const visibleCount = isMobile ? 1 : Math.max(1, Math.min(isTablet ? 2 : 3, Math.floor(((deckWidth || viewportWidth) + gap) / (cardWidth + gap))))
-  const maxSlideIndex = Math.max(0, posts.length - visibleCount)
-
-  // Bounds clamp index
-  const safeActiveIndex = Math.min(activeIndex, maxSlideIndex)
-
-  // Reconcile navigation when Realtime removes cards or the viewport changes.
-  useEffect(() => {
-    if (activeIndex > maxSlideIndex) {
-      setActiveIndex(maxSlideIndex)
-      if (isMobile) deckRef.current?.scrollTo({ left: maxSlideIndex * (cardWidth + gap) })
-    }
-  }, [activeIndex, maxSlideIndex, isMobile, cardWidth])
-
-  const handlePrev = () => {
-    const newIndex = safeActiveIndex > 0 ? safeActiveIndex - 1 : maxSlideIndex
-    setActiveIndex(newIndex)
-    if (isMobile && deckRef.current) {
-      deckRef.current.scrollTo({
-        left: newIndex * (cardWidth + gap),
-        behavior: 'smooth'
-      })
-    }
-  }
-
-  const handleNext = () => {
-    const newIndex = safeActiveIndex < maxSlideIndex ? safeActiveIndex + 1 : 0
-    setActiveIndex(newIndex)
-    if (isMobile && deckRef.current) {
-      deckRef.current.scrollTo({
-        left: newIndex * (cardWidth + gap),
-        behavior: 'smooth'
-      })
-    }
-  }
-
-  const handleDotClick = (index: number) => {
-    setActiveIndex(index)
-    if (isMobile && deckRef.current) {
-      deckRef.current.scrollTo({
-        left: index * (cardWidth + gap),
-        behavior: 'smooth'
-      })
-    }
-  }
-
-  const handleScroll = () => {
-    if (!isMobile || !deckRef.current) return
-    const scrollLeft = deckRef.current.scrollLeft
-    const newIndex = Math.round(scrollLeft / (cardWidth + gap))
-    if (newIndex !== activeIndex && newIndex >= 0 && newIndex <= maxSlideIndex) {
-      setActiveIndex(newIndex)
-    }
-  }
-
-  const pageFlipVariants = {
-    initial: {
-      rotateY: 25,
-      x: 30,
-      opacity: 0,
-      scale: 0.98,
-      transformOrigin: 'left center',
-    },
-    animate: {
-      rotateY: 0,
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transformOrigin: 'center center',
-      transition: {
-        duration: 0.45,
-        ease: [0.22, 1, 0.36, 1],
-      }
-    },
-    exit: {
-      rotateY: -25,
-      x: -30,
-      opacity: 0,
-      scale: 0.98,
-      transformOrigin: 'right center',
-      transition: {
-        duration: 0.4,
-        ease: [0.22, 1, 0.36, 1],
-      }
-    }
-  }
-
-  // Slide translation X
-  const slideX = -safeActiveIndex * (cardWidth + gap)
-
+  
   return (
     <section id="wins" ref={containerRef} style={{
       padding: isTabletOrMobile ? '64px 20px 48px' : '80px 64px 64px',
       background: 'var(--void)',
       position: 'relative',
-      overflow: 'hidden',
     }}>
       {/* HTML5 Cybernetic Grid Canvas */}
       <canvas
@@ -457,1014 +570,175 @@ export default function Wins() {
           MEETS RECOGNITION.
         </motion.h2>
 
-        {/* --- A. NEW INTEGRATED FEATURED WORLD RECORD CERTIFICATE --- */}
-        <div className="featured-record-card" style={{
-          background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.65) 0%, rgba(10, 10, 18, 0.8) 100%)',
-          border: '1.5px solid rgba(245, 158, 11, 0.25)',
-          borderRadius: '16px',
-          padding: isTabletOrMobile ? '24px 16px' : '32px',
-          marginBottom: isTabletOrMobile ? '36px' : '56px',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(245, 158, 11, 0.05)',
-          position: 'relative',
-          overflow: 'hidden',
-          display: 'grid',
-          gridTemplateColumns: isTabletOrMobile ? '1fr' : 'minmax(280px, 1fr) minmax(320px, 1.25fr)',
-          gap: isTabletOrMobile ? '24px' : '40px',
-          alignItems: 'center',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-        }}>
-          {/* Bezel strip highlight */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: '10%',
-            width: '120px',
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, var(--gold), transparent)',
-          }} />
-
-          {/* Column 1: A4 3D tilt frame & Thumbnail Gallery */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '20px',
-            width: '100%',
-          }}>
-            <div style={{
-              perspective: 1000,
-              display: 'flex',
-              justifyContent: 'center',
-              width: '100%',
-            }}>
-              <motion.div
-                onMouseMove={(e) => {
-                  const card = e.currentTarget
-                  const rect = card.getBoundingClientRect()
-                  const x = e.clientX - rect.left - rect.width / 2
-                  const y = e.clientY - rect.top - rect.height / 2
-                  setWrRotateX(-(y / (rect.height / 2)) * 8)
-                  setWrRotateY((x / (rect.width / 2)) * 8)
-                  setWrSheenX(((e.clientX - rect.left) / rect.width) * 100)
-                  setWrSheenY(((e.clientY - rect.top) / rect.height) * 100)
-                }}
-                onMouseEnter={() => setWrHovered(true)}
-                onMouseLeave={() => {
-                  setWrHovered(false)
-                  setWrRotateX(0)
-                  setWrRotateY(0)
-                }}
-                animate={{
-                  rotateX: wrHovered ? wrRotateX : 0,
-                  rotateY: wrHovered ? wrRotateY : 0,
-                  scale: wrHovered ? 1.02 : 1,
-                }}
-                transition={{ type: 'spring', stiffness: 150, damping: 20 }}
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  maxWidth: isTabletOrMobile
-                    ? (wrMediaList[featuredMediaIndex].type === 'certificate' ? '260px' : '100%')
-                    : (wrMediaList[featuredMediaIndex].type === 'certificate' ? '290px' : '420px'),
-                  aspectRatio: wrMediaList[featuredMediaIndex].type === 'certificate' ? '0.707' : '1.333',
-                  borderRadius: '12px',
-                  background: 'rgba(5, 5, 12, 0.95)',
-                  border: wrHovered ? '2px solid rgba(245, 158, 11, 0.6)' : '1px solid rgba(255,255,255,0.06)',
-                  boxShadow: wrHovered
-                    ? '0 25px 50px rgba(0,0,0,0.65), 0 0 30px rgba(245,158,11,0.12)'
-                    : '0 15px 30px rgba(0,0,0,0.45)',
-                  cursor: 'zoom-in',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transformStyle: 'preserve-3d',
-                  transition: 'aspect-ratio 0.4s ease-in-out, max-width 0.4s ease-in-out, border-color 0.3s, box-shadow 0.3s',
-                }}
-                onClick={() => setWrLightbox(true)}
-              >
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={featuredMediaIndex}
-                    src={wrMediaList[featuredMediaIndex].url}
-                    alt={wrMediaList[featuredMediaIndex].title}
-                    variants={pageFlipVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                      const fallback = document.getElementById('wr-embed-placeholder')
-                      if (fallback) fallback.style.display = 'flex'
-                    }}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: wrMediaList[featuredMediaIndex].type === 'certificate' ? 'contain' : 'cover',
-                      zIndex: 2,
-                      filter: wrHovered ? 'contrast(1.05) brightness(1.03)' : 'contrast(0.98) brightness(0.85)',
-                      transition: 'filter 0.3s',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                    }}
-                  />
-                </AnimatePresence>
-
-                <div
-                  id="wr-embed-placeholder"
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'none',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 16,
-                    zIndex: 3,
-                    background: 'linear-gradient(135deg, rgba(17,24,39,0.96) 0%, rgba(10,10,18,0.98) 100%)',
-                    fontFamily: 'Share Tech Mono, monospace',
-                    textAlign: 'center',
-                  }}
-                >
-                  <FiShield size={36} color="var(--gold)" style={{ marginBottom: 12, filter: 'drop-shadow(0 0 8px rgba(245,158,11,0.4))' }} />
-                  <span style={{ color: 'var(--ghost)', fontSize: 13, letterSpacing: '0.05em', marginBottom: 4 }}>TIFA WORLD RECORD</span>
-                  <span style={{ color: 'var(--stone)', fontSize: 10 }}>[ VALID CREDENTIAL DATA ]</span>
-                </div>
-
-                <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle at ${wrSheenX}% ${wrSheenY}%, rgba(255, 255, 255, 0.12) 0%, transparent 60%)`, pointerEvents: 'none', zIndex: 6 }} />
-
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'rgba(10, 10, 18, 0.45)',
-                  opacity: wrHovered ? 1 : 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'opacity 0.3s',
-                  zIndex: 10,
-                }}>
-                  <div style={{
-                    background: 'rgba(10, 10, 18, 0.9)',
-                    padding: '10px 16px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--gold)',
-                    color: 'var(--gold)',
-                    fontFamily: 'Share Tech Mono, monospace',
-                    fontSize: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    boxShadow: '0 0 15px rgba(245, 158, 11, 0.3)',
-                  }}>
-                    <FiMaximize2 size={13} />
-                    <span>EXPAND GALLERY VIEW</span>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Gallery Thumbnail Row */}
-            <div style={{
-              display: 'flex',
-              gap: isTabletOrMobile ? '6px' : '10px',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              width: '100%',
-              maxWidth: isTabletOrMobile ? '300px' : '380px',
-              padding: '6px',
-              background: 'rgba(10, 10, 18, 0.4)',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              borderRadius: '8px',
-            }}>
-              {wrMediaList.map((media, idx) => (
-                <button
-                  key={idx}
-                  onMouseEnter={() => setFeaturedMediaIndex(idx)}
-                  onClick={() => setFeaturedMediaIndex(idx)}
-                  style={{
-                    width: isTabletOrMobile ? '38px' : '46px',
-                    height: isTabletOrMobile ? '28px' : '34px',
-                    borderRadius: '4px',
-                    border: featuredMediaIndex === idx ? '1.5px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.1)',
-                    background: '#07070d',
-                    padding: 0,
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    opacity: featuredMediaIndex === idx ? 1 : 0.55,
-                    transform: featuredMediaIndex === idx ? 'scale(1.08)' : 'scale(1)',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    boxShadow: featuredMediaIndex === idx ? '0 0 8px rgba(245,158,11,0.35)' : 'none',
-                  }}
-                  title={media.title}
-                >
-                  <img
-                    src={media.url}
-                    alt={media.title}
-                    referrerPolicy="no-referrer"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Column 2: Content descriptions */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 16,
-            justifyContent: 'center',
-            alignItems: isTabletOrMobile ? 'center' : 'stretch',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: isTabletOrMobile ? 'center' : 'flex-start', gap: 10, flexWrap: 'wrap', width: '100%' }}>
-              <span style={{
-                fontFamily: 'Share Tech Mono, monospace',
-                fontSize: isTabletOrMobile ? '9px' : '10px',
-                color: 'var(--gold)',
-                background: 'rgba(245, 158, 11, 0.12)',
-                border: '1px solid var(--gold)',
-                borderRadius: '4px',
-                padding: '4px 10px',
-                letterSpacing: isTabletOrMobile ? '0.04em' : '0.1em',
-                fontWeight: 700,
-                boxShadow: '0 0 10px rgba(245, 158, 11, 0.15)',
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-                textAlign: 'center',
-                maxWidth: '100%',
-              }}>
-                ⭐ S-RANK RECORD ACHIEVEMENT
-              </span>
-            </div>
-
-            <h3 style={{
-              fontFamily: 'Rajdhani, sans-serif',
-              fontWeight: 700,
-              fontSize: isTabletOrMobile ? '20px' : '26px',
-              color: 'var(--ghost)',
-              lineHeight: 1.2,
-              margin: 0,
-              textAlign: isTabletOrMobile ? 'center' : 'left',
-            }}>
-              World Record: Students Use Robots to Plant a Micro Forest in Chennai
-            </h3>
-
-            <p style={{
-              color: 'var(--stone)',
-              fontSize: '14px',
-              lineHeight: 1.6,
-              margin: '0 0 12px 0',
-              textAlign: isTabletOrMobile ? 'center' : 'left',
-            }}>
-              On January 25, 2020, at the Anna University campus in Chennai, a remarkable world record attempt took place — instead of humans planting trees, it was student-built robots that did the work. The robots were programmed to pick up saplings, lower them into the soil, and water them. A total of 326 students from 20 centres of SP Robotics Maker Lab, aged between 7 and 17, built and operated these robots to create what is recognized as the world's first micro forest planted by robots.
-            </p>
-            <p style={{
-              color: 'var(--stone)',
-              fontSize: '14px',
-              lineHeight: 1.6,
-              margin: '0 0 12px 0',
-              textAlign: isTabletOrMobile ? 'center' : 'left',
-            }}>
-              The robots were controlled via smartphones over Bluetooth, with one team assembling and operating the robots while another team coded the watering mechanism. The planted saplings were committed to be nurtured for three years by SP Robotics in collaboration with Communitree.
-            </p>
-            <p style={{
-              color: 'var(--stone)',
-              fontSize: '14px',
-              lineHeight: 1.6,
-              margin: '0 0 12px 0',
-              textAlign: isTabletOrMobile ? 'center' : 'left',
-            }}>
-              The initiative was inspired when a student submitted a project featuring a robot planting trees and a friend's robot watering them. The Maker Lab Head, Aarthi Muralitharan, scaled up the idea into a world record attempt to demonstrate that technology can be harnessed to fight climate change and benefit nature.
-            </p>
-            <p style={{
-              color: 'var(--stone)',
-              fontSize: '14px',
-              lineHeight: 1.6,
-              margin: 0,
-              textAlign: isTabletOrMobile ? 'center' : 'left',
-            }}>
-              The event set the world record for <strong style={{ color: 'var(--gold)' }}>"Most Participants with Robots to Create a Micro Forest"</strong> and received a World Record Certificate in recognition of this achievement.
-            </p>
-
-            <div style={{ marginTop: 12, width: '100%', display: 'flex', justifyContent: isTabletOrMobile ? 'center' : 'flex-start' }}>
-              <a
-                href="https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644"
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  window.open("https://www.ndtv.com/chennai-news/chennai-students-use-robots-to-plant-300-saplings-raise-micro-forest-2170644", "_blank")
-                }}
-                style={{
-                  textDecoration: 'none',
-                  fontFamily: 'Share Tech Mono, monospace',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  padding: '12px 16px',
-                  borderRadius: '6px',
-                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 58, 237, 0.15))',
-                  border: '1.5px solid var(--gold)',
-                  boxShadow: '0 0 15px rgba(245, 158, 11, 0.15)',
-                  color: 'var(--gold)',
-                  display: isTabletOrMobile ? 'flex' : 'inline-flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: 8,
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  width: isTabletOrMobile ? '100%' : 'auto',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, var(--gold), var(--monarch))'
-                  e.currentTarget.style.color = '#000'
-                  e.currentTarget.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.4)'
-                  e.currentTarget.style.transform = 'none'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 58, 237, 0.15))'
-                  e.currentTarget.style.color = 'var(--gold)'
-                  e.currentTarget.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.15)'
-                  e.currentTarget.style.transform = 'none'
-                }}
-              >
-                <FiExternalLink size={13} />
-                <span>READ OFFICIAL NDTV REPORT</span>
-              </a>
-            </div>
-          </div>
+        {/* SCROLL CAROUSEL FOR ALL EVENTS */}
         </div>
 
-        {/* Viewport sliding window */}
-        <motion.div 
-          ref={deckRef}
-          className="wins-card-deck"
-          role="region"
-          aria-roledescription="carousel"
-          aria-label="LinkedIn activities"
-          aria-busy={loading}
-          onScroll={handleScroll}
-          initial={{ opacity: 0, y: 60 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-          style={{
-            width: 'auto',
-            overflowX: isMobile ? 'auto' : 'hidden',
-            padding: isMobile ? '20px 24px' : '20px 0',
-            margin: isMobile ? '0 -24px' : '0',
-            position: 'relative',
-            scrollSnapType: isMobile ? 'x mandatory' : 'none',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-          {loading ? (
-            <div style={{ display: 'flex', gap: `${gap}px`, width: 'max-content' }}>
-              {Array.from({ length: visibleCount }).map((_, idx) => (
-                <div 
-                  key={idx} 
-                  className="skeleton" 
-                  style={{ 
-                    width: `${cardWidth}px`, 
-                    height: '450px', 
-                    borderRadius: '16px',
-                    border: '1px solid var(--border)',
-                    background: 'var(--dungeon)',
-                    opacity: 0.35,
-                    animation: 'pulse 1.8s infinite ease-in-out',
-                  }} 
-                />
-              ))}
-            </div>
-          ) : posts.length === 0 ? (
-            <p role="status" style={{ minHeight: 450, display: 'grid', placeItems: 'center', color: 'var(--stone)' }}>No recent activities yet.</p>
-          ) : (
-            <motion.div
-              animate={{ x: isMobile ? 0 : slideX }}
-              transition={{
-                type: 'spring',
-                stiffness: 220,
-                damping: 24,
-              }}
-              style={{
-                display: 'flex',
-                gap: `${gap}px`,
-                width: 'max-content',
-                willChange: 'transform',
-              }}
-            >
-              {posts.map((post, index) => {
-                // Highlight card if inside the current visible viewport slice
-                const isCurrentlyVisible = index >= safeActiveIndex && index < safeActiveIndex + visibleCount
-
-              return (
-                <motion.div
-                  key={post.id}
-                  role="group"
-                  aria-roledescription="slide"
-                  aria-label={`${index + 1} of ${posts.length}: ${post.title}`}
-                  className="activity-card"
-                  style={{
-                    width: `${cardWidth}px`,
-                    height: '450px',
-                    borderRadius: '16px',
-                    background: 'var(--dungeon)',
-                    border: isCurrentlyVisible ? '1.5px solid rgba(6, 182, 212, 0.35)' : '1px solid var(--border)',
-                    boxShadow: isCurrentlyVisible 
-                      ? '0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(6, 182, 212, 0.03)'
-                      : '0 10px 25px rgba(0,0,0,0.5)',
-                    cursor: 'pointer',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transformStyle: 'preserve-3d',
-                    transition: 'border-color 0.3s, box-shadow 0.3s',
-                    scrollSnapAlign: isMobile ? 'center' : 'none',
-                  }}
-                  whileHover={{
-                    y: -8,
-                    borderColor: 'rgba(124, 58, 237, 0.55)',
-                    boxShadow: '0 20px 45px rgba(124, 58, 237, 0.2), inset 0 0 24px rgba(124, 58, 237, 0.08)',
-                  }}
-                >
-                  {/* Image Header */}
-                  <div style={{
-                    width: '100%',
-                    height: '170px',
-                    flexShrink: 0,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    borderBottom: '1px solid var(--border)',
-                    background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(10, 10, 18, 0.98) 100%)',
-                  }}>
-                    {/* Glowing highlight strip */}
-                    <div style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      background: `linear-gradient(90deg, transparent, ${TYPE_COLORS[post.type]}, transparent)`,
-                      zIndex: 5,
-                    }} />
-
-                    <ActivityImages
-                      images={post.images ?? (post.image ? [post.image] : [])}
-                      title={post.title}
-                      color={TYPE_COLORS[post.type]}
-                      label={post.badge || TYPE_LABELS[post.type]}
-                      active={isCurrentlyVisible}
-                    />
-
-                    {/* LinkedIn badge */}
-                    <div style={{
-                      position: 'absolute',
-                      top: '12px',
-                      right: '12px',
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      background: 'rgba(10,102,194,0.25)',
-                      border: '1px solid rgba(10,102,194,0.5)',
-                      backdropFilter: 'blur(8px)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#0A66C2',
-                      fontSize: '15px',
-                      zIndex: 10,
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-                    }}>
-                      <FiLinkedin />
-                    </div>
-
-                    {/* Badge Overlay */}
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '12px',
-                      left: '12px',
-                      zIndex: 10,
-                    }}>
-                      <span className="pill" style={{
-                        background: 'rgba(17, 24, 39, 0.85)',
-                        color: TYPE_COLORS[post.type],
-                        border: `1px solid ${TYPE_COLORS[post.type]}88`,
-                        backdropFilter: 'blur(6px)',
-                        fontWeight: 700,
-                        fontSize: '9px',
-                        letterSpacing: '0.08em',
-                        padding: '4px 10px',
-                        maxWidth: 220,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {post.category || TYPE_LABELS[post.type]}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Body Content */}
-                  <div style={{
-                    padding: '20px 24px 24px',
-                    minHeight: 0,
-                    overflowWrap: 'anywhere',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: 1,
-                    justifyContent: 'space-between',
-                    background: 'linear-gradient(to bottom, var(--dungeon) 0%, rgba(10, 10, 12, 0.95) 100%)',
-                  }}>
-                    <div>
-                      {/* Date */}
-                      <p style={{
-                        fontFamily: 'Share Tech Mono, monospace',
-                        fontSize: '10px',
-                        color: 'var(--stone)',
-                        marginBottom: '6px',
-                        textTransform: 'uppercase',
-                      }}>
-                        [ TRANSMISSION_DATE: {formatDate(post.date)} ]
-                      </p>
-
-                      {/* Title */}
-                      <h3 style={{
-                        fontFamily: 'Rajdhani, sans-serif',
-                        fontWeight: 700,
-                        fontSize: '17px',
-                        color: 'var(--ghost)',
-                        lineHeight: 1.3,
-                        marginBottom: '10px',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}>
-                        {post.title}
-                      </h3>
-
-                      {/* Summary */}
-                      <p style={{
-                        color: 'var(--stone)',
-                        fontSize: '13px',
-                        lineHeight: 1.5,
-                        margin: 0,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}>
-                        {post.summary}
-                      </p>
-                    </div>
-
-                    {/* Footer Actions */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginTop: '12px',
-                      gap: '8px',
-                      borderTop: '0.5px solid var(--border)',
-                      paddingTop: '12px',
-                    }}>
-                      <span style={{
-                        fontFamily: 'Share Tech Mono, monospace',
-                        fontSize: '9px',
-                        color: 'rgba(255,255,255,0.2)',
-                      }}>
-                        {post.featured ? 'FEATURED' : ''}
-                      </span>
-                      <a
-                        href={post.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        tabIndex={isMobile || isCurrentlyVisible ? 0 : -1}
-                        style={{
-                          fontFamily: 'Share Tech Mono, monospace',
-                          fontSize: '11px',
-                          minHeight: '44px',
-                          whiteSpace: 'nowrap',
-                          color: TYPE_COLORS[post.type],
-                          textDecoration: 'none',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontWeight: 700,
-                          transition: 'color 0.2s',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                        onMouseLeave={e => (e.currentTarget.style.color = TYPE_COLORS[post.type])}
-                      >
-                        <span>{isLinkedInUrl(post.url) ? 'View on LinkedIn' : 'View publication'}</span>
-                        <FiExternalLink size={12} />
-                      </a>
-                    </div>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </motion.div>
-          )}
-        </motion.div>
-
-        {/* Dynamic Holographic Controls and Progress dots */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px',
-          marginTop: '32px',
-        }}>
-          {/* Navigation buttons */}
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+        <div ref={sliderContainerRef} className="missing-content-carousel-wrapper" style={{ height: `${ALL_EVENTS.length * 52}vh`, position: 'relative', margin: isTabletOrMobile ? '48px -20px -32px' : '48px -64px -48px' }}>
+          <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+            
+            {/* Left Chevron Button */}
             <button
               onClick={handlePrev}
-              aria-label="Previous activities"
-              disabled={loading || maxSlideIndex === 0}
-              className="btn-ghost"
+              disabled={sliderIndex === 0}
+              aria-label="Previous Achievement"
               style={{
-                width: '44px',
-                height: '44px',
+                position: 'absolute',
+                left: isTabletOrMobile ? '12px' : '32px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 50,
+                width: 48,
+                height: 48,
                 borderRadius: '50%',
+                background: 'rgba(10, 10, 18, 0.75)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(59, 130, 246, 0.35)',
+                color: sliderIndex === 0 ? 'rgba(255, 255, 255, 0.2)' : 'var(--ghost)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: 0,
-                border: '1px solid var(--border)',
-                background: 'rgba(17, 24, 39, 0.4)',
-                cursor: 'pointer',
-                color: 'var(--ghost)',
-                transition: 'all 0.25s',
+                cursor: sliderIndex === 0 ? 'default' : 'pointer',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+                transition: 'all 0.2s ease',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'var(--teal)'
-                e.currentTarget.style.color = 'var(--teal)'
-                e.currentTarget.style.transform = 'scale(1.08)'
+                if (sliderIndex > 0) {
+                  e.currentTarget.style.borderColor = 'var(--gate)'
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)'
+                }
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.color = 'var(--ghost)'
-                e.currentTarget.style.transform = 'scale(1)'
+                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.35)'
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
               }}
             >
-              <FiChevronLeft size={20} />
+              <FiChevronLeft size={24} />
             </button>
 
-            {/* Pagination Indicators - S-Rank Level Steps */}
-            {!isMobile && (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '60vw' }}>
-                {Array.from({ length: maxSlideIndex + 1 }).map((_, i) => (
+            {/* Right Chevron Button */}
+            <button
+              onClick={handleNext}
+              disabled={sliderIndex === ALL_EVENTS.length - 1}
+              aria-label="Next Achievement"
+              style={{
+                position: 'absolute',
+                right: isTabletOrMobile ? '12px' : '32px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                zIndex: 50,
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                background: 'rgba(10, 10, 18, 0.75)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(59, 130, 246, 0.35)',
+                color: sliderIndex === ALL_EVENTS.length - 1 ? 'rgba(255, 255, 255, 0.2)' : 'var(--ghost)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: sliderIndex === ALL_EVENTS.length - 1 ? 'default' : 'pointer',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                if (sliderIndex < ALL_EVENTS.length - 1) {
+                  e.currentTarget.style.borderColor = 'var(--gate)'
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)'
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.35)'
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
+              }}
+            >
+              <FiChevronRight size={24} />
+            </button>
+
+            {/* Carousel sliding track */}
+            <motion.div 
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'row', 
+                height: '100%', 
+                alignItems: 'center',
+                willChange: 'transform',
+                x
+              }}
+            >
+              {ALL_EVENTS.map((event) => (
+                <div
+                  key={event.id}
+                  style={{
+                    width: '100vw',
+                    padding: isTabletOrMobile ? '0 3vw' : '0 5vw',
+                    flexShrink: 0,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <FeaturedRecordCard event={event} />
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Bottom Progress Controls & Counter */}
+            <div style={{
+              position: 'absolute',
+              bottom: '28px',
+              left: 0,
+              right: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '10px',
+              zIndex: 40,
+              pointerEvents: 'auto'
+            }}>
+              {/* Badge Counter */}
+              <div style={{
+                fontFamily: 'Share Tech Mono, monospace',
+                fontSize: 11,
+                letterSpacing: '0.12em',
+                color: 'var(--teal)',
+                background: 'rgba(10, 10, 18, 0.85)',
+                border: '1px solid rgba(6, 182, 212, 0.25)',
+                padding: '4px 14px',
+                borderRadius: '20px',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)',
+              }}>
+                RECORD 0{sliderIndex + 1} / 0{ALL_EVENTS.length}
+              </div>
+
+              {/* Clickable Progress Dots */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {ALL_EVENTS.map((evt, i) => (
                   <button
                     key={i}
-                    onClick={() => handleDotClick(i)}
-                    aria-label={`Go to activity ${i + 1}`}
-                    aria-current={i === safeActiveIndex ? 'step' : undefined}
-                    disabled={loading || posts.length === 0}
+                    onClick={() => scrollToCard(i)}
+                    aria-label={`Go to ${evt.title}`}
                     style={{
-                      width: i === safeActiveIndex ? '28px' : '8px',
+                      width: i === sliderIndex ? '28px' : '8px',
                       height: '8px',
                       borderRadius: '4px',
+                      background: i === sliderIndex ? 'var(--gate)' : 'rgba(255, 255, 255, 0.25)',
+                      boxShadow: i === sliderIndex ? '0 0 10px rgba(59, 130, 246, 0.8)' : 'none',
                       border: 'none',
-                      background: i === safeActiveIndex ? 'var(--gate)' : 'var(--border)',
-                      boxShadow: i === safeActiveIndex ? '0 0 10px rgba(59, 130, 246, 0.6)' : 'none',
+                      padding: 0,
                       cursor: 'pointer',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
-                    title={`Step ${i + 1}`}
                   />
                 ))}
               </div>
-            )}
+            </div>
 
-            <button
-              onClick={handleNext}
-              aria-label="Next activities"
-              disabled={loading || maxSlideIndex === 0}
-              className="btn-ghost"
-              style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 0,
-                border: '1px solid var(--border)',
-                background: 'rgba(17, 24, 39, 0.4)',
-                cursor: 'pointer',
-                color: 'var(--ghost)',
-                transition: 'all 0.25s',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'var(--gate)'
-                e.currentTarget.style.color = 'var(--gate)'
-                e.currentTarget.style.transform = 'scale(1.08)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--border)'
-                e.currentTarget.style.color = 'var(--ghost)'
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
-            >
-              <FiChevronRight size={20} />
-            </button>
           </div>
-
-          <p style={{
-            fontFamily: 'Share Tech Mono, monospace',
-            fontSize: '12px',
-            color: 'var(--stone)',
-            letterSpacing: '0.05em',
-            margin: 0,
-          }}>
-            SYSTEM DECK: {loading ? 'SYNCING' : posts.length === 0 ? 'NO ACTIVITIES' : `ACTIVE SCAN [${safeActiveIndex + 1} / ${maxSlideIndex + 1}]`}
-          </p>
         </div>
-      </div>
-
-      {/* --- B. WORLD RECORD HIGH-RES LIGHTBOX MODAL --- */}
-      <AnimatePresence>
-        {wrLightbox && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '24px',
-            boxSizing: 'border-box',
-          }}>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setWrLightbox(false)}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(5, 5, 10, 0.95)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                cursor: 'zoom-out',
-                zIndex: 1,
-              }}
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              style={{
-                position: 'relative',
-                zIndex: 10,
-                width: '100%',
-                maxWidth: '960px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 16,
-              }}
-            >
-              <div style={{
-                position: 'relative',
-                width: '100%',
-                maxHeight: '75vh',
-                background: 'rgba(10, 10, 18, 0.6)',
-                borderRadius: '16px',
-                border: '2px solid rgba(245, 158, 11, 0.5)',
-                boxShadow: '0 0 50px rgba(245, 158, 11, 0.25)',
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                {/* Left navigation arrow */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setFeaturedMediaIndex((prev) => (prev === 0 ? wrMediaList.length - 1 : prev - 1))
-                  }}
-                  style={{
-                    position: 'absolute',
-                    left: isMobile ? 12 : 20,
-                    width: isMobile ? 36 : 44,
-                    height: isMobile ? 36 : 44,
-                    borderRadius: '50%',
-                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
-                    background: 'rgba(10, 10, 18, 0.85)',
-                    color: 'var(--gold)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s',
-                    zIndex: 20,
-                    outline: 'none',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = 'var(--gold)'
-                    e.currentTarget.style.transform = 'scale(1.08)'
-                    e.currentTarget.style.boxShadow = '0 0 10px rgba(245,158,11,0.5)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)'
-                    e.currentTarget.style.transform = 'scale(1)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <FiChevronLeft size={22} />
-                </button>
-
-                {/* Right navigation arrow */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setFeaturedMediaIndex((prev) => (prev === wrMediaList.length - 1 ? 0 : prev + 1))
-                  }}
-                  style={{
-                    position: 'absolute',
-                    right: isMobile ? 12 : 20,
-                    width: isMobile ? 36 : 44,
-                    height: isMobile ? 36 : 44,
-                    borderRadius: '50%',
-                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
-                    background: 'rgba(10, 10, 18, 0.85)',
-                    color: 'var(--gold)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s',
-                    zIndex: 20,
-                    outline: 'none',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = 'var(--gold)'
-                    e.currentTarget.style.transform = 'scale(1.08)'
-                    e.currentTarget.style.boxShadow = '0 0 10px rgba(245,158,11,0.5)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)'
-                    e.currentTarget.style.transform = 'scale(1)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <FiChevronRight size={22} />
-                </button>
-
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={featuredMediaIndex}
-                    src={wrMediaList[featuredMediaIndex].url}
-                    alt={wrMediaList[featuredMediaIndex].title}
-                    variants={pageFlipVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                      const backupModal = document.getElementById('wr-backup-modal')
-                      if (backupModal) backupModal.style.display = 'flex'
-                    }}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '75vh',
-                      display: 'block',
-                      objectFit: 'contain',
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                    }}
-                  />
-                </AnimatePresence>
-
-                <div
-                  id="wr-backup-modal"
-                  style={{
-                    display: 'none',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: isMobile ? '24px 16px' : '48px',
-                    background: 'rgba(10, 10, 18, 0.98)',
-                    fontFamily: 'Share Tech Mono, monospace',
-                    width: '100%',
-                    height: '400px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <FiShield size={64} color="var(--gold)" style={{ marginBottom: 20, filter: 'drop-shadow(0 0 15px rgba(245,158,11,0.5))' }} />
-                  <h3 style={{ color: 'var(--ghost)', fontSize: isMobile ? 16 : 20, letterSpacing: '0.1em', marginBottom: 12 }}>
-                    TIFA WORLD RECORD OFFICIAL VERIFICATION
-                  </h3>
-                  <p style={{ color: 'var(--stone)', fontSize: isMobile ? 11 : 13, maxWidth: '460px', lineHeight: 1.6, marginBottom: 24 }}>
-                    Students designed and operated customized mobile robotic platforms to successfully plant the world's first robot-assisted micro forest at Anna University, Chennai.
-                  </p>
-                  <div style={{
-                    border: '1.5px solid var(--gold)',
-                    background: 'rgba(245, 158, 11, 0.06)',
-                    padding: isMobile ? '8px 12px' : '8px 16px',
-                    borderRadius: 4,
-                    color: 'var(--gold)',
-                    fontSize: isMobile ? '10px' : '12px',
-                    boxShadow: '0 0 10px rgba(245, 158, 11, 0.15)',
-                    wordBreak: 'break-all',
-                    maxWidth: '100%',
-                  }}>
-                    CREDENTIAL SERIAL: TIFA-WORLD-RECORD-2020-01-25-MICRO-FOREST
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setWrLightbox(false)}
-                  style={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 16,
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    border: '1.5px solid rgba(245, 158, 11, 0.4)',
-                    background: 'rgba(10, 10, 18, 0.85)',
-                    color: 'var(--gold)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.25s',
-                    outline: 'none',
-                    zIndex: 100,
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = 'var(--gold)'
-                    e.currentTarget.style.transform = 'scale(1.08) rotate(90deg)'
-                    e.currentTarget.style.boxShadow = '0 0 10px rgba(245,158,11,0.5)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.4)'
-                    e.currentTarget.style.transform = 'scale(1) rotate(0deg)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <FiX size={18} />
-                </button>
-              </div>
-
-              <div style={{
-                background: 'rgba(10, 10, 18, 0.9)',
-                border: '1.5px solid rgba(124, 58, 237, 0.4)',
-                borderRadius: 12,
-                padding: isMobile ? '16px 20px' : '20px 28px',
-                backdropFilter: 'blur(10px)',
-                display: 'flex',
-                flexDirection: isMobile ? 'column' : 'row',
-                justifyContent: 'space-between',
-                alignItems: isMobile ? 'stretch' : 'center',
-                gap: isMobile ? 16 : 12,
-                color: 'var(--stone)',
-                fontFamily: 'Share Tech Mono, monospace',
-                fontSize: 12,
-                boxShadow: '0 20px 45px rgba(0,0,0,0.6)',
-              }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ color: 'var(--monarch)', fontWeight: 'bold' }}>// DIVINE VERIFICATION LOG DETECTED</span>
-                  <span style={{ color: 'var(--ghost)', fontSize: isMobile ? 13 : 15, fontFamily: 'Rajdhani, sans-serif', fontWeight: 600 }}>
-                    {wrMediaList[featuredMediaIndex].title} ({featuredMediaIndex + 1}/{wrMediaList.length})
-                  </span>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: isMobile ? 20 : 40, 
-                  justifyContent: isMobile ? 'space-between' : 'flex-start',
-                  alignItems: 'center' 
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'flex-start' : 'flex-end', gap: 2 }}>
-                    <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>RECORD ID</span>
-                    <span style={{ color: 'var(--teal)' }}>TIFA_8ffd0025</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-                    <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>SYSTEM CLASS</span>
-                    <span style={{ color: 'var(--gold)', fontWeight: 'bold', letterSpacing: '0.1em' }}>S-RANK VERIFIED</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       <style>{`
         #wins a:focus-visible, #wins button:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }

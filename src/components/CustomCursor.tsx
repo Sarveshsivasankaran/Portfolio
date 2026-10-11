@@ -129,28 +129,20 @@ export default function CustomCursor() {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: 32,
-          height: 32,
-          marginLeft: -16,
-          marginTop: -16,
-          borderRadius: '50%',
-          border: '2px solid rgba(168, 85, 247, 0.8)',
           pointerEvents: 'none',
-          zIndex: 9999,
-          transition: 'width 0.2s, height 0.2s, margin 0.2s, background-color 0.2s, border-color 0.2s',
+          zIndex: 99999,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          mixBlendMode: 'difference',
+          backdropFilter: 'blur(1px)',
+          WebkitBackdropFilter: 'blur(1px)',
         }}
       >
-        <div style={{
-          width: isHovering ? 0 : 4,
-          height: isHovering ? 0 : 4,
-          backgroundColor: 'rgba(168, 85, 247, 1)',
-          borderRadius: '50%',
-          transition: 'width 0.2s, height 0.2s'
-        }} />
+        <img
+          src="/cursor-logo.png"
+          alt="Space Invader Cursor"
+          className="cursor-inner-logo"
+        />
       </div>
       <style>{`
         body {
@@ -159,13 +151,44 @@ export default function CustomCursor() {
         a, button, [role="button"], input, textarea, select {
           cursor: none;
         }
+        .custom-cursor {
+          width: 36px;
+          height: 36px;
+          margin-left: -18px;
+          margin-top: -18px;
+          background-color: rgba(10, 10, 18, 0.45);
+          border: 1.5px solid rgba(168, 85, 247, 0.7);
+          box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+          border-radius: 50%;
+          transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                      height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                      margin 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                      background-color 0.2s,
+                      border-color 0.2s,
+                      box-shadow 0.2s;
+        }
         .custom-cursor.hover {
-          width: 56px !important;
-          height: 56px !important;
-          margin-left: -28px !important;
-          margin-top: -28px !important;
-          background-color: rgba(168, 85, 247, 0.1) !important;
+          width: 52px !important;
+          height: 52px !important;
+          margin-left: -26px !important;
+          margin-top: -26px !important;
+          background-color: rgba(168, 85, 247, 0.15) !important;
           border-color: rgba(168, 85, 247, 1) !important;
+          box-shadow: 0 0 20px rgba(168, 85, 247, 0.6) !important;
+        }
+        .cursor-inner-logo {
+          width: 18px;
+          height: 18px;
+          object-fit: contain;
+          image-rendering: pixelated;
+          filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.6));
+          transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s;
+          user-select: none;
+          pointer-events: none;
+        }
+        .custom-cursor.hover .cursor-inner-logo {
+          transform: scale(1.3);
+          filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.95)) brightness(1.15);
         }
       `}</style>
     </>
