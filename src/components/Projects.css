@@ -1,9 +1,8 @@
 .projects-dimension {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   background: var(--void);
-  padding: 96px clamp(20px, 4vw, 64px) 72px;
+  padding: 80px clamp(20px, 4vw, 64px) 64px;
 }
 .projects-heading-row,
 .projects-intro,
@@ -386,6 +385,38 @@
   z-index: 1;
   mask-image: linear-gradient(transparent, #000 25%, #000 75%, transparent);
 }
+.projects-energy {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.projects-energy span {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: url(/characters/sarvesh-projects-wbg.png);
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center bottom;
+  background: linear-gradient(0deg, #000 5%, var(--monarch) 25%, #000 46%, var(--monarch) 65%, #000 88%);
+  background-size: 100% 250%;
+  transform: scale(1.075, 1.025);
+  transform-origin: 50% 97%;
+  opacity: 0.9;
+  animation: projects-aura-flow 4s linear infinite;
+}
+.projects-energy span:nth-child(2) {
+  transform: scale(1.2, 1.05);
+  opacity: 0.25;
+  animation-delay: -1.6s;
+}
+.projects-energy span:nth-child(3) {
+  transform: scale(1.35, 1.07);
+  opacity: 0.09;
+}
+@keyframes projects-aura-flow {
+  to { background-position: 0 250%; }
+}
+
 .room-grid {
   position: absolute;
   inset: -20% 0 -70%;
@@ -930,4 +961,103 @@
   .project-portal {
     filter: none;
   }
+}
+
+.projects-scroll-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.projects-sidebar {
+  width: 300px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.projects-sidebar img {
+  height: 80%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.projects-carousel {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 0 50px;
+  height: 100%;
+  width: max-content;
+}
+
+.project-card {
+  width: 500px;
+  height: 70%;
+  background: var(--dungeon);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 12px 36px #0006;
+  flex-shrink: 0;
+}
+
+.project-image-placeholder {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #111;
+}
+
+.project-screenshot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.project-image-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 12px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+.project-info {
+  padding: 24px 32px;
+  border-top: 1px solid var(--border);
+  background: var(--void);
+}
+
+.project-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.project-info h3 {
+  font: 600 28px/1.2 "Rajdhani", sans-serif;
+  color: var(--ghost);
+  margin: 0;
+}
+
+.project-info p {
+  color: var(--stone);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
 }

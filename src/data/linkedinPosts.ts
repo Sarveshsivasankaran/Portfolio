@@ -6,13 +6,32 @@ export interface LinkedInPost {
   url: string
   type: 'post' | 'article' | 'certificate' | 'project'
   badge: string
-  image: string
+  image?: string
   images?: string[]
+  imageAlt?: string
+  imagePosition?: string
+  imagePlaceholder?: string
   category?: string
   featured?: boolean
 }
 
 export const LINKEDIN_POSTS: LinkedInPost[] = [
+  {
+    "id": 0,
+    "title": "🚀 From 650+ Teams to the Finals of Acentra Health’s Build to Care Hackathon 2026!",
+    "summary": "Proud to share that our team reached the finals of the Hackforge.ai × Acentra Health “Build to Care” Hackathon 2026! After the first-round Codeathon at Rajalakshmi Engineering College, we advanced to the finals, competing among 34 teams selected from 650+ teams across Chennai, Hyderabad, Bengaluru, and beyond. We engineered ClaimShield Nexus — an AI-powered intelligence platform helping healthcare payers and Special Investigation Units (SIUs) detect suspicious claims, uncover fraudulent collusions, and prioritize investigations.",
+    "date": "2026-10-11",
+    "url": "https://lnkd.in/p/gdiunmfi",
+    "type": "project",
+    "badge": "GRAND FINALIST",
+    "image": "/acentra_hackathon_1.png",
+    "images": [
+      "/acentra_hackathon_1.png",
+      "/acentra_hackathon_4.png",
+      "/acentra_hackathon_2.png",
+      "/acentra_hackathon_3.png"
+    ]
+  },
   {
     "id": 1,
     "title": "\ud83c\udf1f What a Journey \u2013 SIH Internal Hackathon 2025 (Software Edition)! \ud83c\udf1f",
@@ -68,10 +87,10 @@ export const LINKEDIN_POSTS: LinkedInPost[] = [
     "title": "\u2726 TEXPLORE Magazine \u2726",
     "summary": "Displayed in Texplore Magazine 2k26 for CSE Department in Rajalakshmi Engineering College, As Speaker in Student Organisations chronicle",
     "date": "2026-02-15",
-    "url": "https://Recmagazine.vercel.app",
+    "url": "https://lnkd.in/p/gbe2Sgep",
     "type": "certificate",
     "badge": "KEYNOTE SPEAKER",
-    "image": "https://media.licdn.com/dms/image/v2/D562DAQFw10yp8FLnZA/profile-treasury-image-shrink_800_800/B56Z5i.579IQAI-/0/1779777118480?e=1780484400&v=beta&t=jZzzDfomBELQoQ_MnaR9xR4WF4u8HDftp1QrYDYopc0"
+    "image": "/texplore_magazine_2026.png"
   },
   {
     "id": 7,

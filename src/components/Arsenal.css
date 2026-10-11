@@ -1,4 +1,4 @@
-.arsenal-section { padding: 96px 4vw 80px; background: var(--dungeon); position: relative; overflow: hidden; }
+.arsenal-section { padding: 80px 4vw 64px; background: var(--dungeon); position: relative; overflow: hidden; }
 .arsenal-heading, .arsenal-intro, .arsenal-filters, .arsenal-universe { max-width: 1440px; margin-inline: auto; }
 .arsenal-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; }
 .arsenal-heading h2 { margin:0; }
@@ -16,7 +16,7 @@
 .arsenal-filters button:hover, .arsenal-filters select:hover { border-color:var(--monarch); }
 .arsenal-filters label { display:flex; align-items:center; gap:10px; color:var(--stone); font:11px 'Share Tech Mono',monospace; }
 .arsenal-section button:focus-visible, .arsenal-section select:focus-visible { outline:2px solid var(--teal); outline-offset:5px; }
-.arsenal-scene { position:relative; isolation:isolate; aspect-ratio:16/9; min-height:650px; perspective:1000px; margin-top:34px; }
+.arsenal-scene { position:relative; isolation:isolate; aspect-ratio:16/9; min-height:650px; perspective:1000px; margin-top:34px; overflow:hidden; max-width:100%; }
 .arsenal-depth { position:absolute; inset:0; pointer-events:none; z-index:0; }
 .arsenal-halo { position:absolute; width:55%; height:85%; top:5%; left:22.5%; background:radial-gradient(ellipse,color-mix(in srgb,var(--monarch) 17%,transparent),transparent 65%); }
 .arsenal-orbit { position:absolute; border:1px solid color-mix(in srgb,var(--monarch) 40%,transparent); border-radius:50%; box-shadow:0 0 18px color-mix(in srgb,var(--monarch) 12%,transparent); }
