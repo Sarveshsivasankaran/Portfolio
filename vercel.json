@@ -1,8 +1,15 @@
 {
-  "crons": [{ "path": "/api/cron/linkedin", "schedule": "30 3 * * *" }],
-  "functions": { "api/cron/linkedin.mjs": { "maxDuration": 120 } },
+  "crons": [
+    { "path": "/api/cron/linkedin", "schedule": "30 3 * * *" },
+    { "path": "/api/cron/followers", "schedule": "0 */6 * * *" }
+  ],
+  "functions": {
+    "api/cron/linkedin.mjs": { "maxDuration": 120 },
+    "api/cron/followers.mjs": { "maxDuration": 30 }
+  },
   "rewrites": [
     { "source": "/admin/activities", "destination": "/index.html" },
     { "source": "/admin/activities/", "destination": "/index.html" }
   ]
 }
+
