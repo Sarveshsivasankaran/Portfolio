@@ -1,7 +1,7 @@
 {
   "crons": [
     { "path": "/api/cron/linkedin", "schedule": "30 3 * * *" },
-    { "path": "/api/cron/followers", "schedule": "0 */6 * * *" }
+    { "path": "/api/cron/followers", "schedule": "0 3 * * *" }
   ],
   "functions": {
     "api/cron/linkedin.mjs": { "maxDuration": 120 },
