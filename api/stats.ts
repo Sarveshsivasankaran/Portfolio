@@ -3,7 +3,7 @@ import axios from 'axios'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = 'https://fxnconsxvbmpkmsxjpjq.supabase.co'
-const FALLBACK_LINKEDIN_FOLLOWERS = 5259
+const FALLBACK_LINKEDIN_FOLLOWERS = 5328
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .maybeSingle()
 
         if (data && typeof data.value === 'number' && data.value > 0) {
-          linkedinFollowers = data.value
+          linkedinFollowers = Math.max(FALLBACK_LINKEDIN_FOLLOWERS, data.value)
         }
       }
     } catch {

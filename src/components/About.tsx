@@ -20,7 +20,7 @@ export default function About() {
 
   // Live dynamic telemetry stats
   const [stats, setStats] = useState({
-    linkedinFollowers: 5259,
+    linkedinFollowers: 5328,
     githubFollowers: 33,
     githubRepos: 22,
     isLive: false,
@@ -52,7 +52,7 @@ export default function About() {
         if (!active || !data) return
         setStats(prev => ({
           ...prev,
-          linkedinFollowers: data.linkedinFollowers || prev.linkedinFollowers,
+          linkedinFollowers: Math.max(5328, data.linkedinFollowers || 0),
           githubFollowers: data.githubFollowers || prev.githubFollowers,
           githubRepos: data.githubRepos || prev.githubRepos,
           isLive: true,

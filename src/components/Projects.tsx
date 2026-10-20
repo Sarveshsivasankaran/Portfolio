@@ -1,11 +1,139 @@
 import { useMemo, useRef, useState } from "react";
-import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { FiExternalLink, FiGithub, FiGitBranch, FiStar } from "react-icons/fi";
 import { useGitHubRepos, type GitHubRepo } from "../hooks/useGitHubRepos";
 import "./Projects.css";
 
-const titleOf = (repo: GitHubRepo) => repo.name.replace(/[-_]+/g, " ");
-const safeLink = (url: string | null) => {
+interface CuratedProjectDefinition {
+  key: string;
+  repoName: string;
+  displayTitle: string;
+  description: string;
+  language: string;
+  defaultStars: number;
+  defaultForks: number;
+  homepage: string | null;
+  match: (repo: GitHubRepo) => boolean;
+}
+
+const TARGET_PROJECTS: CuratedProjectDefinition[] = [
+  {
+    key: "ClaimShield_Nexus",
+    repoName: "ClaimShield_Nexus",
+    displayTitle: "ClaimShield Nexus",
+    description:
+      "AI-powered healthcare fraud, waste, and abuse (FWA) intelligence platform combining ML anomaly detection, explainable risk scoring, and graph network analysis.",
+    language: "Python / React",
+    defaultStars: 1,
+    defaultForks: 0,
+    homepage: null,
+    match: (r) => /claimshield/i.test(r.name),
+  },
+  {
+    key: "CacheFusion",
+    repoName: "CacheFusion",
+    displayTitle: "CacheFusion",
+    description:
+      "High-performance hybrid LSM-tree inspired Java cache library featuring multi-tiered memory architecture, selectable eviction policies (LRU/LFU), and live React dashboard.",
+    language: "Java / React",
+    defaultStars: 1,
+    defaultForks: 0,
+    homepage: null,
+    match: (r) => /cachefusion/i.test(r.name),
+  },
+  {
+    key: "Students-Notes-Manager---Notezilla",
+    repoName: "Students-Notes-Manager---Notezilla",
+    displayTitle: "Notezilla 2.0",
+    description:
+      "Full-stack academic notes and study ecosystem for REC students featuring Supabase storage, Google Drive faculty sync, role-based dashboards, and AI study tools.",
+    language: "JavaScript / React",
+    defaultStars: 2,
+    defaultForks: 0,
+    homepage: "https://notezilla-blond.vercel.app",
+    match: (r) => /notezilla/i.test(r.name) || /students-notes-manager/i.test(r.name),
+  },
+  {
+    key: "Visualec",
+    repoName: "Visualec",
+    displayTitle: "Visualec",
+    description:
+      "AI-powered vision-based adaptive grid energy management system that monitors room occupancy via computer vision and dynamically powers localized zones.",
+    language: "Python / FastAPI",
+    defaultStars: 1,
+    defaultForks: 0,
+    homepage: null,
+    match: (r) => /visualec/i.test(r.name),
+  },
+  {
+    key: "Telegram-Bot-Beru",
+    repoName: "Telegram-Bot-Beru",
+    displayTitle: "Telegram Bot Beru",
+    description:
+      "Intelligent Telegram assistant powered by Beru-AI for automated task execution, real-time contextual summaries, custom workflows, and interactive conversational utilities.",
+    language: "Python",
+    defaultStars: 1,
+    defaultForks: 0,
+    homepage: "https://telegram-bot-beru.onrender.com/",
+    match: (r) => /telegram-bot-beru/i.test(r.name) || (/beru/i.test(r.name) && /bot/i.test(r.name)),
+  },
+  {
+    key: "Disaster-Management-System",
+    repoName: "Disaster-Management-System",
+    displayTitle: "Disaster Management System",
+    description:
+      "Comprehensive situational awareness dashboard integrating geospatial hazard tracking, real-time IoT sensors, emergency resource coordination, and public safety alerts.",
+    language: "JavaScript / HTML",
+    defaultStars: 1,
+    defaultForks: 1,
+    homepage: "https://disaster-management-system-three.vercel.app",
+    match: (r) => /disaster-management/i.test(r.name),
+  },
+  {
+    key: "Smart_Buoy",
+    repoName: "Smart_Buoy",
+    displayTitle: "Smart Buoy",
+    description:
+      "Real-time marine oceanographic and disaster monitoring buoy streaming telemetry data for early tsunami/cyclone warnings and environmental hazard tracking.",
+    language: "C++ / IoT",
+    defaultStars: 1,
+    defaultForks: 0,
+    homepage: null,
+    match: (r) => /smart_buoy/i.test(r.name) || /smart-buoy/i.test(r.name),
+  },
+  {
+    key: "Water-Quality-monitoring-ML-model",
+    repoName: "Water-Quality-monitoring-ML-model",
+    displayTitle: "Water Quality ML Monitor",
+    description:
+      "Machine learning risk prediction model assessing water potability and contamination thresholds through multi-parametric sensor data and classification pipelines.",
+    language: "Python / ML",
+    defaultStars: 1,
+    defaultForks: 0,
+    homepage: null,
+    match: (r) => /water-quality/i.test(r.name),
+  },
+  {
+    key: "Baby_monitoring_system",
+    repoName: "Baby_monitoring_system",
+    displayTitle: "Baby Monitoring System",
+    description:
+      "Smart IoT infant monitoring system streaming real-time biometric and environmental telemetry to Arduino IoT Cloud for proactive safety notifications.",
+    language: "C++ / Arduino",
+    defaultStars: 1,
+    defaultForks: 0,
+    homepage: null,
+    match: (r) => /^baby/i.test(r.name) || /baby_monitoring_system/i.test(r.name),
+  },
+];
+
+const DISPLAY_TITLES: Record<string, string> = Object.fromEntries(
+  TARGET_PROJECTS.map((p) => [p.repoName, p.displayTitle])
+);
+
+const titleOf = (repo: GitHubRepo) => DISPLAY_TITLES[repo.name] || repo.name.replace(/[-_]+/g, " ");
+
+const safeLink = (url?: string | null) => {
   try {
     const parsed = new URL(url || "");
     return ["https:", "http:"].includes(parsed.protocol) ? parsed.href : null;
@@ -24,27 +152,24 @@ export default function Projects() {
     offset: ["start start", "end end"]
   });
 
-  const filtered = useMemo(() => {
-    const sorted = repos
-      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime() || a.name.localeCompare(b.name));
+  const filtered = useMemo<GitHubRepo[]>(() => {
+    return TARGET_PROJECTS.map((target, index) => {
+      const live = repos.find(target.match);
 
-    const major = sorted.slice(0, 10);
-
-    const githubCard: GitHubRepo = {
-      id: 999999999,
-      name: 'View All on GitHub',
-      description: 'Everything else lives on my GitHub profile. Explore all my other projects, contributions, and active repositories.',
-      html_url: 'https://github.com/Sarveshsivasankaran',
-      homepage: 'https://github.com/Sarveshsivasankaran',
-      stargazers_count: 0,
-      forks_count: 0,
-      language: 'GitHub',
-      topics: [],
-      updated_at: new Date().toISOString(),
-      pushed_at: new Date().toISOString()
-    };
-
-    return [...major, githubCard];
+      return {
+        id: live?.id ?? (1000 + index),
+        name: live?.name || target.repoName,
+        description: live?.description?.trim() || target.description,
+        html_url: live?.html_url || `https://github.com/Sarveshsivasankaran/${target.repoName}`,
+        homepage: safeLink(live?.homepage) || safeLink(target.homepage),
+        stargazers_count: live?.stargazers_count ?? target.defaultStars,
+        forks_count: live?.forks_count ?? target.defaultForks,
+        language: live?.language || target.language,
+        topics: live?.topics?.length ? live.topics : [],
+        updated_at: live?.updated_at || new Date().toISOString(),
+        pushed_at: live?.pushed_at || new Date().toISOString(),
+      };
+    });
   }, [repos]);
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -56,10 +181,6 @@ export default function Projects() {
       setActiveIndex(idx);
     }
   });
-
-  // Orbit rotation based on scroll (1 full rotation over the entire section)
-  // (Left intact in case we need it, though orbit is being replaced)
-  const rotation = useTransform(scrollYProgress, [0, 1], [0, 360]);
 
   return (
     <section id="projects" ref={containerRef} className="projects-dimension" style={{ position: 'relative', height: '400vh', background: 'transparent' }}>
@@ -80,25 +201,89 @@ export default function Projects() {
               alignItems: 'center',
               borderTop: '1px solid rgba(255, 255, 255, 0.1)',
               paddingTop: 16,
-              marginBottom: 64,
+              marginBottom: 48,
+              pointerEvents: 'auto',
             }}
           >
-            <span style={{
-              fontFamily: 'Share Tech Mono, monospace',
-              fontSize: 12,
-              color: 'var(--stone)',
-              letterSpacing: '0.1em'
-            }}>
-              <span style={{ color: 'var(--monarch)' }}>05</span> PROJECTS
-            </span>
-            <span style={{
-              fontFamily: 'serif',
-              fontStyle: 'italic',
-              color: 'var(--stone)',
-              fontSize: 14
-            }}>
-              Where theory meets reality
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span style={{
+                fontFamily: 'Share Tech Mono, monospace',
+                fontSize: 12,
+                color: 'var(--stone)',
+                letterSpacing: '0.1em'
+              }}>
+                <span style={{ color: 'var(--monarch)' }}>05</span> PROJECTS
+              </span>
+              <span style={{
+                fontFamily: 'Share Tech Mono, monospace',
+                fontSize: 11,
+                color: 'var(--teal)',
+                background: 'rgba(6, 182, 212, 0.1)',
+                border: '1px solid rgba(6, 182, 212, 0.25)',
+                padding: '2px 8px',
+                borderRadius: 4,
+                letterSpacing: '0.08em',
+              }}>
+                {String(activeIndex + 1).padStart(2, '0')} / {String(filtered.length).padStart(2, '0')}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              <span style={{
+                fontFamily: 'serif',
+                fontStyle: 'italic',
+                color: 'var(--stone)',
+                fontSize: 14
+              }}>
+                Where theory meets reality
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button
+                  type="button"
+                  aria-label="Previous project"
+                  disabled={activeIndex === 0}
+                  onClick={() => setActiveIndex((prev) => Math.max(0, prev - 1))}
+                  style={{
+                    background: 'rgba(17, 24, 39, 0.8)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: activeIndex === 0 ? 'var(--border)' : 'var(--ghost)',
+                    borderRadius: '6px',
+                    width: '30px',
+                    height: '30px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: activeIndex === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '16px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next project"
+                  disabled={activeIndex === filtered.length - 1}
+                  onClick={() => setActiveIndex((prev) => Math.min(filtered.length - 1, prev + 1))}
+                  style={{
+                    background: 'rgba(17, 24, 39, 0.8)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: activeIndex === filtered.length - 1 ? 'var(--border)' : 'var(--ghost)',
+                    borderRadius: '6px',
+                    width: '30px',
+                    height: '30px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: activeIndex === filtered.length - 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '16px',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  ›
+                </button>
+              </div>
+            </div>
           </motion.div>
 
           {/* Huge Title */}
@@ -114,7 +299,7 @@ export default function Projects() {
               lineHeight: 1,
               textTransform: 'uppercase',
               color: 'var(--ghost)',
-              marginBottom: 64,
+              marginBottom: 48,
               letterSpacing: '-0.02em',
               textAlign: 'left'
             }}
@@ -137,7 +322,6 @@ export default function Projects() {
           </motion.h2>
         </div>
 
-        {/* Character positioned at the bottom */}
         {/* Character positioned at the bottom right */}
         <div style={{ position: 'absolute', inset: 0, display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', paddingRight: '10%', pointerEvents: 'none', zIndex: 20 }}>
           <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute' }}>
@@ -167,13 +351,12 @@ export default function Projects() {
         </div>
 
         {/* Scroll-driven Horizontal Projects List */}
-        {/* Scroll-driven Horizontal Projects List */}
         <div style={{ 
           position: 'absolute', 
-          bottom: '10%', 
+          bottom: '8%', 
           left: '0%', 
           width: '100%', 
-          height: '420px', 
+          height: '430px', 
           display: 'flex', 
           alignItems: 'center', 
           pointerEvents: 'none', 
@@ -194,51 +377,82 @@ export default function Projects() {
             ) : (
               filtered.map((repo, i) => {
                 const isActive = i === activeIndex;
-
-                const realScreenshot = repo.id === 999999999 
-                  ? `https://socialify.git.ci/Sarveshsivasankaran/Portfolio/image?font=Inter&language=1&name=1&owner=1&pattern=Circuit%20Board&theme=Dark`
-                  : `https://socialify.git.ci/Sarveshsivasankaran/${repo.name}/image?font=Inter&language=1&name=1&owner=1&pattern=Circuit%20Board&theme=Dark`;
+                const realScreenshot = `https://socialify.git.ci/Sarveshsivasankaran/${repo.name}/image?font=Inter&language=1&name=1&owner=1&pattern=Circuit%20Board&theme=Dark`;
 
                 return (
                   <motion.div
-                    key={repo.id}
-                    animate={{ opacity: isActive ? 1 : 0.4, scale: isActive ? 1 : 0.9 }}
+                    key={repo.name}
+                    onClick={() => setActiveIndex(i)}
+                    animate={{ 
+                      opacity: isActive ? 1 : 0.45, 
+                      scale: isActive ? 1 : 0.92,
+                    }}
                     style={{
                       background: 'var(--dungeon)', 
-                      border: '1px solid var(--border)', 
+                      border: isActive ? '1px solid rgba(0, 212, 255, 0.4)' : '1px solid var(--border)', 
                       borderRadius: 16,
                       display: 'flex', 
                       flexDirection: 'column', 
                       overflow: 'hidden', 
-                      boxShadow: isActive ? '0 12px 40px rgba(0, 212, 255, 0.2)' : 'none',
+                      boxShadow: isActive ? '0 16px 48px rgba(0, 212, 255, 0.22)' : 'none',
                       width: 340,
-                      height: 380,
+                      height: 390,
                       flexShrink: 0,
                       transformOrigin: 'center center',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.3s ease',
                     }}
                     transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                   >
                     {/* Image Section */}
-                    <div className="project-image-placeholder" style={{ position: 'relative', overflow: 'hidden', background: '#111', height: '160px', flexShrink: 0 }}>
+                    <div className="project-image-placeholder" style={{ position: 'relative', overflow: 'hidden', background: '#0b0f19', height: '155px', flexShrink: 0 }}>
                       <img 
                         src={realScreenshot} 
                         className="project-screenshot" 
                         alt={titleOf(repo)} 
                         loading="lazy" 
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} 
                       />
                     </div>
 
                     {/* Info Section */}
-                    <div style={{ padding: '24px', background: 'var(--void)', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                          <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 600, fontFamily: 'Rajdhani, sans-serif', color: 'var(--ghost)' }}>{titleOf(repo)}</h3>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--stone)' }}><FiGitBranch aria-hidden="true" /> {repo.forks_count}</span>
+                    <div style={{ padding: '20px 24px 24px', background: 'var(--void)', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: 12 }}>
+                          <h3 style={{ margin: 0, fontSize: '19px', fontWeight: 600, fontFamily: 'Rajdhani, sans-serif', color: 'var(--ghost)' }}>{titleOf(repo)}</h3>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--stone)', flexShrink: 0 }}><FiGitBranch aria-hidden="true" /> {repo.forks_count}</span>
                        </div>
-                       <div style={{ display: 'flex', gap: '12px', marginBottom: 16 }}>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 12 }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--gate)' }}><FiStar aria-hidden="true" /> {repo.stargazers_count} stars</span>
+                          {repo.language && (
+                            <span style={{
+                              fontFamily: 'Share Tech Mono, monospace',
+                              fontSize: '10px',
+                              color: 'var(--teal)',
+                              background: 'rgba(6, 182, 212, 0.1)',
+                              border: '1px solid rgba(6, 182, 212, 0.2)',
+                              padding: '1px 6px',
+                              borderRadius: '3px',
+                            }}>
+                              {repo.language}
+                            </span>
+                          )}
                        </div>
-                       <p style={{ color: 'var(--stone)', fontSize: '13px', lineHeight: 1.5, marginBottom: 20, flexGrow: 1 }}>{repo.description || "Explore on GitHub."}</p>
+                       <p style={{ 
+                         color: 'var(--stone)', 
+                         fontSize: '13px', 
+                         lineHeight: 1.5, 
+                         marginBottom: 16, 
+                         flexGrow: 1,
+                         display: '-webkit-box',
+                         WebkitLineClamp: 3,
+                         WebkitBoxOrient: 'vertical',
+                         overflow: 'hidden'
+                       }}>
+                         {repo.description}
+                       </p>
                        <ProjectLinks repo={repo} />
                     </div>
                   </motion.div>
@@ -257,7 +471,7 @@ function ProjectLinks({ repo }: { repo: GitHubRepo }) {
   const code = safeLink(repo.html_url);
   const demo = safeLink(repo.homepage);
   return (
-    <div className="project-links" style={{ display: 'flex', gap: '12px' }}>
+    <div className="project-links" style={{ display: 'flex', gap: '12px' }} onClick={(e) => e.stopPropagation()}>
       {code && (
         <a href={code} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>
           <FiGithub aria-hidden="true" /> View code

@@ -1,5 +1,17 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Environment variables & secrets (NEVER push to GitHub)
 .env
-node_modules
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
+
 dist
 .DS_Store
 *.local
@@ -22,6 +34,3 @@ test-results/
 # Local deployment metadata
 .vercel/
 supabase/.temp/
-
-.env.*
-!.env.example
