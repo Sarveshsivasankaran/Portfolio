@@ -20,7 +20,7 @@ export default function About() {
 
   // Live dynamic telemetry stats
   const [stats, setStats] = useState({
-    linkedinFollowers: 5328,
+    linkedinFollowers: 5329,
     githubFollowers: 33,
     githubRepos: 22,
     isLive: false,
@@ -29,38 +29,45 @@ export default function About() {
   useEffect(() => {
     let active = true
 
-    // Direct GitHub user telemetry (CORS enabled by GitHub)
-    fetch('https://api.github.com/users/Sarveshsivasankaran')
-      .then(res => res.json())
-      .then(data => {
-        if (!active) return
-        if (typeof data.followers === 'number' || typeof data.public_repos === 'number') {
+    const loadStats = () => {
+      // Direct GitHub user telemetry (CORS enabled by GitHub)
+      fetch('https://api.github.com/users/Sarveshsivasankaran')
+        .then(res => res.json())
+        .then(data => {
+          if (!active) return
+          if (typeof data.followers === 'number' || typeof data.public_repos === 'number') {
+            setStats(prev => ({
+              ...prev,
+              githubFollowers: typeof data.followers === 'number' ? data.followers : prev.githubFollowers,
+              githubRepos: typeof data.public_repos === 'number' ? data.public_repos : prev.githubRepos,
+              isLive: true,
+            }))
+          }
+        })
+        .catch(() => {})
+
+      // Serverless stats endpoint for LinkedIn & GitHub telemetry
+      fetch('/api/stats')
+        .then(res => res.json())
+        .then(data => {
+          if (!active || !data) return
           setStats(prev => ({
             ...prev,
-            githubFollowers: typeof data.followers === 'number' ? data.followers : prev.githubFollowers,
-            githubRepos: typeof data.public_repos === 'number' ? data.public_repos : prev.githubRepos,
+            linkedinFollowers: data.linkedinFollowers || prev.linkedinFollowers,
+            githubFollowers: data.githubFollowers || prev.githubFollowers,
+            githubRepos: data.githubRepos || prev.githubRepos,
             isLive: true,
           }))
-        }
-      })
-      .catch(() => {})
+        })
+        .catch(() => {})
+    }
 
-    // Serverless stats endpoint for LinkedIn & GitHub telemetry
-    fetch('/api/stats')
-      .then(res => res.json())
-      .then(data => {
-        if (!active || !data) return
-        setStats(prev => ({
-          ...prev,
-          linkedinFollowers: Math.max(5328, data.linkedinFollowers || 0),
-          githubFollowers: data.githubFollowers || prev.githubFollowers,
-          githubRepos: data.githubRepos || prev.githubRepos,
-          isLive: true,
-        }))
-      })
-      .catch(() => {})
+    loadStats()
+    // Re-poll so the LinkedIn count updates live (the MCP watcher pushes fresh
+    // numbers to /api/linkedin/sync within ~15 minutes of a change).
+    const interval = setInterval(loadStats, 5 * 60 * 1000)
 
-    return () => { active = false }
+    return () => { active = false; clearInterval(interval) }
   }, [])
 
   const handleNextCard = () => {
