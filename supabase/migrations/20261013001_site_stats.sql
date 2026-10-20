@@ -10,8 +10,8 @@ create table if not exists portfolio_private.site_stats (
 
 -- Seed with safe fallback so the stats endpoint always gets a row
 insert into portfolio_private.site_stats (key, value)
-values ('linkedin_followers', 5259)
-on conflict (key) do nothing;
+values ('linkedin_followers', 5328)
+on conflict (key) do update set value = excluded.value where portfolio_private.site_stats.value < excluded.value;
 
 grant all on portfolio_private.site_stats to service_role;
 revoke all on portfolio_private.site_stats from public, anon, authenticated;
