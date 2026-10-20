@@ -3,7 +3,7 @@ import axios from 'axios'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = 'https://fxnconsxvbmpkmsxjpjq.supabase.co'
-const FALLBACK_LINKEDIN_FOLLOWERS = 5328
+const FALLBACK_LINKEDIN_FOLLOWERS = 5329
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .maybeSingle()
 
         if (data && typeof data.value === 'number' && data.value > 0) {
-          linkedinFollowers = Math.max(FALLBACK_LINKEDIN_FOLLOWERS, data.value)
+          linkedinFollowers = data.value
         }
       }
     } catch {
@@ -51,7 +51,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Silently fall back to cached
     }
 
-    res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=300')
+    // Short cache: the local linkedin-follower-mcp watcher pushes fresh counts
+    // to /api/linkedin/sync within ~15 minutes of a change; keep the CDN window
+    // shorter than that so visitors see updates quickly.
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60')
     return res.status(200).json({
       linkedinFollowers,
       githubFollowers,
