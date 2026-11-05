@@ -17,6 +17,24 @@ export interface LinkedInPost {
 
 export const LINKEDIN_POSTS: LinkedInPost[] = [
   {
+    "id": "tcs-ai-immersion-2026",
+    "title": "👾 TCS AI Immersion Hackathon Top 5 Rank & TCS Internship Selection!",
+    "summary": "On 17th April 2026, I participated in the Tata Consultancy Services AI Immersion Hackathon, conducted by TCS AI CoE at Rajalakshmi Engineering College. Competing in an intense 90-minute individual challenge, I secured Rank 5 among 603 participants, earning a place among the Top 20 Best Solution Providers.\n\nOn 4th November 2026, I had the privilege of being felicitated by Tata Consultancy Services (TCS) in recognition of this achievement as part of the TCS Student Orientation Programme at REC. Graced by Ravi Kumar Murthy (Regional Head – Academic Alliances, TCS) and Natarajan Swaminathan (Senior Consultant, Cybersecurity Practice, TCS).\n\nWhat's even more exciting is that this achievement has opened another door — I have been selected for an internship opportunity at Tata Consultancy Services! 50% completed of what my past self wanted me to achieve. Levelling up has no percentage limit. The journey continues. ⚡",
+    "date": "2026-11-04",
+    "url": "https://lnkd.in/p/gVAxhZid",
+    "type": "project",
+    "badge": "TOP 5 & TCS INTERNSHIP",
+    "image": "/tcs_immersion_page_1.jpg",
+    "images": [
+      "/tcs_immersion_page_1.jpg",
+      "/tcs_immersion_page_2.jpg",
+      "/tcs_immersion_page_3.jpg",
+      "/tcs_immersion_page_4.jpg",
+      "/tcs_immersion_page_5.jpg",
+      "/tcs_immersion_page_6.jpg"
+    ]
+  },
+  {
     "id": 0,
     "title": "🚀 From 650+ Teams to the Finals of Acentra Health’s Build to Care Hackathon 2026!",
     "summary": "Proud to share that our team reached the finals of the Hackforge.ai × Acentra Health “Build to Care” Hackathon 2026! After the first-round Codeathon at Rajalakshmi Engineering College, we advanced to the finals, competing among 34 teams selected from 650+ teams across Chennai, Hyderabad, Bengaluru, and beyond. We engineered ClaimShield Nexus — an AI-powered intelligence platform helping healthcare payers and Special Investigation Units (SIUs) detect suspicious claims, uncover fraudulent collusions, and prioritize investigations.",

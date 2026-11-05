@@ -65,6 +65,38 @@ const ALL_EVENTS: EventRecord[] = [
     ]
   },
   {
+    id: 9,
+    title: "TCS AI Immersion Hackathon - Top 5 Rank & TCS Internship Selection",
+    category: "Corporate AI Hackathon & Internship",
+    issuer: "Tata Consultancy Services (TCS) × REC",
+    year: "2026",
+    badge: "⭐ TOP 5 RANK & TCS INTERNSHIP OFFER",
+    description: (
+      <>
+        <p style={{ margin: 0, marginBottom: 12 }}>
+          Secured <strong>Rank 5 among 603 participants</strong> in the <strong>Tata Consultancy Services (TCS) AI Immersion Hackathon</strong>, conducted by the TCS AI CoE at Rajalakshmi Engineering College. Competing in an intense 90-minute individual challenge, engineered high-precision AI solutions to earn a place among the <strong>Top 20 Best Solution Providers</strong>.
+        </p>
+        <p style={{ margin: 0, marginBottom: 12 }}>
+          On November 4, 2026, officially felicitated by Tata Consultancy Services in recognition of this achievement as part of the TCS Student Orientation Programme at REC. The felicitation was graced by <strong>Ravi Kumar Murthy</strong> (Regional Head – Academic Alliances, TCS) and <strong>Natarajan Swaminathan</strong> (Senior Consultant, Cybersecurity Practice, TCS). In recognition of this high-ranking solution, selected for a coveted <strong>internship opportunity at Tata Consultancy Services</strong> to solve industrial-grade challenges.
+        </p>
+        <p style={{ margin: 0 }}>
+          This achievement marks a proud &ldquo;50% milestone&rdquo; of the ambitious goals set at the beginning of the engineering journey &mdash; proving that relentless grit, technical depth, and building under pressure unlock career-defining opportunities.
+        </p>
+      </>
+    ),
+    link: "https://lnkd.in/p/gVAxhZid",
+    linkText: "VIEW LINKEDIN POST",
+    linkIcon: "linkedin",
+    media: [
+      { url: '/tcs_immersion_page_1.jpg', title: 'Top 5 Rank - TCS AI Immersion Hackathon & Internship Selection', type: 'square' },
+      { url: '/tcs_immersion_page_2.jpg', title: 'Felicitation Ceremony with TCS Leadership at REC', type: 'square' },
+      { url: '/tcs_immersion_page_3.jpg', title: 'TCS Certificate of Appreciation - Sarvesh S', type: 'square' },
+      { url: '/tcs_immersion_page_4.jpg', title: 'Stage Felicitation & Certificate Handover', type: 'square' },
+      { url: '/tcs_immersion_page_5.jpg', title: 'Top 20 Solution Providers with TCS Dignitaries', type: 'square' },
+      { url: '/tcs_immersion_page_6.jpg', title: 'TCS Orientation & Felicitation Auditorium', type: 'square' },
+    ]
+  },
+  {
     id: 6,
     title: "Presented to Honourable AI Minister - AI Nexus 2026 EXPO",
     category: "AI Expo Showcase",
@@ -711,7 +743,7 @@ export default function Wins() {
                 WebkitBackdropFilter: 'blur(8px)',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)',
               }}>
-                RECORD 0{sliderIndex + 1} / 0{ALL_EVENTS.length}
+                RECORD {String(sliderIndex + 1).padStart(2, '0')} / {String(ALL_EVENTS.length).padStart(2, '0')}
               </div>
 
               {/* Clickable Progress Dots */}

@@ -83,13 +83,17 @@ export default function FeaturedRecordCard({ event }: Props) {
   }
 
   const hasMedia = event.media && event.media.length > 0
-  const activeMedia = hasMedia ? event.media[featuredMediaIndex] : null
+  const activeMedia = hasMedia ? (event.media[featuredMediaIndex] || event.media[0]) : null
+
+  useEffect(() => {
+    setFeaturedMediaIndex(0)
+  }, [event.id])
 
   useEffect(() => {
     if (!hasMedia || event.media.length <= 1) return;
     if (wrHovered || wrLightbox) return;
     const interval = setInterval(() => {
-      setFeaturedMediaIndex(prev => (prev === event.media.length - 1 ? 0 : prev + 1));
+      setFeaturedMediaIndex(prev => (prev >= event.media.length - 1 ? 0 : prev + 1));
     }, 7000);
     return () => clearInterval(interval);
   }, [hasMedia, event.media, wrHovered, wrLightbox]);
@@ -166,9 +170,9 @@ export default function FeaturedRecordCard({ event }: Props) {
                 position: 'relative',
                 width: '100%',
                 maxWidth: isTabletOrMobile
-                  ? (activeMedia?.type === 'certificate' ? '260px' : '100%')
-                  : (activeMedia?.type === 'certificate' ? '290px' : '420px'),
-                aspectRatio: activeMedia?.type === 'certificate' ? '0.707' : '1.333',
+                  ? (activeMedia?.type === 'certificate' ? '260px' : activeMedia?.type === 'square' ? '300px' : '100%')
+                  : (activeMedia?.type === 'certificate' ? '290px' : activeMedia?.type === 'square' ? '380px' : '420px'),
+                aspectRatio: activeMedia?.type === 'certificate' ? '0.707' : activeMedia?.type === 'square' ? '1' : '1.333',
                 borderRadius: '12px',
                 background: 'rgba(5, 5, 12, 0.95)',
                 border: wrHovered ? '2px solid rgba(245, 158, 11, 0.6)' : '1px solid rgba(255,255,255,0.06)',
