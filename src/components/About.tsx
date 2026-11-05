@@ -536,70 +536,8 @@ I enjoy taking on difficult problems, learning along the way and figuring things
 
               {/* 3 Interactive Community Cards */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                
-                {/* 1. CodeSapiens */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  whileHover={{ y: -4, borderColor: 'rgba(6, 182, 212, 0.45)', backgroundColor: 'rgba(6, 182, 212, 0.03)' }}
-                  style={{
-                    padding: '24px',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    background: 'rgba(10, 10, 18, 0.6)',
-                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
-                    transition: 'border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <FiUsers size={18} color="#06b6d4" />
-                        <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20, fontWeight: 700, color: 'var(--ghost)', margin: 0 }}>
-                          CodeSapiens
-                        </h4>
-                        <span style={{ color: 'var(--stone)', fontSize: 13 }}>— The Student Community of Coders</span>
-                      </div>
-                    </div>
-                    <span style={{
-                      fontFamily: 'Share Tech Mono, monospace',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: '#06b6d4',
-                      background: 'rgba(6, 182, 212, 0.12)',
-                      border: '1px solid rgba(6, 182, 212, 0.35)',
-                      padding: '4px 10px',
-                      borderRadius: '4px',
-                      letterSpacing: '0.06em',
-                    }}>
-                      🎙️ SPEAKER &amp; EVENT SPEAKER MANAGER
-                    </span>
-                  </div>
 
-                  <p style={{ color: 'var(--stone)', fontSize: 14, lineHeight: 1.7, margin: '0 0 14px 0' }}>
-                    Active core contributor driving developer initiatives across Chennai and beyond. Served as <strong>Event Speaker Manager</strong> for <em>CodeSapiens Summer Fest 2026</em>, curating high-impact speaker tracks, workshops, and championships alongside Nexora, MLSA, and Google Student Ambassadors. Delivered keynote tech sessions at the <em>February 2K26 Meetup</em> on <strong>Open Source Contribution &amp; GitHub Usage</strong> with live PR reviews, built a full-stack AI web crawler under the D3 &times; CodeSapiens Mentorship Program, and received the <strong>Best Post Keychain Award</strong> for tech community advocacy.
-                  </p>
-
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {['Summer Fest 2026 Speaker Manager', 'Feb 2K26 Keynote Speaker', 'D3 AI Mentorship Graduate', 'Best Post Award Winner'].map((tag, idx) => (
-                      <span key={idx} style={{
-                        fontFamily: 'Share Tech Mono, monospace',
-                        fontSize: 10,
-                        color: 'rgba(255, 255, 255, 0.65)',
-                        background: 'rgba(255, 255, 255, 0.04)',
-                        border: '1px solid rgba(255, 255, 255, 0.06)',
-                        padding: '3px 8px',
-                        borderRadius: '4px',
-                      }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* 2. Intellexa REC Club */}
+                {/* 1. Intellexa REC Club */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -646,6 +584,68 @@ I enjoy taking on difficult problems, learning along the way and figuring things
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                     {['Appointed Vice President (2026-27)', 'Titanium 2K26 SPOC Lead', 'HackRush Triple Podium Mentor', 'Website Maintainer'].map((tag, idx) => (
+                      <span key={idx} style={{
+                        fontFamily: 'Share Tech Mono, monospace',
+                        fontSize: 10,
+                        color: 'rgba(255, 255, 255, 0.65)',
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+                
+                {/* 2. CodeSapiens */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  whileHover={{ y: -4, borderColor: 'rgba(6, 182, 212, 0.45)', backgroundColor: 'rgba(6, 182, 212, 0.03)' }}
+                  style={{
+                    padding: '24px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    background: 'rgba(10, 10, 18, 0.6)',
+                    boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
+                    transition: 'border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FiUsers size={18} color="#06b6d4" />
+                        <h4 style={{ fontFamily: 'Rajdhani, sans-serif', fontSize: 20, fontWeight: 700, color: 'var(--ghost)', margin: 0 }}>
+                          CodeSapiens
+                        </h4>
+                        <span style={{ color: 'var(--stone)', fontSize: 13 }}>— The Student Community of Coders</span>
+                      </div>
+                    </div>
+                    <span style={{
+                      fontFamily: 'Share Tech Mono, monospace',
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: '#06b6d4',
+                      background: 'rgba(6, 182, 212, 0.12)',
+                      border: '1px solid rgba(6, 182, 212, 0.35)',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      letterSpacing: '0.06em',
+                    }}>
+                      🎙️ SPEAKER &amp; EVENT SPEAKER MANAGER
+                    </span>
+                  </div>
+
+                  <p style={{ color: 'var(--stone)', fontSize: 14, lineHeight: 1.7, margin: '0 0 14px 0' }}>
+                    Active core contributor driving developer initiatives across Chennai and beyond. Served as <strong>Event Speaker Manager</strong> for <em>CodeSapiens Summer Fest 2026</em>, curating high-impact speaker tracks, workshops, and championships alongside Nexora, MLSA, and Google Student Ambassadors. Delivered keynote tech sessions at the <em>February 2K26 Meetup</em> on <strong>Open Source Contribution &amp; GitHub Usage</strong> with live PR reviews, built a full-stack AI web crawler under the D3 &times; CodeSapiens Mentorship Program, and received the <strong>Best Post Keychain Award</strong> for tech community advocacy.
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {['Summer Fest 2026 Speaker Manager', 'Feb 2K26 Keynote Speaker', 'D3 AI Mentorship Graduate', 'Best Post Award Winner'].map((tag, idx) => (
                       <span key={idx} style={{
                         fontFamily: 'Share Tech Mono, monospace',
                         fontSize: 10,
