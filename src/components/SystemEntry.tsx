@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
-const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode'
+const SPLINE_URL = ''
 
 const BOOT = [
   { t: "MONARCH OS — AWAKENING SEQUENCE INITIATED", c: "#4B5563", d: 0 },
@@ -1029,19 +1029,21 @@ export default function SystemEntry({ onEnter }: SystemEntryProps) {
       )}
 
       {/* Interactive 3D Holographic Backdrop Scene */}
-      <Suspense fallback={null}>
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 2,
-          pointerEvents: 'none',
-          opacity: 0.45,
-          width: '100%',
-          height: '100%',
-        }}>
-          <Spline scene={SPLINE_URL} />
-        </div>
-      </Suspense>
+      {SPLINE_URL && (
+        <Suspense fallback={null}>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 2,
+            pointerEvents: 'none',
+            opacity: 0.45,
+            width: '100%',
+            height: '100%',
+          }}>
+            <Spline scene={SPLINE_URL} />
+          </div>
+        </Suspense>
+      )}
 
       {/* Dark Shadow Monarch Mist Aura (SVG Filtered Organic Fluid Particles) */}
       <div className="shadow-mist-container">

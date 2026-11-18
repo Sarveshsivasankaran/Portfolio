@@ -252,12 +252,13 @@ export default function About() {
               transition={{ duration: 0.8 }}
             >
               <h3 style={{
-                fontFamily: 'serif',
+                fontFamily: 'Rajdhani, sans-serif',
                 fontSize: 'clamp(24px, 3.5vw, 40px)',
-                fontWeight: 400,
+                fontWeight: 600,
                 color: 'var(--ghost)',
                 lineHeight: 1.3,
                 marginBottom: 24,
+                letterSpacing: '0.01em',
               }}>
                 I'm Sarvesh Sivasankaran, a pre-final-year CSE student at Rajalakshmi Engineering College, and an engineer who turns ambitious ideas into products people <span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>rely on.</span>
               </h3>

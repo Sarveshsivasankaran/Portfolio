@@ -2,7 +2,7 @@ import { useRef, useEffect, useState, Suspense, lazy } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
-const SPLINE_URL = 'https://prod.spline.design/pnf7pGj7N51D0PzY/scene.splinecode'
+const SPLINE_URL = ''
 
 interface EventsBackgroundProps {
   containerRef: React.RefObject<HTMLElement>
@@ -250,7 +250,7 @@ export default function EventsBackground({ containerRef }: EventsBackgroundProps
         }}
       />
       {/* 3D Interactive Spline scene - Loaded lazily only on desktop near viewport */}
-      {isDesktop && loadSpline && (
+      {SPLINE_URL && isDesktop && loadSpline && (
         <Suspense fallback={null}>
           <motion.div className="events-spline-wrapper" style={{
             position: 'absolute',

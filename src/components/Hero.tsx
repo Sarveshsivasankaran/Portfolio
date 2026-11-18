@@ -8,8 +8,8 @@ import HeroNameReveal from './HeroNameReveal'
 // Lazy-load Spline to avoid blocking initial render
 const Spline = lazy(() => import('@splinetool/react-spline'))
 
-// Interactive 3D Spline background (particle wave/vortex)
-const SPLINE_URL = 'https://prod.spline.design/kZiQZ1hp09EE5chm/scene.splinecode'
+// Interactive 3D Spline background (particle wave/vortex) - set to empty if scene is unavailable
+const SPLINE_URL = ''
 
 const TYPEWRITER_STRINGS = [
   'Full Stack Developer',
@@ -61,14 +61,18 @@ function PortalFallback() {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <span style={{
-          fontFamily: 'Rajdhani, sans-serif',
-          fontWeight: 700,
-          fontSize: 48,
-          background: 'linear-gradient(135deg, #3B82F6, #7C3AED)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}>SS</span>
+        <img
+          src="/logo.png"
+          alt="Portal Logo"
+          style={{
+            width: '80px',
+            height: '80px',
+            objectFit: 'contain',
+            opacity: 0.3,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        />
       </div>
       {/* Floating particles */}
       {Array.from({ length: 12 }).map((_, i) => (
@@ -207,7 +211,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
       </div>
 
       {/* 2. Interactive 3D Spline Vortex Background Layer (Desktop only; Mobile uses instant lightweight portal) */}
-      {(!splineLoaded || splineError || isMobile) && (
+      {(!splineLoaded || splineError || isMobile || !SPLINE_URL) && (
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -218,7 +222,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
           <PortalFallback />
         </div>
       )}
-      {!splineError && !isMobile && (
+      {SPLINE_URL && !splineError && !isMobile && (
         <Suspense fallback={null}>
           <motion.div className="hero-spline-wrapper" style={{
             position: 'absolute',

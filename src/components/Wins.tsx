@@ -15,7 +15,7 @@ import {
 } from 'react-icons/fi'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
-const SPLINE_URL = 'https://prod.spline.design/kZiQZ1hp09EE5chm/scene.splinecode'
+const SPLINE_URL = ''
 
 const TYPE_COLORS: Record<LinkedInPost['type'], string> = {
   post:        '#06b6d4', // Cyan
@@ -691,7 +691,7 @@ export default function Wins() {
       />
 
       {/* 3D Interactive Spline Background Canvas - Loaded lazily only on desktop near viewport */}
-      {!isTabletOrMobile && loadSpline && (
+      {SPLINE_URL && !isTabletOrMobile && loadSpline && (
         <Suspense fallback={null}>
           <motion.div className="wins-spline-wrapper" style={{
             position: 'absolute',

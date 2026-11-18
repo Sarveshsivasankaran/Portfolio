@@ -18,6 +18,7 @@ import Footer from './components/Footer'
 import SystemEntry from './components/SystemEntry'
 import BlueParticleBackground from './components/BlueParticleBackground'
 import CustomCursor from './components/CustomCursor'
+import ErrorBoundary from './components/ErrorBoundary'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -383,17 +384,19 @@ export default function App() {
             )}
           </button>
         </div>
-        <main>
-          <Hero isMuted={isMuted} toggleMute={toggleMute} />
-          <About />
-          <Skills />
-          <MarqueeSection />
-          <Wins />
-          <Projects />
-          <Events />
-          <Publications />
-          <Contact />
-        </main>
+        <ErrorBoundary>
+          <main>
+            <Hero isMuted={isMuted} toggleMute={toggleMute} />
+            <About />
+            <Skills />
+            <MarqueeSection />
+            <Wins />
+            <Projects />
+            <Events />
+            <Publications />
+            <Contact />
+          </main>
+        </ErrorBoundary>
         <Footer />
         <Analytics />
         <SpeedInsights />
