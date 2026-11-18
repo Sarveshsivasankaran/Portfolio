@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { FiSend, FiUser, FiMail, FiMessageSquare, FiBookOpen } from 'react-icons/fi'
 
-const Spline = lazy(() => import('@splinetool/react-spline'))
-const SPLINE_URL = 'https://prod.spline.design/kZiQZ1hp09EE5chm/scene.splinecode'
-
 gsap.registerPlugin(ScrollTrigger)
-
 
 interface QueuedMessage {
   id: string
@@ -30,30 +26,199 @@ export default function Contact() {
   const [isSending, setIsSending] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [queue, setQueue] = useState<QueuedMessage[]>([])
-  const splineApp = useRef<any>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // S-Rank Blue-themed High-Performance HTML5 Canvas Grid & Particle Background Animation moved to global component
-
+  // Cybernetic Logo Particles Canvas Background Animation (for Contact section)
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.contact-spline-wrapper',
-        { rotation: 0, scale: 1.05, y: -50 },
-        {
-          rotation: 40,
-          scale: 1.25,
-          y: 100,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '#contact',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.2,
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let animationFrameId = 0
+    let isVisible = false
+    let lastTime = 0
+    const frameInterval = 1000 / 60
+    let width = (canvas.width = canvas.offsetWidth || window.innerWidth)
+    let height = (canvas.height = canvas.offsetHeight || window.innerHeight)
+
+    // Pre-downscale logo onto a 48x48 offscreen canvas once
+    let offscreenLogo: HTMLCanvasElement | null = null
+    const logoImg = new Image()
+    logoImg.src = '/logo.png'
+    const createOffscreenLogo = () => {
+      if (!logoImg.complete || logoImg.naturalWidth === 0) return
+      const offscreen = document.createElement('canvas')
+      offscreen.width = 48
+      offscreen.height = 48
+      const oCtx = offscreen.getContext('2d')
+      if (!oCtx) return
+      oCtx.drawImage(logoImg, 0, 0, 48, 48)
+      offscreenLogo = offscreen
+    }
+    logoImg.onload = createOffscreenLogo
+    if (logoImg.complete) createOffscreenLogo()
+
+    const handleResize = () => {
+      if (!canvas) return
+      width = canvas.width = canvas.offsetWidth || window.innerWidth
+      height = canvas.height = canvas.offsetHeight || window.innerHeight
+    }
+    window.addEventListener('resize', handleResize)
+
+    // Particle pool: logo particles (drastically reduced on mobile for calm, uncluttered UI)
+    const isMobile = width < 768
+    const particleCount = isMobile ? 6 : 22
+    const maxLinkDist = isMobile ? 70 : 110
+    const maxLinkDistSq = maxLinkDist * maxLinkDist
+    const particles: Array<{
+      x: number
+      y: number
+      size: number
+      speedY: number
+      speedX: number
+      rotation: number
+      rotSpeed: number
+      alpha: number
+      pulseSpeed: number
+      pulseDir: number
+    }> = []
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: isMobile ? (Math.random() * 6 + 12) : (Math.random() * 14 + 18),
+        speedY: -(Math.random() * 0.45 + 0.12),
+        speedX: (Math.random() - 0.5) * 0.2,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.008,
+        alpha: Math.random() * 0.35 + 0.15,
+        pulseSpeed: Math.random() * 0.012 + 0.004,
+        pulseDir: Math.random() > 0.5 ? 1 : -1,
+      })
+    }
+
+    let scanY = 0
+    const gridSpacing = 64
+
+    const render = (time: number) => {
+      animationFrameId = requestAnimationFrame(render)
+      if (time - lastTime < frameInterval - 1) return
+      lastTime = time
+
+      ctx.clearRect(0, 0, width, height)
+
+      // Draw subtle cyber grid lines
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.025)'
+      ctx.lineWidth = 0.5
+      for (let x = 0; x < width; x += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, height)
+        ctx.stroke()
+      }
+      for (let y = 0; y < height; y += gridSpacing) {
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(width, y)
+        ctx.stroke()
+      }
+
+      // Horizontal tracking scanline
+      scanY += 0.7
+      if (scanY > height) scanY = 0
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.04)'
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(0, scanY)
+      ctx.lineTo(width, scanY)
+      ctx.stroke()
+
+      // Render logo particles using pre-scaled offscreen canvas
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]
+        p.y += p.speedY
+        p.x += p.speedX
+        p.rotation += p.rotSpeed
+
+        if (p.y < -40) {
+          p.y = height + 25
+          p.x = Math.random() * width
+        }
+        if (p.x < -40) p.x = width + 25
+        if (p.x > width + 40) p.x = -25
+
+        p.alpha += p.pulseSpeed * p.pulseDir
+        if (p.alpha > 0.48 || p.alpha < 0.12) {
+          p.pulseDir *= -1
+        }
+
+        // Fast blit from offscreen texture
+        const texture = offscreenLogo || (logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
+        if (texture) {
+          ctx.save()
+          ctx.translate(p.x, p.y)
+          ctx.rotate(p.rotation)
+          ctx.globalAlpha = p.alpha
+          ctx.drawImage(texture, -p.size / 2, -p.size / 2, p.size, p.size)
+          ctx.restore()
+        }
+      }
+
+      // Optimized Pairwise Strands (O(N^2)/2 instead of O(N^2) with early bounding box rejection)
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i]
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j]
+          const dx = p1.x - p2.x
+          const dy = p1.y - p2.y
+          if (Math.abs(dx) > maxLinkDist || Math.abs(dy) > maxLinkDist) continue
+          const distSq = dx * dx + dy * dy
+          if (distSq < maxLinkDistSq) {
+            const dist = Math.sqrt(distSq)
+            ctx.strokeStyle = `rgba(59, 130, 246, ${0.07 * (1 - dist / maxLinkDist)})`
+            ctx.lineWidth = 0.5
+            ctx.beginPath()
+            ctx.moveTo(p1.x, p1.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.stroke()
           }
         }
-      )
-    })
-    return () => ctx.revert()
+      }
+    }
+
+    // Viewport Visibility Culling: Only run RAF loop when section is visible
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting
+      if (isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      } else if (!isVisible && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      }
+    }, { threshold: 0.05 })
+
+    observer.observe(canvas)
+
+    const handleVisibility = () => {
+      if (document.hidden && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      } else if (!document.hidden && isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      observer.disconnect()
+      if (animationFrameId) cancelAnimationFrame(animationFrameId)
+    }
   }, [])
 
   // Scroll-triggered entrance animations for contact content
@@ -74,33 +239,6 @@ export default function Contact() {
     })
     return () => ctx.revert()
   }, [])
-
-  function onSplineLoad(app: any) {
-    splineApp.current = app
-    gsap.to({}, {
-      scrollTrigger: {
-        trigger: '#contact',
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1.2,
-        onUpdate: (self) => {
-          if (!splineApp.current) return
-          try {
-            const camera = splineApp.current.findObjectByName('Camera')
-            if (camera) {
-              camera.rotation.y = self.progress * Math.PI * 0.4
-            } else {
-              splineApp.current.setZoom(1.0 - self.progress * 0.15)
-            }
-          } catch (e) {
-            try {
-              splineApp.current.setZoom(1.0 - self.progress * 0.15)
-            } catch (err) {}
-          }
-        }
-      }
-    })
-  }
 
   // Load stashed queue on mount
   useEffect(() => {
@@ -226,51 +364,75 @@ export default function Contact() {
 
   return (
     <section id="contact" style={{
-      padding: '80px 24px 64px',
+      background: 'var(--void)',
+      padding: 'clamp(60px, 8vh, 88px) 24px clamp(40px, 6vh, 64px)',
       position: 'relative',
       overflow: 'hidden',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
     }}>
-      {/* Blue cybernetic background now handled globally */}
-      {/* 3D Interactive Spline Background Canvas */}
-      <Suspense fallback={null}>
-        <div className="contact-spline-wrapper" style={{
+      {/* HTML5 Cybernetic Logo Particles Canvas Background */}
+      <canvas
+        ref={canvasRef}
+        style={{
           position: 'absolute',
           inset: 0,
-          zIndex: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
           pointerEvents: 'none',
-          opacity: 0.1,
-          willChange: 'transform',
-        }}>
-          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
-        </div>
-      </Suspense>
+        }}
+      />
 
-      {/* Background radial glow */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '80%',
-        height: '80%',
-        background: 'radial-gradient(circle, rgba(124, 58, 237, 0.03) 0%, transparent 70%)',
-        pointerEvents: 'none',
-        zIndex: 0,
-      }} />
+      <div style={{ maxWidth: 1140, margin: '0 auto', width: '100%', position: 'relative', zIndex: 5 }}>
+        {/* Top Header Bar */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            paddingTop: 16,
+            marginBottom: 'clamp(16px, 2.5vh, 28px)',
+          }}
+        >
+          <span style={{
+            fontFamily: 'Share Tech Mono, monospace',
+            fontSize: 12,
+            color: 'var(--stone)',
+            letterSpacing: '0.1em'
+          }}>
+            <span style={{ color: 'var(--monarch)' }}>06</span> CONTACT
+          </span>
+          <span style={{
+            fontFamily: 'serif',
+            fontStyle: 'italic',
+            color: 'var(--stone)',
+            fontSize: 14
+          }}>
+            Where intention meets dispatch
+          </span>
+        </motion.div>
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', position: 'relative', zIndex: 5 }}>
         {/* Title */}
-
-        <h2 className="section-heading" style={{ textAlign: 'center', marginBottom: 12 }}>Contact Monarch</h2>
-        <p style={{ color: 'var(--stone)', fontSize: 14, textAlign: 'center', marginBottom: 48 }}>
-          Initiate direct link transmission to S-Rank hunter Sarvesh Sivasankaran
-        </p>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(18px, 2.6vh, 32px)' }}>
+          <h2 className="section-heading" style={{ textAlign: 'center', marginBottom: 8, fontSize: 'clamp(28px, 4vw, 44px)' }}>Contact Monarch</h2>
+          <p style={{ color: 'var(--stone)', fontSize: 'clamp(13px, 1.2vw, 15px)', textAlign: 'center', margin: 0 }}>
+            Initiate direct link transmission to S-Rank hunter Sarvesh Sivasankaran
+          </p>
+        </div>
 
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1.2fr',
-          gap: 40,
-          alignItems: 'start'
+          gridTemplateColumns: '1fr 1.25fr',
+          gap: 'clamp(20px, 3vw, 36px)',
+          alignItems: 'stretch'
         }} className="contact-grid">
           
           {/* Left Column: Quest Info / System Details */}
@@ -281,7 +443,7 @@ export default function Contact() {
             transition={{ duration: 0.6 }}
             className="card"
             style={{
-              padding: 32,
+              padding: 'clamp(20px, 2.5vw, 32px)',
               borderLeft: '4px solid var(--gate)',
               background: 'rgba(17, 24, 37, 0.6)',
               backdropFilter: 'blur(8px)',
@@ -322,18 +484,6 @@ export default function Contact() {
                 </span>
                 <span style={{ color: 'var(--stone)', fontSize: 13, lineHeight: 1.5 }}>
                   Engineering solutions, fast development, and long-term collaboration.
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <span style={{ color: 'var(--teal)', fontFamily: 'Share Tech Mono, monospace', fontSize: 13, minWidth: 90 }}>
-                  SILENT SEND:
-                </span>
-                <span style={{ color: 'var(--stone)', fontSize: 13, lineHeight: 1.5 }}>
-                  {import.meta.env.VITE_WEB3FORMS_ACCESS_KEY && import.meta.env.VITE_WEB3FORMS_ACCESS_KEY !== 'your_web3forms_access_key_here' ? (
-                    <span style={{ color: 'var(--teal)', fontWeight: 'bold' }}>[ACTIVE] Silent Background Transmission Enabled</span>
-                  ) : (
-                    <span>[INACTIVE] mailto client. Set <code style={{ color: 'var(--monarch)', background: 'rgba(0,0,0,0.3)', padding: '2px 4px', borderRadius: 4, fontFamily: 'Share Tech Mono, monospace' }}>VITE_WEB3FORMS_ACCESS_KEY</code> in `.env` to unlock silent background sending!</span>
-                  )}
                 </span>
               </div>
             </div>
@@ -445,12 +595,12 @@ export default function Contact() {
             transition={{ duration: 0.6 }}
             className="card"
             style={{
-              padding: 32,
+              padding: 'clamp(20px, 2.5vw, 32px)',
               background: 'rgba(17, 24, 37, 0.6)',
               backdropFilter: 'blur(8px)',
             }}
           >
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px, 1.6vh, 18px)' }}>
               
               {/* Name */}
               <div>
@@ -613,6 +763,14 @@ export default function Contact() {
       </AnimatePresence>
 
       <style>{`
+        @keyframes contactRingSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes contactRingSpinReverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
         @media (max-width: 768px) {
           .contact-grid {
             grid-template-columns: 1fr !important;

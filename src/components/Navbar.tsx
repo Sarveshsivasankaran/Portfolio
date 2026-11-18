@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
 import { FaGithub, FaLinkedin } from 'react-icons/fa'
 
@@ -24,6 +24,7 @@ export default function Navbar({ isMuted, toggleMute }: NavbarProps) {
   const [active, setActive] = useState('hero')
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
+  const navContainerRef = useRef<HTMLDivElement>(null)
 
   const updateActiveSection = () => {
     // If near the bottom of the page, highlight Contact
@@ -49,6 +50,14 @@ export default function Navbar({ isMuted, toggleMute }: NavbarProps) {
       setActive('hero')
     }
   }
+
+  // Context & Behaviour Adaptation: Auto-scroll active nav pill into view on mobile
+  useEffect(() => {
+    const activeBtn = navContainerRef.current?.querySelector(`[data-nav-id="${active}"]`) as HTMLElement | null
+    if (activeBtn) {
+      activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+  }, [active])
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (latest > 50) {
@@ -87,7 +96,7 @@ export default function Navbar({ isMuted, toggleMute }: NavbarProps) {
       }}
     >
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-        <div className="nav-container" style={{
+        <div ref={navContainerRef} className="nav-container" style={{
         background: 'rgba(10, 10, 18, 0.45)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
@@ -109,6 +118,7 @@ export default function Navbar({ isMuted, toggleMute }: NavbarProps) {
           return (
             <button
               key={link.href}
+              data-nav-id={id}
               onClick={() => handleNav(link.href)}
               className="nav-item"
               style={{
@@ -167,6 +177,21 @@ export default function Navbar({ isMuted, toggleMute }: NavbarProps) {
         .nav-container {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        @media (max-width: 768px) {
+          .navbar {
+            padding-top: 12px !important;
+          }
+          .nav-container {
+            padding: 6px 14px !important;
+            gap: 12px !important;
+            max-width: 95vw !important;
+            border-radius: 20px !important;
+          }
+          .nav-item {
+            font-size: 12px !important;
+            padding: 3px 6px !important;
+          }
         }
       `}</style>
     </motion.div>

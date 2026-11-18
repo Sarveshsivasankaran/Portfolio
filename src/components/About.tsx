@@ -20,7 +20,7 @@ export default function About() {
 
   // Live dynamic telemetry stats
   const [stats, setStats] = useState({
-    linkedinFollowers: 5400,
+    linkedinFollowers: 5500,
     githubFollowers: 33,
     githubRepos: 22,
     isLive: false,
@@ -100,6 +100,7 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
+          className="about-top-bar"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -133,6 +134,7 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8, ease: "easeOut" }}
+          className="about-main-title"
           style={{
             fontFamily: 'Rajdhani, sans-serif',
             fontSize: 'clamp(32px, 5vw, 80px)',
@@ -225,10 +227,11 @@ export default function About() {
                       whileHover={isFront ? { scale: 1.02, rotate: 0 } : {}}
                     >
                       <img 
-                        src={img.thumbnailUrl.replace('=w600', '=w1000')}
+                        src={img.thumbnailUrl}
                         alt={img.name} 
                         style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4, background: 'var(--dungeon)' }}
                         loading="lazy"
+                        decoding="async"
                       />
                     </motion.div>
                   )
@@ -544,6 +547,7 @@ I enjoy taking on difficult problems, learning along the way and figuring things
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                   whileHover={{ y: -4, borderColor: 'rgba(168, 85, 247, 0.45)', backgroundColor: 'rgba(168, 85, 247, 0.03)' }}
+                  className="community-card"
                   style={{
                     padding: '24px',
                     borderRadius: '14px',
@@ -606,6 +610,7 @@ I enjoy taking on difficult problems, learning along the way and figuring things
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                   whileHover={{ y: -4, borderColor: 'rgba(6, 182, 212, 0.45)', backgroundColor: 'rgba(6, 182, 212, 0.03)' }}
+                  className="community-card"
                   style={{
                     padding: '24px',
                     borderRadius: '14px',
@@ -668,6 +673,7 @@ I enjoy taking on difficult problems, learning along the way and figuring things
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                   whileHover={{ y: -4, borderColor: 'rgba(245, 158, 11, 0.45)', backgroundColor: 'rgba(245, 158, 11, 0.03)' }}
+                  className="community-card"
                   style={{
                     padding: '24px',
                     borderRadius: '14px',
@@ -741,8 +747,23 @@ I enjoy taking on difficult problems, learning along the way and figuring things
         }
         @media (max-width: 991px) {
           .polaroid-container {
-            height: 500px !important;
-            margin-bottom: 40px;
+            height: min(420px, 85vw) !important;
+            min-height: 0 !important;
+            margin-bottom: 32px !important;
+          }
+        }
+        @media (max-width: 768px) {
+          #about {
+            padding: 60px 16px 40px !important;
+          }
+          .about-top-bar {
+            margin-bottom: 32px !important;
+          }
+          .about-main-title {
+            margin-bottom: 36px !important;
+          }
+          .community-card {
+            padding: 18px 14px !important;
           }
         }
       `}</style>

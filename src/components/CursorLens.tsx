@@ -55,6 +55,11 @@ export default function CursorLens({
     backgroundPosition = "center",
     trackingTargetId = "hero",
 }: CursorLensProps) {
+    const isTouchDevice = React.useMemo(() => {
+        if (typeof window === "undefined") return false
+        return window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window || (navigator.maxTouchPoints > 0)
+    }, [])
+
     const [isHovering, setIsHovering] = React.useState(false)
     const isActive = isHovering || previewCursor
 
@@ -278,6 +283,26 @@ export default function CursorLens({
     const cursorFilterId = React.useId()
     const maskId = React.useId()
     const baseMaskId = React.useId()
+
+    if (isTouchDevice) {
+        return (
+            <div
+                ref={containerRef}
+                style={{ ...containerStyle, backgroundColor: backgroundColor }}
+            >
+                <div style={layerContainerStyle}>
+                    <div
+                        style={{
+                            ...imageStyle,
+                            backgroundImage: `url("${baseImage}")`,
+                            backgroundSize: objectFit,
+                            backgroundPosition: backgroundPosition,
+                        }}
+                    />
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div

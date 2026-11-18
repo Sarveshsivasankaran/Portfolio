@@ -305,6 +305,9 @@ export default function Wins() {
     mass: 0.16
   })
   const x = useTransform(smoothProgress, [0, 1], ["0vw", `-${(ALL_EVENTS.length - 1) * 100}vw`])
+  const splineRotate = useTransform(scrollYProgress, [0, 1], [0, -45])
+  const splineScale = useTransform(scrollYProgress, [0, 1], [1.1, 1.3])
+  const splineY = useTransform(scrollYProgress, [0, 1], [-50, 80])
 
   const [sliderIndex, setSliderIndex] = useState(0)
 
@@ -335,7 +338,24 @@ export default function Wins() {
     scrollToCard(Math.min(ALL_EVENTS.length - 1, sliderIndex + 1))
   }
 
+  const [loadSpline, setLoadSpline] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Lazy load Spline scene only on desktop and when near viewport
+  useEffect(() => {
+    if (isTabletOrMobile) return
+    const el = containerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setLoadSpline(true)
+        observer.disconnect()
+      }
+    }, { rootMargin: '300px' })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isTabletOrMobile])
+
   // High-Performance HTML5 Canvas Grid & Particle Background Animation
   useEffect(() => {
     const canvas = canvasRef.current
@@ -343,9 +363,87 @@ export default function Wins() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let animationFrameId: number
+    let animationFrameId = 0
+    let isVisible = false
+    let lastTime = 0
+    const frameInterval = 1000 / 60
     let width = (canvas.width = canvas.offsetWidth)
     let height = (canvas.height = canvas.offsetHeight)
+
+    // Pre-render gold-highlighted logo onto an offscreen canvas once (eliminates 3,600 GPU shadowBlur passes per second)
+    let offscreenLogo: HTMLCanvasElement | null = null
+    const logoImg = new Image()
+    logoImg.src = '/logo.png'
+
+    const createOffscreenLogo = () => {
+      if (!logoImg.complete || logoImg.naturalWidth === 0) return
+      const offscreen = document.createElement('canvas')
+      const base = 48
+      const pad = 10
+      const total = base + pad * 2
+      offscreen.width = total
+      offscreen.height = total
+      const oCtx = offscreen.getContext('2d')
+      if (!oCtx) return
+
+      oCtx.save()
+      oCtx.translate(total / 2, total / 2)
+
+      // 1. Radiant gold glow hugging the silhouette borders of the logo image
+      oCtx.shadowColor = '#F59E0B'
+      oCtx.shadowBlur = 12
+      oCtx.drawImage(logoImg, -base / 2, -base / 2, base, base)
+
+      // 2. Crisp Gold Highlight Border frame
+      oCtx.shadowBlur = 4
+      oCtx.shadowColor = '#FBBF24'
+      oCtx.strokeStyle = 'rgba(245, 158, 11, 0.92)'
+      oCtx.lineWidth = 1.2
+      const half = base / 2
+      const fPad = 3
+      oCtx.strokeRect(-half - fPad, -half - fPad, base + fPad * 2, base + fPad * 2)
+
+      // 3. High-intensity Gold Corner Highlights
+      const corner = Math.max(4, base * 0.22)
+      oCtx.strokeStyle = '#FEF08A'
+      oCtx.lineWidth = 1.8
+      oCtx.shadowColor = '#FDE047'
+      oCtx.shadowBlur = 6
+
+      // Top-left
+      oCtx.beginPath()
+      oCtx.moveTo(-half - fPad, -half - fPad + corner)
+      oCtx.lineTo(-half - fPad, -half - fPad)
+      oCtx.lineTo(-half - fPad + corner, -half - fPad)
+      oCtx.stroke()
+
+      // Top-right
+      oCtx.beginPath()
+      oCtx.moveTo(half + fPad - corner, -half - fPad)
+      oCtx.lineTo(half + fPad, -half - fPad)
+      oCtx.lineTo(half + fPad, -half - fPad + corner)
+      oCtx.stroke()
+
+      // Bottom-left
+      oCtx.beginPath()
+      oCtx.moveTo(-half - fPad, half + fPad - corner)
+      oCtx.lineTo(-half - fPad, half + fPad)
+      oCtx.lineTo(-half - fPad + corner, half + fPad)
+      oCtx.stroke()
+
+      // Bottom-right
+      oCtx.beginPath()
+      oCtx.moveTo(half + fPad - corner, half + fPad)
+      oCtx.lineTo(half + fPad, half + fPad)
+      oCtx.lineTo(half + fPad, half + fPad - corner)
+      oCtx.stroke()
+
+      oCtx.restore()
+      offscreenLogo = offscreen
+    }
+
+    logoImg.onload = createOffscreenLogo
+    if (logoImg.complete) createOffscreenLogo()
 
     const handleResize = () => {
       if (!canvas) return
@@ -354,13 +452,19 @@ export default function Wins() {
     }
     window.addEventListener('resize', handleResize)
 
-    // Lightweight particle pool for smooth 60fps performance
-    const particleCount = 24
+    // Lightweight logo particle pool (minimal on mobile UI)
+    const isMobile = width < 768
+    const particleCount = isMobile ? 6 : 20
+    const maxLinkDist = isMobile ? 75 : 115
+    const maxLinkDistSq = maxLinkDist * maxLinkDist
     const particles: Array<{
       x: number
       y: number
       size: number
       speedY: number
+      speedX: number
+      rotation: number
+      rotSpeed: number
       alpha: number
       pulseSpeed: number
       pulseDir: number
@@ -370,10 +474,13 @@ export default function Wins() {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: Math.random() * 2 + 1,
+        size: isMobile ? (Math.random() * 6 + 12) : (Math.random() * 12 + 18),
         speedY: -(Math.random() * 0.35 + 0.1),
-        alpha: Math.random() * 0.45 + 0.1,
-        pulseSpeed: Math.random() * 0.02 + 0.005,
+        speedX: (Math.random() - 0.5) * 0.18,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.007,
+        alpha: Math.random() * 0.35 + 0.12,
+        pulseSpeed: Math.random() * 0.012 + 0.004,
         pulseDir: Math.random() > 0.5 ? 1 : -1
       })
     }
@@ -381,7 +488,11 @@ export default function Wins() {
     let scanY = 0
     const gridSpacing = 60
 
-    const render = () => {
+    const render = (time: number) => {
+      animationFrameId = requestAnimationFrame(render)
+      if (time - lastTime < frameInterval - 1) return
+      lastTime = time
+
       ctx.clearRect(0, 0, width, height)
 
       // Draw grids
@@ -420,33 +531,115 @@ export default function Wins() {
       ctx.lineTo(width, scanY)
       ctx.stroke()
 
-      // Render lightweight coordinates particles
-      particles.forEach((p) => {
+      // Render lightweight logo particles using pre-rendered offscreen texture (0 runtime shadowBlur)
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]
         p.y += p.speedY
-        if (p.y < 0) {
-          p.y = height
+        p.x += p.speedX
+        p.rotation += p.rotSpeed
+
+        if (p.y < -40) {
+          p.y = height + 25
           p.x = Math.random() * width
         }
+        if (p.x < -40) p.x = width + 25
+        if (p.x > width + 40) p.x = -25
 
         p.alpha += p.pulseSpeed * p.pulseDir
-        if (p.alpha > 0.8 || p.alpha < 0.1) {
+        if (p.alpha > 0.48 || p.alpha < 0.12) {
           p.pulseDir *= -1
         }
 
-        ctx.fillStyle = `rgba(245, 158, 11, ${p.alpha})`
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fill()
-      })
+        // Blit pre-rendered gold highlighted logo (hardware accelerated, 0 CPU filter overhead)
+        if (offscreenLogo) {
+          ctx.save()
+          ctx.translate(p.x, p.y)
+          ctx.rotate(p.rotation)
+          ctx.globalAlpha = p.alpha
+          ctx.drawImage(offscreenLogo, -p.size / 2, -p.size / 2, p.size, p.size)
+          ctx.restore()
+        }
+      }
 
-      animationFrameId = requestAnimationFrame(render)
+      // Optimized Pairwise Strands (O(N^2)/2 instead of O(N^2) with early bounding box rejection)
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i]
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j]
+          const dx = p1.x - p2.x
+          const dy = p1.y - p2.y
+          if (Math.abs(dx) > maxLinkDist || Math.abs(dy) > maxLinkDist) continue
+          const distSq = dx * dx + dy * dy
+          if (distSq < maxLinkDistSq) {
+            const dist = Math.sqrt(distSq)
+            ctx.strokeStyle = `rgba(245, 158, 11, ${0.12 * (1 - dist / maxLinkDist)})`
+            ctx.lineWidth = 0.5
+            ctx.beginPath()
+            ctx.moveTo(p1.x, p1.y)
+            ctx.lineTo(p2.x, p2.y)
+            ctx.stroke()
+          }
+        }
+      }
+
+      // Section perimeter gold border highlights
+      const topGlow = ctx.createLinearGradient(0, 0, width, 0)
+      topGlow.addColorStop(0, 'rgba(245, 158, 11, 0)')
+      topGlow.addColorStop(0.2, 'rgba(245, 158, 11, 0.35)')
+      topGlow.addColorStop(0.5, 'rgba(254, 240, 138, 0.7)')
+      topGlow.addColorStop(0.8, 'rgba(245, 158, 11, 0.35)')
+      topGlow.addColorStop(1, 'rgba(245, 158, 11, 0)')
+      ctx.strokeStyle = topGlow
+      ctx.lineWidth = 1.5
+      ctx.beginPath()
+      ctx.moveTo(0, 0.5)
+      ctx.lineTo(width, 0.5)
+      ctx.stroke()
+
+      const btmGlow = ctx.createLinearGradient(0, 0, width, 0)
+      btmGlow.addColorStop(0, 'rgba(245, 158, 11, 0)')
+      btmGlow.addColorStop(0.2, 'rgba(245, 158, 11, 0.25)')
+      btmGlow.addColorStop(0.5, 'rgba(254, 240, 138, 0.55)')
+      btmGlow.addColorStop(0.8, 'rgba(245, 158, 11, 0.25)')
+      btmGlow.addColorStop(1, 'rgba(245, 158, 11, 0)')
+      ctx.strokeStyle = btmGlow
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(0, height - 0.5)
+      ctx.lineTo(width, height - 0.5)
+      ctx.stroke()
     }
 
-    render()
+    // Viewport Visibility Culling: Only run RAF loop when section is visible
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting
+      if (isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      } else if (!isVisible && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      }
+    }, { threshold: 0.05 })
+
+    observer.observe(canvas)
+
+    const handleVisibility = () => {
+      if (document.hidden && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      } else if (!document.hidden && isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
 
     return () => {
       window.removeEventListener('resize', handleResize)
-      cancelAnimationFrame(animationFrameId)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      observer.disconnect()
+      if (animationFrameId) cancelAnimationFrame(animationFrameId)
     }
   }, [])
 
@@ -480,6 +673,8 @@ export default function Wins() {
       padding: isTabletOrMobile ? '64px 20px 48px' : '80px 64px 64px',
       background: 'var(--void)',
       position: 'relative',
+      borderTop: '1px solid rgba(245, 158, 11, 0.18)',
+      borderBottom: '1px solid rgba(245, 158, 11, 0.18)',
     }}>
       {/* HTML5 Cybernetic Grid Canvas */}
       <canvas
@@ -495,22 +690,24 @@ export default function Wins() {
         }}
       />
 
-      {/* 3D Interactive Spline Background Canvas */}
-      <Suspense fallback={null}>
-        <motion.div className="wins-spline-wrapper" style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: 'none',
-          opacity: 0.12, // Cohesive premium subtle depth
-          willChange: 'transform',
-          rotate: useTransform(scrollYProgress, [0, 1], [0, -45]),
-          scale: useTransform(scrollYProgress, [0, 1], [1.1, 1.3]),
-          y: useTransform(scrollYProgress, [0, 1], [-50, 80]),
-        }}>
-          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
-        </motion.div>
-      </Suspense>
+      {/* 3D Interactive Spline Background Canvas - Loaded lazily only on desktop near viewport */}
+      {!isTabletOrMobile && loadSpline && (
+        <Suspense fallback={null}>
+          <motion.div className="wins-spline-wrapper" style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: 'none',
+            opacity: 0.12, // Cohesive premium subtle depth
+            willChange: 'transform',
+            rotate: splineRotate,
+            scale: splineScale,
+            y: splineY,
+          }}>
+            <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
+          </motion.div>
+        </Suspense>
+      )}
 
       {/* Ambient glowing fields */}
       <div style={{
@@ -615,12 +812,12 @@ export default function Wins() {
               aria-label="Previous Achievement"
               style={{
                 position: 'absolute',
-                left: isTabletOrMobile ? '12px' : '32px',
+                left: isTabletOrMobile ? '6px' : '32px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 zIndex: 50,
-                width: 48,
-                height: 48,
+                width: isTabletOrMobile ? 36 : 48,
+                height: isTabletOrMobile ? 36 : 48,
                 borderRadius: '50%',
                 background: 'rgba(10, 10, 18, 0.75)',
                 backdropFilter: 'blur(10px)',
@@ -645,7 +842,7 @@ export default function Wins() {
                 e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
               }}
             >
-              <FiChevronLeft size={24} />
+              <FiChevronLeft size={isTabletOrMobile ? 18 : 24} />
             </button>
 
             {/* Right Chevron Button */}
@@ -655,12 +852,12 @@ export default function Wins() {
               aria-label="Next Achievement"
               style={{
                 position: 'absolute',
-                right: isTabletOrMobile ? '12px' : '32px',
+                right: isTabletOrMobile ? '6px' : '32px',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 zIndex: 50,
-                width: 48,
-                height: 48,
+                width: isTabletOrMobile ? 36 : 48,
+                height: isTabletOrMobile ? 36 : 48,
                 borderRadius: '50%',
                 background: 'rgba(10, 10, 18, 0.75)',
                 backdropFilter: 'blur(10px)',
@@ -685,7 +882,7 @@ export default function Wins() {
                 e.currentTarget.style.transform = 'translateY(-50%) scale(1)'
               }}
             >
-              <FiChevronRight size={24} />
+              <FiChevronRight size={isTabletOrMobile ? 18 : 24} />
             </button>
 
             {/* Carousel sliding track */}
@@ -704,7 +901,7 @@ export default function Wins() {
                   key={event.id}
                   style={{
                     width: '100vw',
-                    padding: isTabletOrMobile ? '0 3vw' : '0 5vw',
+                    padding: isTabletOrMobile ? '0 clamp(16px, 6vw, 48px)' : '0 5vw',
                     flexShrink: 0,
                     display: 'flex',
                     justifyContent: 'center',

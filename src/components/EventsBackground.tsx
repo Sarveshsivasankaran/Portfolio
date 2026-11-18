@@ -1,4 +1,4 @@
-import { useRef, useEffect, Suspense, lazy } from 'react'
+import { useRef, useEffect, useState, Suspense, lazy } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 
 const Spline = lazy(() => import('@splinetool/react-spline'))
@@ -9,13 +9,35 @@ interface EventsBackgroundProps {
 }
 
 export default function EventsBackground({ containerRef }: EventsBackgroundProps) {
+  const [loadSpline, setLoadSpline] = useState(false)
   const splineApp = useRef<any>(null)
   const stripesCanvasRef = useRef<HTMLCanvasElement>(null)
+
+  const isDesktop = typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+
+  // Lazy load Spline scene only on desktop and when near viewport
+  useEffect(() => {
+    if (!isDesktop) return
+    const el = containerRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setLoadSpline(true)
+        observer.disconnect()
+      }
+    }, { rootMargin: '300px' })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [containerRef, isDesktop])
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
   })
+
+  const splineRotate = useTransform(scrollYProgress, [0, 1], [0, -25])
+  const splineScale = useTransform(scrollYProgress, [0, 1], [1.1, 1.3])
+  const splineY = useTransform(scrollYProgress, [0, 1], [-50, 80])
 
   // Cybernetic Diagonal Stripe Light Travelling Background Animation
   useEffect(() => {
@@ -24,7 +46,10 @@ export default function EventsBackground({ containerRef }: EventsBackgroundProps
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let animationFrameId: number
+    let animationFrameId = 0
+    let isVisible = false
+    let lastTime = 0
+    const frameInterval = 1000 / 60
     let width = (canvas.width = canvas.offsetWidth)
     let height = (canvas.height = canvas.offsetHeight)
 
@@ -84,7 +109,11 @@ export default function EventsBackground({ containerRef }: EventsBackgroundProps
       pulses[i].progress = Math.random()
     }
 
-    const render = () => {
+    const render = (time: number) => {
+      animationFrameId = requestAnimationFrame(render)
+      if (time - lastTime < frameInterval - 1) return
+      lastTime = time
+
       ctx.clearRect(0, 0, width, height)
 
       const totalStripes = Math.ceil((width + height) / stripeSpacing) + 5
@@ -142,7 +171,7 @@ export default function EventsBackground({ containerRef }: EventsBackgroundProps
           // Draw an S-rank bright focus particle in the center of the beam
           if (p.progress >= 0 && p.progress <= 1) {
             ctx.fillStyle = '#ffffff'
-            ctx.shadowBlur = 12
+            ctx.shadowBlur = 10
             ctx.shadowColor = 'rgba(6, 182, 212, 0.8)'
             ctx.beginPath()
             ctx.arc(progressX, progressY, 1.8, 0, Math.PI * 2)
@@ -153,15 +182,38 @@ export default function EventsBackground({ containerRef }: EventsBackgroundProps
           }
         }
       })
-
-      animationFrameId = requestAnimationFrame(render)
     }
 
-    render()
+    // Viewport Visibility Culling: Only run RAF loop when section is visible
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting
+      if (isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      } else if (!isVisible && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      }
+    }, { threshold: 0.05 })
+
+    observer.observe(canvas)
+
+    const handleVisibility = () => {
+      if (document.hidden && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      } else if (!document.hidden && isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
 
     return () => {
       window.removeEventListener('resize', handleResize)
-      cancelAnimationFrame(animationFrameId)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      observer.disconnect()
+      if (animationFrameId) cancelAnimationFrame(animationFrameId)
     }
   }, [])
 
@@ -197,21 +249,24 @@ export default function EventsBackground({ containerRef }: EventsBackgroundProps
           WebkitMaskImage: 'linear-gradient(to right, black 0%, transparent 18%, transparent 82%, black 100%)',
         }}
       />
-      <Suspense fallback={null}>
-        <motion.div className="events-spline-wrapper" style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: 'none',
-          opacity: 0.12,
-          willChange: 'transform',
-          rotate: useTransform(scrollYProgress, [0, 1], [0, -25]),
-          scale: useTransform(scrollYProgress, [0, 1], [1.1, 1.3]),
-          y: useTransform(scrollYProgress, [0, 1], [-50, 80]),
-        }}>
-          <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
-        </motion.div>
-      </Suspense>
+      {/* 3D Interactive Spline scene - Loaded lazily only on desktop near viewport */}
+      {isDesktop && loadSpline && (
+        <Suspense fallback={null}>
+          <motion.div className="events-spline-wrapper" style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: 'none',
+            opacity: 0.12,
+            willChange: 'transform',
+            rotate: splineRotate,
+            scale: splineScale,
+            y: splineY,
+          }}>
+            <Spline scene={SPLINE_URL} onLoad={onSplineLoad} />
+          </motion.div>
+        </Suspense>
+      )}
     </>
   )
 }

@@ -158,6 +158,22 @@ section {
   padding-top: 80px;
 }
 
+@media (max-width: 768px) {
+  section {
+    padding-top: 56px;
+  }
+}
+
+/* Reduced motion preference adaptation */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Pill badge */
 .pill {
   font-family: 'Share Tech Mono', monospace;
@@ -317,4 +333,53 @@ section {
   z-index: 1000;
   width: 100%;
   pointer-events: none;
+}
+
+/* Responsive Layout & Container Adaptations */
+#events {
+  padding: clamp(48px, 6vh, 72px) clamp(16px, 4vw, 64px) clamp(36px, 5vh, 60px) !important;
+}
+#publications {
+  padding: 80px clamp(16px, 4vw, 64px) 64px !important;
+}
+#contact {
+  padding: clamp(60px, 8vh, 88px) clamp(16px, 4vw, 64px) clamp(40px, 6vh, 64px) !important;
+}
+
+@media (max-width: 768px) {
+  #events {
+    padding: 56px 16px 36px !important;
+  }
+  #publications {
+    padding: 60px 16px 40px !important;
+  }
+  .publications-content-wrapper {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 24px 16px !important;
+  }
+  #contact {
+    min-height: auto;
+    padding: 56px 16px 40px !important;
+  }
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+}
+
+/* Featured Record Card custom scrollbar for mobile */
+.featured-record-card {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 158, 11, 0.4) transparent;
+}
+.featured-record-card::-webkit-scrollbar {
+  width: 4px;
+}
+.featured-record-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+.featured-record-card::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.4);
+  border-radius: 4px;
 }

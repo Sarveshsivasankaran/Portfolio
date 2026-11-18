@@ -105,13 +105,16 @@ export default function FeaturedRecordCard({ event }: Props) {
         background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.65) 0%, rgba(10, 10, 18, 0.8) 100%)',
         border: '1.5px solid rgba(245, 158, 11, 0.25)',
         borderRadius: '16px',
-        padding: isTabletOrMobile ? '24px 16px' : '32px',
+        padding: isTabletOrMobile ? (viewportWidth < 640 ? '16px 12px' : '24px 16px') : '32px',
         boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(245, 158, 11, 0.05)',
         position: 'relative',
-        overflow: 'hidden',
+        maxHeight: isTabletOrMobile ? 'calc(100vh - 120px)' : 'none',
+        overflowY: isTabletOrMobile ? 'auto' : 'hidden',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
         display: 'grid',
         gridTemplateColumns: isTabletOrMobile ? '1fr' : 'minmax(280px, 1fr) minmax(320px, 1.25fr)',
-        gap: isTabletOrMobile ? '24px' : '40px',
+        gap: isTabletOrMobile ? (viewportWidth < 640 ? '14px' : '20px') : '40px',
         alignItems: 'center',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
@@ -145,6 +148,7 @@ export default function FeaturedRecordCard({ event }: Props) {
           }}>
             <motion.div
               onMouseMove={(e) => {
+                if (window.matchMedia('(pointer: coarse)').matches) return
                 const card = e.currentTarget
                 const rect = card.getBoundingClientRect()
                 const x = e.clientX - rect.left - rect.width / 2
@@ -154,7 +158,10 @@ export default function FeaturedRecordCard({ event }: Props) {
                 setWrSheenX(((e.clientX - rect.left) / rect.width) * 100)
                 setWrSheenY(((e.clientY - rect.top) / rect.height) * 100)
               }}
-              onMouseEnter={() => setWrHovered(true)}
+              onMouseEnter={() => {
+                if (window.matchMedia('(pointer: coarse)').matches) return
+                setWrHovered(true)
+              }}
               onMouseLeave={() => {
                 setWrHovered(false)
                 setWrRotateX(0)
@@ -170,7 +177,9 @@ export default function FeaturedRecordCard({ event }: Props) {
                 position: 'relative',
                 width: '100%',
                 maxWidth: isTabletOrMobile
-                  ? (activeMedia?.type === 'certificate' ? '260px' : activeMedia?.type === 'square' ? '300px' : '100%')
+                  ? (viewportWidth < 640
+                      ? (activeMedia?.type === 'certificate' ? '180px' : activeMedia?.type === 'square' ? '200px' : '240px')
+                      : (activeMedia?.type === 'certificate' ? '260px' : activeMedia?.type === 'square' ? '300px' : '100%'))
                   : (activeMedia?.type === 'certificate' ? '290px' : activeMedia?.type === 'square' ? '380px' : '420px'),
                 aspectRatio: activeMedia?.type === 'certificate' ? '0.707' : activeMedia?.type === 'square' ? '1' : '1.333',
                 borderRadius: '12px',
@@ -273,7 +282,7 @@ export default function FeaturedRecordCard({ event }: Props) {
           {hasMedia && event.media.length > 1 && (
             <div style={{
               display: 'flex',
-              gap: isTabletOrMobile ? '6px' : '10px',
+              gap: viewportWidth < 640 ? '4px' : (isTabletOrMobile ? '6px' : '10px'),
               justifyContent: 'center',
               alignItems: 'center',
               flexWrap: 'wrap',
@@ -290,8 +299,8 @@ export default function FeaturedRecordCard({ event }: Props) {
                   onMouseEnter={() => setFeaturedMediaIndex(idx)}
                   onClick={() => setFeaturedMediaIndex(idx)}
                   style={{
-                    width: isTabletOrMobile ? '38px' : '46px',
-                    height: isTabletOrMobile ? '28px' : '34px',
+                    width: viewportWidth < 640 ? '30px' : (isTabletOrMobile ? '38px' : '46px'),
+                    height: viewportWidth < 640 ? '22px' : (isTabletOrMobile ? '28px' : '34px'),
                     borderRadius: '4px',
                     border: featuredMediaIndex === idx ? '1.5px solid var(--gold)' : '1px solid rgba(255, 255, 255, 0.1)',
                     background: '#07070d',
@@ -308,6 +317,8 @@ export default function FeaturedRecordCard({ event }: Props) {
                   <img
                     src={media.url}
                     alt={media.title}
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                     style={{
                       width: '100%',
@@ -325,7 +336,7 @@ export default function FeaturedRecordCard({ event }: Props) {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 16,
+          gap: viewportWidth < 640 ? 10 : 16,
           justifyContent: 'center',
           alignItems: isTabletOrMobile ? 'center' : 'stretch',
         }}>
@@ -353,7 +364,7 @@ export default function FeaturedRecordCard({ event }: Props) {
           <h3 style={{
             fontFamily: 'Rajdhani, sans-serif',
             fontWeight: 700,
-            fontSize: isTabletOrMobile ? '20px' : '26px',
+            fontSize: viewportWidth < 640 ? '18px' : (isTabletOrMobile ? '22px' : '26px'),
             color: 'var(--ghost)',
             lineHeight: 1.2,
             margin: 0,
@@ -364,29 +375,29 @@ export default function FeaturedRecordCard({ event }: Props) {
           
           <div style={{
             fontFamily: 'Share Tech Mono, monospace',
-            fontSize: '12px',
+            fontSize: viewportWidth < 640 ? '11px' : '12px',
             color: 'var(--stone)',
             textAlign: isTabletOrMobile ? 'center' : 'left',
-            marginBottom: '4px'
+            marginBottom: '2px'
           }}>
             <span style={{ color: 'var(--monarch)' }}>{event.category}</span> • {event.issuer} • {event.year}
           </div>
 
           <div style={{
             color: 'var(--stone)',
-            fontSize: '14px',
-            lineHeight: 1.6,
-            margin: '0 0 12px 0',
+            fontSize: viewportWidth < 640 ? '13px' : '14px',
+            lineHeight: viewportWidth < 640 ? 1.45 : 1.6,
+            margin: viewportWidth < 640 ? '0 0 8px 0' : '0 0 12px 0',
             textAlign: isTabletOrMobile ? 'center' : 'left',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px'
+            gap: viewportWidth < 640 ? '8px' : '12px'
           }}>
             {event.description}
           </div>
 
           {(event.link || event.secondaryLink) && (
-            <div style={{ marginTop: 12, width: '100%', display: 'flex', gap: 12, justifyContent: isTabletOrMobile ? 'center' : 'flex-start', flexWrap: 'wrap' }}>
+            <div style={{ marginTop: viewportWidth < 640 ? 6 : 12, width: '100%', display: 'flex', gap: 10, justifyContent: isTabletOrMobile ? 'center' : 'flex-start', flexWrap: 'wrap' }}>
               {event.link && (
                 <a
                   href={event.link}

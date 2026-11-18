@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { FiExternalLink, FiGithub, FiGitBranch, FiStar } from "react-icons/fi";
 import { useGitHubRepos, type GitHubRepo } from "../hooks/useGitHubRepos";
@@ -173,6 +173,17 @@ export default function Projects() {
   }, [repos]);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [viewportWidth, setViewportWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = viewportWidth < 640;
+  const cardWidth = isMobile ? Math.min(300, Math.max(260, viewportWidth - 48)) : 340;
+  const cardGap = isMobile ? 16 : 32;
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (!filtered || filtered.length === 0) return;
@@ -188,7 +199,7 @@ export default function Projects() {
       <div style={{ position: 'sticky', top: 0, height: '100vh', width: '100%', overflow: 'hidden' }}>
         
         {/* Header - Fixed at the top of the sticky container */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '80px 64px 0', zIndex: 30, maxWidth: 1280, margin: '0 auto', pointerEvents: 'none' }}>
+        <div className="projects-sticky-header">
           {/* Top Header Bar */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -201,7 +212,7 @@ export default function Projects() {
               alignItems: 'center',
               borderTop: '1px solid rgba(255, 255, 255, 0.1)',
               paddingTop: 16,
-              marginBottom: 48,
+              marginBottom: 'clamp(10px, 1.6vh, 22px)',
               pointerEvents: 'auto',
             }}
           >
@@ -294,12 +305,12 @@ export default function Projects() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             style={{
               fontFamily: 'Rajdhani, sans-serif',
-              fontSize: 'clamp(32px, 5vw, 80px)',
+              fontSize: 'clamp(28px, 4vw, 54px)',
               fontWeight: 800,
-              lineHeight: 1,
+              lineHeight: 1.05,
               textTransform: 'uppercase',
               color: 'var(--ghost)',
-              marginBottom: 48,
+              marginBottom: 'clamp(10px, 1.8vh, 24px)',
               letterSpacing: '-0.02em',
               textAlign: 'left'
             }}
@@ -323,7 +334,16 @@ export default function Projects() {
         </div>
 
         {/* Character positioned at the bottom right */}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', paddingRight: '10%', pointerEvents: 'none', zIndex: 20 }}>
+        <div className="projects-character-wrap" style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          display: 'flex', 
+          justifyContent: 'flex-end', 
+          alignItems: isMobile ? 'center' : 'flex-end', 
+          paddingRight: isMobile ? '0' : '10%', 
+          pointerEvents: 'none', 
+          zIndex: isMobile ? 25 : 20 
+        }}>
           <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute' }}>
             <defs>
               <filter id="projects-aura" x="-30%" y="-15%" width="160%" height="130%">
@@ -337,7 +357,13 @@ export default function Projects() {
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            style={{ position: 'relative', height: '75vh', aspectRatio: '1', display: 'flex', justifyContent: 'center' }}
+            style={{ 
+              position: 'relative', 
+              height: isMobile ? 'clamp(300px, 56vh, 580px)' : '75vh', 
+              aspectRatio: '1', 
+              display: 'flex', 
+              justifyContent: 'center' 
+            }}
           >
             <div className="projects-energy" style={{ filter: 'url(#projects-aura) drop-shadow(0 0 15px var(--monarch))' }}>
               <span /><span /><span />
@@ -345,6 +371,8 @@ export default function Projects() {
             <img 
               src="/characters/sarvesh-projects-wbg.png" 
               alt="Sarvesh Projects" 
+              loading="lazy"
+              decoding="async"
               style={{ position: 'relative', height: '100%', objectFit: 'contain', zIndex: 2, filter: 'drop-shadow(0 0 40px rgba(0, 212, 255, 0.2))' }} 
             />
           </motion.div>
@@ -353,21 +381,21 @@ export default function Projects() {
         {/* Scroll-driven Horizontal Projects List */}
         <div style={{ 
           position: 'absolute', 
-          bottom: '8%', 
+          bottom: isMobile ? '3%' : 'clamp(18px, 4.5vh, 44px)', 
           left: '0%', 
           width: '100%', 
-          height: '430px', 
+          height: isMobile ? '375px' : '395px', 
           display: 'flex', 
           alignItems: 'center', 
           pointerEvents: 'none', 
           zIndex: 30, 
           overflow: 'hidden',
-          WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)',
-          maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)' 
+          WebkitMaskImage: isMobile ? 'none' : 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)',
+          maskImage: isMobile ? 'none' : 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)' 
         }}>
           <motion.div 
-            style={{ display: 'flex', flexDirection: 'row', gap: '32px', height: '100%', paddingLeft: '10%', pointerEvents: 'auto', alignItems: 'center' }}
-            animate={{ x: -activeIndex * 372 }} // 340px card + 32px gap
+            style={{ display: 'flex', flexDirection: 'row', gap: `${cardGap}px`, height: '100%', paddingLeft: isMobile ? '20px' : '10%', pointerEvents: 'auto', alignItems: 'center' }}
+            animate={{ x: -activeIndex * (cardWidth + cardGap) }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {isLoading ? (
@@ -395,8 +423,8 @@ export default function Projects() {
                       flexDirection: 'column', 
                       overflow: 'hidden', 
                       boxShadow: isActive ? '0 16px 48px rgba(0, 212, 255, 0.22)' : 'none',
-                      width: 340,
-                      height: 390,
+                      width: cardWidth,
+                      height: isMobile ? 355 : 390,
                       flexShrink: 0,
                       transformOrigin: 'center center',
                       cursor: 'pointer',
@@ -405,12 +433,13 @@ export default function Projects() {
                     transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                   >
                     {/* Image Section */}
-                    <div className="project-image-placeholder" style={{ position: 'relative', overflow: 'hidden', background: '#0b0f19', height: '155px', flexShrink: 0 }}>
+                    <div className="project-image-placeholder" style={{ position: 'relative', overflow: 'hidden', background: '#0b0f19', height: isMobile ? '128px' : '155px', flexShrink: 0 }}>
                       <img 
                         src={realScreenshot} 
                         className="project-screenshot" 
                         alt={titleOf(repo)} 
                         loading="lazy" 
+                        decoding="async"
                         onError={(e) => {
                           (e.currentTarget as HTMLElement).style.display = 'none';
                         }}
@@ -419,12 +448,12 @@ export default function Projects() {
                     </div>
 
                     {/* Info Section */}
-                    <div style={{ padding: '20px 24px 24px', background: 'var(--void)', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: 12 }}>
-                          <h3 style={{ margin: 0, fontSize: '19px', fontWeight: 600, fontFamily: 'Rajdhani, sans-serif', color: 'var(--ghost)' }}>{titleOf(repo)}</h3>
+                    <div style={{ padding: isMobile ? '12px 16px 14px' : '20px 24px 24px', background: 'var(--void)', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: isMobile ? 6 : 8, gap: 12 }}>
+                          <h3 style={{ margin: 0, fontSize: isMobile ? '18px' : '19px', fontWeight: 600, fontFamily: 'Rajdhani, sans-serif', color: 'var(--ghost)' }}>{titleOf(repo)}</h3>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--stone)', flexShrink: 0 }}><FiGitBranch aria-hidden="true" /> {repo.forks_count}</span>
                        </div>
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 12 }}>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: isMobile ? 10 : 12 }}>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--gate)' }}><FiStar aria-hidden="true" /> {repo.stargazers_count} stars</span>
                           {repo.language && (
                             <span style={{
@@ -442,9 +471,9 @@ export default function Projects() {
                        </div>
                        <p style={{ 
                          color: 'var(--stone)', 
-                         fontSize: '13px', 
-                         lineHeight: 1.5, 
-                         marginBottom: 16, 
+                         fontSize: isMobile ? '12.5px' : '13px', 
+                         lineHeight: isMobile ? 1.4 : 1.5, 
+                         marginBottom: isMobile ? 12 : 16, 
                          flexGrow: 1,
                          display: '-webkit-box',
                          WebkitLineClamp: 3,

@@ -157,8 +157,12 @@ export default function App() {
       })
     })
 
-    // Magnetic Button Effect
-    const magneticElements = document.querySelectorAll('.btn-primary:not(.no-magnetic), .btn-ghost:not(.no-magnetic), button:not(.nav-item):not(.no-magnetic)')
+    // Magnetic Button Effect - only enabled for fine pointer devices (mouse/trackpad)
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    const magneticElements = isFinePointer 
+      ? document.querySelectorAll('.btn-primary:not(.no-magnetic), .btn-ghost:not(.no-magnetic), button:not(.nav-item):not(.no-magnetic)')
+      : []
+
     const handleMouseMove = (e: Event) => {
       const mouseEvent = e as MouseEvent
       const btn = mouseEvent.currentTarget as HTMLElement
@@ -178,19 +182,23 @@ export default function App() {
       btn.style.transition = 'none' // Remove transition for instant follow
     }
 
-    magneticElements.forEach(btn => {
-      btn.addEventListener('mousemove', handleMouseMove)
-      btn.addEventListener('mouseleave', handleMouseLeave)
-      btn.addEventListener('mouseenter', handleMouseEnter)
-      ;(btn as HTMLElement).style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
-    })
+    if (isFinePointer) {
+      magneticElements.forEach(btn => {
+        btn.addEventListener('mousemove', handleMouseMove)
+        btn.addEventListener('mouseleave', handleMouseLeave)
+        btn.addEventListener('mouseenter', handleMouseEnter)
+        ;(btn as HTMLElement).style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+      })
+    }
 
     return () => {
-      magneticElements.forEach(btn => {
-        btn.removeEventListener('mousemove', handleMouseMove)
-        btn.removeEventListener('mouseleave', handleMouseLeave)
-        btn.removeEventListener('mouseenter', handleMouseEnter)
-      })
+      if (isFinePointer) {
+        magneticElements.forEach(btn => {
+          btn.removeEventListener('mousemove', handleMouseMove)
+          btn.removeEventListener('mouseleave', handleMouseLeave)
+          btn.removeEventListener('mouseenter', handleMouseEnter)
+        })
+      }
       ctx.revert()
     }
   }, [hasEntered])
@@ -227,6 +235,34 @@ export default function App() {
           position: relative;
           z-index: 2;
         }
+        @media (max-width: 640px) {
+          .top-invader-logo {
+            top: 16px !important;
+            left: 16px !important;
+            width: 32px !important;
+            height: 32px !important;
+          }
+          .top-right-controls {
+            top: 16px !important;
+            right: 16px !important;
+            gap: 8px !important;
+          }
+          .top-resume-btn {
+            height: 34px !important;
+            padding: 0 12px !important;
+            font-size: 11px !important;
+          }
+          .top-sound-btn {
+            width: 34px !important;
+            height: 34px !important;
+          }
+          .scroll-to-top-btn {
+            bottom: 20px !important;
+            right: 16px !important;
+            width: 38px !important;
+            height: 38px !important;
+          }
+        }
       ` }} />
       <BlueParticleBackground />
       <CustomCursor />
@@ -250,6 +286,7 @@ export default function App() {
         <img 
           src="/invader-logo.png" 
           alt="Space Invader Logo" 
+          className="top-invader-logo"
           style={{
             position: 'absolute',
             top: '24px',
@@ -261,7 +298,7 @@ export default function App() {
           }}
         />
         {/* Top Right Controls: Resume & Sound (Non-sticky) */}
-        <div style={{
+        <div className="top-right-controls" style={{
           position: 'absolute',
           top: '24px',
           right: '32px',
@@ -274,7 +311,7 @@ export default function App() {
             href="https://drive.google.com/uc?export=download&id=19Czf6xdxeH9e7yNvngj3-Sg3CWG6h35X"
             target="_blank"
             rel="noreferrer"
-            className="magnetic-btn"
+            className="magnetic-btn top-resume-btn"
             style={{ 
                display: 'flex', alignItems: 'center', gap: '6px',
                background: 'linear-gradient(135deg, var(--gate), #2563eb)', color: '#ffffff',
@@ -303,6 +340,7 @@ export default function App() {
 
           <button
             onClick={toggleMute}
+            className="top-sound-btn"
             style={{
               background: 'rgba(10, 10, 18, 0.65)',
               backdropFilter: 'blur(8px)',

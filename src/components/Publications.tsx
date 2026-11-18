@@ -30,9 +30,29 @@ export default function Publications() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let animationFrameId: number
+    let animationFrameId = 0
+    let isVisible = false
+    let lastTime = 0
+    const frameInterval = 1000 / 60
     let width = (canvas.width = canvas.offsetWidth)
     let height = (canvas.height = canvas.offsetHeight)
+
+    // Pre-downscale logo onto a 48x48 offscreen canvas once
+    let offscreenLogo: HTMLCanvasElement | null = null
+    const logoImg = new Image()
+    logoImg.src = '/logo.png'
+    const createOffscreenLogo = () => {
+      if (!logoImg.complete || logoImg.naturalWidth === 0) return
+      const offscreen = document.createElement('canvas')
+      offscreen.width = 48
+      offscreen.height = 48
+      const oCtx = offscreen.getContext('2d')
+      if (!oCtx) return
+      oCtx.drawImage(logoImg, 0, 0, 48, 48)
+      offscreenLogo = offscreen
+    }
+    logoImg.onload = createOffscreenLogo
+    if (logoImg.complete) createOffscreenLogo()
 
     const handleResize = () => {
       if (!canvas) return
@@ -41,13 +61,19 @@ export default function Publications() {
     }
     window.addEventListener('resize', handleResize)
 
-    // Particle pool
-    const particleCount = 40
+    // Particle pool: Monarch logo particles (calm, minimal on mobile UI)
+    const isMobile = width < 768
+    const particleCount = isMobile ? 6 : 20
+    const maxLinkDist = isMobile ? 75 : 110
+    const maxLinkDistSq = maxLinkDist * maxLinkDist
     const particles: Array<{
       x: number
       y: number
       size: number
       speedY: number
+      speedX: number
+      rotation: number
+      rotSpeed: number
       alpha: number
       pulseSpeed: number
       pulseDir: number
@@ -57,10 +83,13 @@ export default function Publications() {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: Math.random() * 2 + 0.8,
-        speedY: -(Math.random() * 0.25 + 0.08),
-        alpha: Math.random() * 0.4 + 0.1,
-        pulseSpeed: Math.random() * 0.015 + 0.005,
+        size: isMobile ? (Math.random() * 6 + 12) : (Math.random() * 12 + 18),
+        speedY: -(Math.random() * 0.3 + 0.08),
+        speedX: (Math.random() - 0.5) * 0.18,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.007,
+        alpha: Math.random() * 0.35 + 0.12,
+        pulseSpeed: Math.random() * 0.012 + 0.004,
         pulseDir: Math.random() > 0.5 ? 1 : -1
       })
     }
@@ -68,7 +97,11 @@ export default function Publications() {
     let scanY = 0
     const gridSpacing = 64
 
-    const render = () => {
+    const render = (time: number) => {
+      animationFrameId = requestAnimationFrame(render)
+      if (time - lastTime < frameInterval - 1) return
+      lastTime = time
+
       ctx.clearRect(0, 0, width, height)
 
       // Draw grids (Monarch/Purple grid lines)
@@ -109,47 +142,89 @@ export default function Publications() {
       ctx.lineTo(width, scanY)
       ctx.stroke()
 
-      // Render flowing particles & network linkages
-      particles.forEach((p) => {
+      // Render flowing logo particles using pre-scaled offscreen canvas
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]
         p.y += p.speedY
-        if (p.y < 0) {
-          p.y = height
+        p.x += p.speedX
+        p.rotation += p.rotSpeed
+
+        if (p.y < -40) {
+          p.y = height + 25
           p.x = Math.random() * width
         }
+        if (p.x < -40) p.x = width + 25
+        if (p.x > width + 40) p.x = -25
 
         p.alpha += p.pulseSpeed * p.pulseDir
-        if (p.alpha > 0.75 || p.alpha < 0.1) {
+        if (p.alpha > 0.48 || p.alpha < 0.12) {
           p.pulseDir *= -1
         }
 
-        ctx.fillStyle = `rgba(124, 58, 237, ${p.alpha * 0.4})`
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fill()
+        // Fast blit from offscreen texture
+        const texture = offscreenLogo || (logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
+        if (texture) {
+          ctx.save()
+          ctx.translate(p.x, p.y)
+          ctx.rotate(p.rotation)
+          ctx.globalAlpha = p.alpha
+          ctx.drawImage(texture, -p.size / 2, -p.size / 2, p.size, p.size)
+          ctx.restore()
+        }
+      }
 
-        particles.forEach((p2) => {
-          const dx = p.x - p2.x
-          const dy = p.y - p2.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 110) {
-            ctx.strokeStyle = `rgba(124, 58, 237, ${0.06 * (1 - dist / 110)})`
+      // Optimized Pairwise Strands (O(N^2)/2 with early rejection)
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i]
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j]
+          const dx = p1.x - p2.x
+          const dy = p1.y - p2.y
+          if (Math.abs(dx) > maxLinkDist || Math.abs(dy) > maxLinkDist) continue
+          const distSq = dx * dx + dy * dy
+          if (distSq < maxLinkDistSq) {
+            const dist = Math.sqrt(distSq)
+            ctx.strokeStyle = `rgba(124, 58, 237, ${0.08 * (1 - dist / maxLinkDist)})`
             ctx.lineWidth = 0.5
             ctx.beginPath()
-            ctx.moveTo(p.x, p.y)
+            ctx.moveTo(p1.x, p1.y)
             ctx.lineTo(p2.x, p2.y)
             ctx.stroke()
           }
-        })
-      })
-
-      animationFrameId = requestAnimationFrame(render)
+        }
+      }
     }
 
-    render()
+    // Viewport Visibility Culling: Only run RAF loop when section is visible
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting
+      if (isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      } else if (!isVisible && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      }
+    }, { threshold: 0.05 })
+
+    observer.observe(canvas)
+
+    const handleVisibility = () => {
+      if (document.hidden && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      } else if (!document.hidden && isVisible && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
 
     return () => {
       window.removeEventListener('resize', handleResize)
-      cancelAnimationFrame(animationFrameId)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      observer.disconnect()
+      if (animationFrameId) cancelAnimationFrame(animationFrameId)
     }
   }, [])
 
@@ -360,6 +435,8 @@ export default function Publications() {
               <img
                 src="/faces_behind_faces_cover.jpg"
                 alt="The Faces Behind Faces Book Cover"
+                loading="lazy"
+                decoding="async"
                 style={{
                   position: 'absolute',
                   inset: 0,

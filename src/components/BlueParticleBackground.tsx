@@ -9,9 +9,28 @@ export default function BlueParticleBackground() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let animationFrameId: number
+    let animationFrameId = 0
+    let lastTime = 0
+    const frameInterval = 1000 / 60
     let width = (canvas.width = window.innerWidth)
     let height = (canvas.height = window.innerHeight)
+
+    // Pre-downscale logo onto a 48x48 offscreen canvas once
+    let offscreenLogo: HTMLCanvasElement | null = null
+    const logoImg = new Image()
+    logoImg.src = '/logo.png'
+    const createOffscreenLogo = () => {
+      if (!logoImg.complete || logoImg.naturalWidth === 0) return
+      const offscreen = document.createElement('canvas')
+      offscreen.width = 48
+      offscreen.height = 48
+      const oCtx = offscreen.getContext('2d')
+      if (!oCtx) return
+      oCtx.drawImage(logoImg, 0, 0, 48, 48)
+      offscreenLogo = offscreen
+    }
+    logoImg.onload = createOffscreenLogo
+    if (logoImg.complete) createOffscreenLogo()
 
     const handleResize = () => {
       width = canvas.width = window.innerWidth
@@ -19,14 +38,19 @@ export default function BlueParticleBackground() {
     }
     window.addEventListener('resize', handleResize)
 
-    // Particle pool
-    const particleCount = 80
+    // Logo particle pool (calm, minimal on mobile UI)
+    const isMobile = width < 768
+    const particleCount = isMobile ? 8 : 28
+    const maxLinkDist = isMobile ? 75 : 120
+    const maxLinkDistSq = maxLinkDist * maxLinkDist
     const particles: Array<{
       x: number
       y: number
       size: number
       speedY: number
       speedX: number
+      rotation: number
+      rotSpeed: number
       alpha: number
       pulseSpeed: number
       pulseDir: number
@@ -36,11 +60,13 @@ export default function BlueParticleBackground() {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: Math.random() * 2 + 1,
-        speedY: -(Math.random() * 0.5 + 0.1),
+        size: isMobile ? (Math.random() * 6 + 12) : (Math.random() * 14 + 18),
+        speedY: -(Math.random() * 0.45 + 0.12),
         speedX: (Math.random() - 0.5) * 0.2,
-        alpha: Math.random() * 0.45 + 0.1,
-        pulseSpeed: Math.random() * 0.02 + 0.005,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.007,
+        alpha: Math.random() * 0.35 + 0.12,
+        pulseSpeed: Math.random() * 0.012 + 0.004,
         pulseDir: Math.random() > 0.5 ? 1 : -1
       })
     }
@@ -48,7 +74,11 @@ export default function BlueParticleBackground() {
     let scanY = 0
     const gridSpacing = 65
 
-    const render = () => {
+    const render = (time: number) => {
+      animationFrameId = requestAnimationFrame(render)
+      if (time - lastTime < frameInterval - 1) return
+      lastTime = time
+
       ctx.clearRect(0, 0, width, height)
 
       // Draw blue grid lines
@@ -78,50 +108,77 @@ export default function BlueParticleBackground() {
       ctx.lineTo(width, scanY)
       ctx.stroke()
 
-      // Render coordinates particles and blue connecting strings
-      particles.forEach((p) => {
+      // Render logo particles using pre-scaled offscreen canvas
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]
         p.y += p.speedY
         p.x += p.speedX
-        if (p.y < 0) {
-          p.y = height
+        p.rotation += p.rotSpeed
+
+        if (p.y < -40) {
+          p.y = height + 25
           p.x = Math.random() * width
         }
-        if (p.x < 0) p.x = width
-        if (p.x > width) p.x = 0
+        if (p.x < -40) p.x = width + 25
+        if (p.x > width + 40) p.x = -25
 
         p.alpha += p.pulseSpeed * p.pulseDir
-        if (p.alpha > 0.8 || p.alpha < 0.1) {
+        if (p.alpha > 0.48 || p.alpha < 0.12) {
           p.pulseDir *= -1
         }
 
-        ctx.fillStyle = `rgba(14, 165, 233, ${p.alpha})` // Sky blue particle
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fill()
+        // Fast blit from offscreen texture
+        const texture = offscreenLogo || (logoImg.complete && logoImg.naturalWidth > 0 ? logoImg : null)
+        if (texture) {
+          ctx.save()
+          ctx.translate(p.x, p.y)
+          ctx.rotate(p.rotation)
+          ctx.globalAlpha = p.alpha
+          ctx.drawImage(texture, -p.size / 2, -p.size / 2, p.size, p.size)
+          ctx.restore()
+        }
+      }
 
-        particles.forEach((p2) => {
-          const dx = p.x - p2.x
-          const dy = p.y - p2.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 110) {
-            ctx.strokeStyle = `rgba(37, 99, 235, ${0.08 * (1 - dist / 110)})` // Indigo / Royal blue string
+      // Optimized Pairwise Strands (O(N^2)/2 with early rejection)
+      for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i]
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j]
+          const dx = p1.x - p2.x
+          const dy = p1.y - p2.y
+          if (Math.abs(dx) > maxLinkDist || Math.abs(dy) > maxLinkDist) continue
+          const distSq = dx * dx + dy * dy
+          if (distSq < maxLinkDistSq) {
+            const dist = Math.sqrt(distSq)
+            ctx.strokeStyle = `rgba(14, 165, 233, ${0.08 * (1 - dist / maxLinkDist)})` // Sky blue / cyan string
             ctx.lineWidth = 0.5
             ctx.beginPath()
-            ctx.moveTo(p.x, p.y)
+            ctx.moveTo(p1.x, p1.y)
             ctx.lineTo(p2.x, p2.y)
             ctx.stroke()
           }
-        })
-      })
-
-      animationFrameId = requestAnimationFrame(render)
+        }
+      }
     }
 
-    render()
+    lastTime = performance.now()
+    animationFrameId = requestAnimationFrame(render)
+
+    const handleVisibility = () => {
+      if (document.hidden && animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+        animationFrameId = 0
+      } else if (!document.hidden && !animationFrameId) {
+        lastTime = performance.now()
+        animationFrameId = requestAnimationFrame(render)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
 
     return () => {
       window.removeEventListener('resize', handleResize)
-      cancelAnimationFrame(animationFrameId)
+      document.removeEventListener('visibilitychange', handleVisibility)
+      if (animationFrameId) cancelAnimationFrame(animationFrameId)
     }
   }, [])
 

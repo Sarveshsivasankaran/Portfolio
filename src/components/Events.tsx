@@ -58,6 +58,7 @@ function EventImage({ src, alt, onClick }: EventImageProps) {
         src={src}
         alt={alt}
         loading="lazy"
+        decoding="async"
         referrerPolicy="no-referrer"
         onLoad={() => setLoaded(true)}
         onError={() => setLoaded(true)}
@@ -233,20 +234,23 @@ export default function Events() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
+          className="events-top-bar"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             paddingTop: 16,
-            marginBottom: 64,
+            marginBottom: 'clamp(14px, 2vh, 24px)',
+            gap: 12,
           }}
         >
           <span style={{
             fontFamily: 'Share Tech Mono, monospace',
-            fontSize: 12,
+            fontSize: 'clamp(10px, 2.7vw, 12px)',
             color: 'var(--stone)',
-            letterSpacing: '0.1em'
+            letterSpacing: '0.1em',
+            whiteSpace: 'nowrap',
           }}>
             <span style={{ color: 'var(--monarch)' }}>03</span> EVENTS AND SPEAKING
           </span>
@@ -254,7 +258,8 @@ export default function Events() {
             fontFamily: 'serif',
             fontStyle: 'italic',
             color: 'var(--stone)',
-            fontSize: 14
+            fontSize: 'clamp(11px, 3.2vw, 14px)',
+            textAlign: 'right',
           }}>
             Where voice meets action
           </span>
@@ -490,7 +495,15 @@ export default function Events() {
           100% { transform: translate3d(-50%, 0, 0); }
         }
         @media (max-width: 768px) {
-          #events { padding: 64px 24px 48px !important; }
+          #events { padding: 56px 16px 36px !important; }
+        }
+        @media (max-width: 640px) {
+          .events-top-bar {
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 12px !important;
+          }
         }
       `}</style>
     </section>

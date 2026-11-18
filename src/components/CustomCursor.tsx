@@ -5,8 +5,16 @@ export default function CustomCursor() {
   const particlesRef = useRef<HTMLCanvasElement>(null)
   
   const [isHovering, setIsHovering] = useState(false)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
   useEffect(() => {
+    // Context and Behaviour Adaptation: Disable custom cursor on touch/mobile devices
+    const isTouch = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window || (navigator.maxTouchPoints > 0)
+    if (isTouch) {
+      setIsTouchDevice(true)
+      return
+    }
+
     const cursor = cursorRef.current
     const canvas = particlesRef.current
     if (!cursor || !canvas) return
@@ -24,49 +32,8 @@ export default function CustomCursor() {
 
     const particles: Array<{ x: number; y: number; size: number; alpha: number; vx: number; vy: number }> = []
 
-    const onMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX
-      mouseY = e.clientY
-      
-      // Add a particle on move
-      if (Math.random() > 0.5) {
-        particles.push({
-          x: mouseX,
-          y: mouseY,
-          size: Math.random() * 4 + 1,
-          alpha: 1,
-          vx: (Math.random() - 0.5) * 2,
-          vy: (Math.random() - 0.5) * 2,
-        })
-      }
-    }
-
-    const onMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement
-      if (
-        target.tagName.toLowerCase() === 'button' ||
-        target.tagName.toLowerCase() === 'a' ||
-        target.closest('button') ||
-        target.closest('a') ||
-        target.classList.contains('interactive') ||
-        getComputedStyle(target).cursor === 'pointer'
-      ) {
-        setIsHovering(true)
-      } else {
-        setIsHovering(false)
-      }
-    }
-
-    const onResize = () => {
-      width = canvas.width = window.innerWidth
-      height = canvas.height = window.innerHeight
-    }
-
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseover', onMouseOver)
-    window.addEventListener('resize', onResize)
-
-    let animationFrameId: number
+    let animationFrameId = 0
+    let isAnimating = false
 
     const render = () => {
       // Smooth follow for cursor
@@ -98,9 +65,66 @@ export default function CustomCursor() {
         ctx.fill()
       }
 
+      const dx = mouseX - cursorX
+      const dy = mouseY - cursorY
+      if (Math.abs(dx) < 0.2 && Math.abs(dy) < 0.2 && particles.length === 0) {
+        isAnimating = false
+        return
+      }
+
       animationFrameId = requestAnimationFrame(render)
     }
-    render()
+
+    const startAnimation = () => {
+      if (!isAnimating) {
+        isAnimating = true
+        animationFrameId = requestAnimationFrame(render)
+      }
+    }
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX
+      mouseY = e.clientY
+      
+      // Add a particle on move
+      if (Math.random() > 0.5) {
+        particles.push({
+          x: mouseX,
+          y: mouseY,
+          size: Math.random() * 4 + 1,
+          alpha: 1,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+        })
+      }
+
+      startAnimation()
+    }
+
+    const onMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (
+        target.tagName.toLowerCase() === 'button' ||
+        target.tagName.toLowerCase() === 'a' ||
+        target.closest('button') ||
+        target.closest('a') ||
+        target.classList.contains('interactive') ||
+        getComputedStyle(target).cursor === 'pointer'
+      ) {
+        setIsHovering(true)
+      } else {
+        setIsHovering(false)
+      }
+    }
+
+    const onResize = () => {
+      width = canvas.width = window.innerWidth
+      height = canvas.height = window.innerHeight
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseover', onMouseOver)
+    window.addEventListener('resize', onResize)
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove)
@@ -109,6 +133,10 @@ export default function CustomCursor() {
       cancelAnimationFrame(animationFrameId)
     }
   }, [])
+
+  if (isTouchDevice) {
+    return null
+  }
 
   return (
     <>
@@ -145,50 +173,52 @@ export default function CustomCursor() {
         />
       </div>
       <style>{`
-        body {
-          cursor: none;
-        }
-        a, button, [role="button"], input, textarea, select {
-          cursor: none;
-        }
-        .custom-cursor {
-          width: 36px;
-          height: 36px;
-          margin-left: -18px;
-          margin-top: -18px;
-          background-color: rgba(10, 10, 18, 0.45);
-          border: 1.5px solid rgba(168, 85, 247, 0.7);
-          box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
-          border-radius: 50%;
-          transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      margin 0.22s cubic-bezier(0.16, 1, 0.3, 1),
-                      background-color 0.2s,
-                      border-color 0.2s,
-                      box-shadow 0.2s;
-        }
-        .custom-cursor.hover {
-          width: 52px !important;
-          height: 52px !important;
-          margin-left: -26px !important;
-          margin-top: -26px !important;
-          background-color: rgba(168, 85, 247, 0.15) !important;
-          border-color: rgba(168, 85, 247, 1) !important;
-          box-shadow: 0 0 20px rgba(168, 85, 247, 0.6) !important;
-        }
-        .cursor-inner-logo {
-          width: 18px;
-          height: 18px;
-          object-fit: contain;
-          image-rendering: pixelated;
-          filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.6));
-          transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s;
-          user-select: none;
-          pointer-events: none;
-        }
-        .custom-cursor.hover .cursor-inner-logo {
-          transform: scale(1.3);
-          filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.95)) brightness(1.15);
+        @media (hover: hover) and (pointer: fine) {
+          body {
+            cursor: none;
+          }
+          a, button, [role="button"], input, textarea, select {
+            cursor: none;
+          }
+          .custom-cursor {
+            width: 36px;
+            height: 36px;
+            margin-left: -18px;
+            margin-top: -18px;
+            background-color: rgba(10, 10, 18, 0.45);
+            border: 1.5px solid rgba(168, 85, 247, 0.7);
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+            border-radius: 50%;
+            transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                        height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                        margin 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                        background-color 0.2s,
+                        border-color 0.2s,
+                        box-shadow 0.2s;
+          }
+          .custom-cursor.hover {
+            width: 52px !important;
+            height: 52px !important;
+            margin-left: -26px !important;
+            margin-top: -26px !important;
+            background-color: rgba(168, 85, 247, 0.15) !important;
+            border-color: rgba(168, 85, 247, 1) !important;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.6) !important;
+          }
+          .cursor-inner-logo {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.6));
+            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s;
+            user-select: none;
+            pointer-events: none;
+          }
+          .custom-cursor.hover .cursor-inner-logo {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.95)) brightness(1.15);
+          }
         }
       `}</style>
     </>

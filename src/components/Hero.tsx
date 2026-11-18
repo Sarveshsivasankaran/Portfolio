@@ -111,6 +111,10 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
     offset: ["start start", "end start"]
   })
 
+  const splineRotate = useTransform(scrollYProgress, [0, 1], [0, 30])
+  const splineScale = useTransform(scrollYProgress, [0, 1], [1.02, 1.25])
+  const splineY = useTransform(scrollYProgress, [0, 1], [0, 150])
+
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (!splineApp.current) return
     try {
@@ -202,8 +206,8 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
         </div>
       </div>
 
-      {/* 2. Interactive 3D Spline Vortex Background Layer */}
-      {(!splineLoaded || splineError) && (
+      {/* 2. Interactive 3D Spline Vortex Background Layer (Desktop only; Mobile uses instant lightweight portal) */}
+      {(!splineLoaded || splineError || isMobile) && (
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -214,7 +218,7 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
           <PortalFallback />
         </div>
       )}
-      {!splineError && (
+      {!splineError && !isMobile && (
         <Suspense fallback={null}>
           <motion.div className="hero-spline-wrapper" style={{
             position: 'absolute',
@@ -224,9 +228,9 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
             opacity: 0.25,
             willChange: 'transform',
             display: splineLoaded ? 'block' : 'none',
-            rotate: useTransform(scrollYProgress, [0, 1], [0, 30]),
-            scale: useTransform(scrollYProgress, [0, 1], [1.02, 1.25]),
-            y: useTransform(scrollYProgress, [0, 1], [0, 150]),
+            rotate: splineRotate,
+            scale: splineScale,
+            y: splineY,
           }}>
             <Spline
               scene={SPLINE_URL}
@@ -409,12 +413,12 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
 
         {/* CTA row */}
         <motion.div variants={stagger.item} style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 36 }} className="hero-cta-row">
-          <button className="btn-primary" onClick={scrollToProjects} id="hero-view-projects">
+          <button className="btn-primary no-magnetic" onClick={scrollToProjects} id="hero-view-projects">
             View Projects
           </button>
           <a
             href="#contact"
-            className="btn-ghost"
+            className="btn-ghost no-magnetic"
             id="hero-contact-button"
             onClick={(e) => {
               e.preventDefault();
@@ -501,6 +505,29 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        /* Hero buttons hover stillness */
+        #hero .btn-primary,
+        #hero .btn-ghost,
+        .hero-cta-row button,
+        .hero-cta-row a {
+          transform: none !important;
+          transition: filter 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease !important;
+        }
+        #hero .btn-primary:hover,
+        #hero .btn-ghost:hover,
+        .hero-cta-row button:hover,
+        .hero-cta-row a:hover,
+        #hero .btn-primary:active,
+        #hero .btn-ghost:active,
+        .hero-cta-row button:active,
+        .hero-cta-row a:active,
+        #hero .btn-primary:focus-visible,
+        #hero .btn-ghost:focus-visible,
+        .hero-cta-row button:focus-visible,
+        .hero-cta-row a:focus-visible {
+          transform: none !important;
+        }
+
         .typewriter-cursor { color: var(--gate) !important; }
         @keyframes ribbonScrollLeft {
           0% { transform: translate3d(0, 0, 0); }
@@ -538,6 +565,24 @@ export default function Hero({ isMuted, toggleMute }: HeroProps) {
             justify-content: center !important;
           }
           .hero-cta-row {
+            justify-content: center;
+          }
+        }
+        @media (max-width: 640px) {
+          #hero {
+            padding: 0px 16px 24px !important;
+          }
+          .hero-text-pane {
+            margin-top: 56px !important;
+            padding: 24px 14px !important;
+            border-radius: 12px !important;
+          }
+          .hero-cta-row {
+            gap: 12px !important;
+            width: 100%;
+          }
+          .hero-cta-row button, .hero-cta-row a {
+            flex: 1 1 140px;
             justify-content: center;
           }
         }
