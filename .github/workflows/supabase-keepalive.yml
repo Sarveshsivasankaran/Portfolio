@@ -1,0 +1,57 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Runs twice a week (Monday & Thursday at 04:15 UTC) as an independent backup
+    # to the daily Vercel Cron, well within Supabase Free Tier's 7-day inactivity limit.
+    - cron: '15 4 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Portfolio Cron / Supabase REST API
+        env:
+          VERCEL_CRON_URL: https://solo-p-leveller-portfolio.vercel.app/api/cron/supabase-keepalive
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -n "$CRON_SECRET" ]; then
+            echo "Pinging Vercel Supabase keep-alive endpoint..."
+            HTTP_CODE=$(curl -sS -o response.json -w "%{http_code}" --max-time 25 \
+              -H "Authorization: Bearer ${CRON_SECRET}" \
+              "${VERCEL_CRON_URL}")
+            echo "HTTP status: ${HTTP_CODE}"
+            cat response.json || true
+            echo ""
+            if [ "${HTTP_CODE}" -ne 200 ]; then
+              echo "::error::Vercel keep-alive endpoint returned HTTP ${HTTP_CODE}"
+              exit 1
+            fi
+          elif [ -n "${SUPABASE_PUBLISHABLE_KEY:-${SUPABASE_ANON_KEY}}" ]; then
+            KEY="${SUPABASE_PUBLISHABLE_KEY:-${SUPABASE_ANON_KEY}}"
+            TARGET_URL="${SUPABASE_URL:-https://fxnconsxvbmpkmsxjpjq.supabase.co}"
+            echo "Pinging Supabase REST API directly..."
+            HTTP_CODE=$(curl -sS -o response.json -w "%{http_code}" --max-time 25 \
+              -H "apikey: ${KEY}" \
+              -H "Authorization: Bearer ${KEY}" \
+              "${TARGET_URL%/}/rest/v1/activity_feed_revision?select=id,revision&limit=1")
+            echo "HTTP status: ${HTTP_CODE}"
+            if [ "${HTTP_CODE}" -ne 200 ]; then
+              cat response.json || true
+              echo ""
+              echo "::error::Supabase REST ping returned HTTP ${HTTP_CODE}"
+              exit 1
+            fi
+          else
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "::error::Set CRON_SECRET or SUPABASE_PUBLISHABLE_KEY in GitHub Repository Secrets to enable GitHub Actions backup pings."
+              exit 1
+            fi
+            echo "::notice::Skipping GitHub backup ping cleanly (neither CRON_SECRET nor SUPABASE_PUBLISHABLE_KEY is set in GitHub Secrets). Vercel Cron remains active as primary."
+          fi
+

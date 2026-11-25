@@ -1,11 +1,13 @@
 {
   "crons": [
     { "path": "/api/cron/linkedin", "schedule": "30 3 * * *" },
-    { "path": "/api/cron/followers", "schedule": "0 3 * * *" }
+    { "path": "/api/cron/followers", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/supabase-keepalive", "schedule": "0 4 * * *" }
   ],
   "functions": {
     "api/cron/linkedin.mjs": { "maxDuration": 120 },
-    "api/cron/followers.mjs": { "maxDuration": 30 }
+    "api/cron/followers.mjs": { "maxDuration": 30 },
+    "api/cron/supabase-keepalive.mjs": { "maxDuration": 15 }
   },
   "rewrites": [
     { "source": "/admin/activities", "destination": "/index.html" },
